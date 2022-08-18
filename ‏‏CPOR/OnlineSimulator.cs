@@ -1,6 +1,0 @@
-﻿namespace CPOR
-{
-    class OnlineSimulator
-    {
-    }
-}

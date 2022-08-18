@@ -1,0 +1,10 @@
+C:\Users\shanigu\OneDrive - Ben Gurion University of the Negev\Research\AIPlan4EU\code\CPORLibSolution\CPORLib\bin\Debug\netstandard2.0\CPORLib.deps.json
+C:\Users\shanigu\OneDrive - Ben Gurion University of the Negev\Research\AIPlan4EU\code\CPORLibSolution\CPORLib\bin\Debug\netstandard2.0\CPORLib.dll
+C:\Users\shanigu\OneDrive - Ben Gurion University of the Negev\Research\AIPlan4EU\code\CPORLibSolution\CPORLib\bin\Debug\netstandard2.0\CPORLib.pdb
+C:\Users\shanigu\OneDrive - Ben Gurion University of the Negev\Research\AIPlan4EU\code\CPORLibSolution\CPORLib\obj\Debug\netstandard2.0\CPORLib.csproj.AssemblyReference.cache
+C:\Users\shanigu\OneDrive - Ben Gurion University of the Negev\Research\AIPlan4EU\code\CPORLibSolution\CPORLib\obj\Debug\netstandard2.0\CPORLib.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\shanigu\OneDrive - Ben Gurion University of the Negev\Research\AIPlan4EU\code\CPORLibSolution\CPORLib\obj\Debug\netstandard2.0\CPORLib.AssemblyInfoInputs.cache
+C:\Users\shanigu\OneDrive - Ben Gurion University of the Negev\Research\AIPlan4EU\code\CPORLibSolution\CPORLib\obj\Debug\netstandard2.0\CPORLib.AssemblyInfo.cs
+C:\Users\shanigu\OneDrive - Ben Gurion University of the Negev\Research\AIPlan4EU\code\CPORLibSolution\CPORLib\obj\Debug\netstandard2.0\CPORLib.csproj.CoreCompileInputs.cache
+C:\Users\shanigu\OneDrive - Ben Gurion University of the Negev\Research\AIPlan4EU\code\CPORLibSolution\CPORLib\obj\Debug\netstandard2.0\CPORLib.dll
+C:\Users\shanigu\OneDrive - Ben Gurion University of the Negev\Research\AIPlan4EU\code\CPORLibSolution\CPORLib\obj\Debug\netstandard2.0\CPORLib.pdb
