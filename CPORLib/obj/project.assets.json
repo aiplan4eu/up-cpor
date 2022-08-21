@@ -209,11 +209,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\shanigu\\OneDrive - Ben Gurion University of the Negev\\Research\\AIPlan4EU\\code\\CPORLibSolution\\CPORLib\\CPORLib.csproj",
+      "projectUniqueName": "C:\\Users\\shanigu\\OneDrive - Ben Gurion University of the Negev\\Research\\projects\\AIPlan4EU\\up-cpor\\CPORLib\\CPORLib.csproj",
       "projectName": "CPORLib",
-      "projectPath": "C:\\Users\\shanigu\\OneDrive - Ben Gurion University of the Negev\\Research\\AIPlan4EU\\code\\CPORLibSolution\\CPORLib\\CPORLib.csproj",
+      "projectPath": "C:\\Users\\shanigu\\OneDrive - Ben Gurion University of the Negev\\Research\\projects\\AIPlan4EU\\up-cpor\\CPORLib\\CPORLib.csproj",
       "packagesPath": "C:\\Users\\shanigu\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\shanigu\\OneDrive - Ben Gurion University of the Negev\\Research\\AIPlan4EU\\code\\CPORLibSolution\\CPORLib\\obj\\",
+      "outputPath": "C:\\Users\\shanigu\\OneDrive - Ben Gurion University of the Negev\\Research\\projects\\AIPlan4EU\\up-cpor\\CPORLib\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"

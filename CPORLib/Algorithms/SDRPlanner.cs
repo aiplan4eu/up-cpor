@@ -16,6 +16,9 @@ namespace CPORLib.Algorithms
 
     public class SDRPlanner
     {
+
+        // ALL THESE WHERE MOVED TO THE OPTIONS CLASS - NEED TO REMOVE AND FIX ALL REFERENCES
+
         //test
         public static bool SDR_OBS { set; get; }
 

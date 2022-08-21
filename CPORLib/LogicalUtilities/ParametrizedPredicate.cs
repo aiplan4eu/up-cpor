@@ -53,6 +53,14 @@ namespace CPORLib.LogicalUtilities
 
         }
 
+        public void AddParameter(string sName, string sType)
+        {
+            Parameter p = new Parameter(sType, sName);
+            Parameterized = true;
+            m_lParameters.Add(p);
+
+        }
+
         public override bool Equals(object obj)
         {
             if (obj is ParametrizedPredicate)

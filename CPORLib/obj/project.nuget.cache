@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "VmDy8Zp/1jgn2ujS9ne+bRG9qcqZAZBWyDa4qIhzijcvYfKKmWCc1We/6yGWyGvIQ3y9/mWF2dMGSAQXas3Vhw==",
+  "dgSpecHash": "beTTXYzpxIYmGjTMU3COe8seo4O2ddYY8EeIIvKeCX5Kg4Uv5ybF3zi7oEXwJvKfGJ/ItklphfPXyM/qCv+jjQ==",
   "success": true,
-  "projectFilePath": "C:\\Users\\shanigu\\OneDrive - Ben Gurion University of the Negev\\Research\\AIPlan4EU\\code\\CPORLibSolution\\CPORLib\\CPORLib.csproj",
+  "projectFilePath": "C:\\Users\\shanigu\\OneDrive - Ben Gurion University of the Negev\\Research\\projects\\AIPlan4EU\\up-cpor\\CPORLib\\CPORLib.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\shanigu\\.nuget\\packages\\microsoft.netcore.platforms\\1.1.0\\microsoft.netcore.platforms.1.1.0.nupkg.sha512",
     "C:\\Users\\shanigu\\.nuget\\packages\\microsoft.solver.foundation\\3.1.0\\microsoft.solver.foundation.3.1.0.nupkg.sha512",

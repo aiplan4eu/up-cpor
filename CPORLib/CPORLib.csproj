@@ -13,7 +13,7 @@
   </ItemGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="copy /Y &quot;$(TargetDir)$(ProjectName).dll&quot; &quot;C:\Users\shanigu\OneDrive - Ben Gurion University of the Negev\Research\AIPlan4EU\code\PythonCPORTest\Dlls\$(ProjectName).dll&quot;" />
+    <Exec Command="copy /Y &quot;$(TargetDir)$(ProjectName).dll&quot; &quot;C:\Users\shanigu\OneDrive - Ben Gurion University of the Negev\Research\projects\AIPlan4EU\unified-planning\unified-planning\$(ProjectName).dll&quot;" />
   </Target>
 
 </Project>

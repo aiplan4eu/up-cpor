@@ -86,7 +86,7 @@ namespace CPORLib.Parsing
                 {
                     CompoundExpression eSub = (CompoundExpression)e;
                     if (eSub.Type == "domain")
-                        d = new Domain(eSub.SubExpressions.First().ToString(), sPath);
+                        d = new Domain(eSub.SubExpressions.First().ToString());
                     else if (eSub.Type == ":requirements")
                     {
                     }

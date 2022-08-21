@@ -23,23 +23,21 @@ namespace CPORLib.PlanningModel
         public List<string> m_lAlwaysKnown { get; protected set; }
         private List<string> m_lAlwaysConstant;
         private List<string> m_lObservable;
-        public string Path { get; private set; }
+
         public bool IsSimple { get; private set; }
 
 
         public bool UseCosts { get; private set; }
 
 
-
         private Dictionary<Predicate, Predicate> m_dAuxilaryPredicates;
 
         public bool ContainsNonDeterministicActions { get; private set; }
 
-        public Domain(string sName, string sPath)
+        public Domain(string sName)
         {
             UseCosts = true;
             Name = sName;
-            Path = sPath;
             Actions = new List<PlanningAction>();
             Constants = new List<Constant>();
             Predicates = new List<Predicate>();
@@ -56,6 +54,30 @@ namespace CPORLib.PlanningModel
             ContainsNonDeterministicActions = false;
             TypeHierarchy = new Dictionary<string, string>();
         }
+
+
+        #region accessors for unified_planning 
+
+        public void AddType(string sType)
+        {
+            if(!Types.Contains(sType))
+                Types.Add(sType);
+        }
+        public void AddType(string sType, string sParentType)
+        {
+            if (!Types.Contains(sType))
+            {
+                Types.Add(sType);
+            }
+            if (!Types.Contains(sParentType))
+                Types.Add(sParentType);
+            TypeHierarchy[sType] = sParentType;
+        }
+
+
+
+        #endregion
+
 
         public void AddAction(PlanningAction a)
         {
@@ -297,7 +319,7 @@ namespace CPORLib.PlanningModel
 
         private Domain RemoveNonDeterministicEffects()
         {
-            Domain dDeterministic = new Domain(Name, Path);
+            Domain dDeterministic = new Domain(Name);
             dDeterministic.Predicates = new List<Predicate>(Predicates);
             dDeterministic.Constants = new List<Constant>(Constants);
             dDeterministic.Types = new List<string>(Types);
@@ -3476,102 +3498,6 @@ namespace CPORLib.PlanningModel
                 }
             }
 
-        }
-
-
-        private List<List<string>> GetSASVariables(string sPath, string sDomainFileName, string sProblemFileName)
-        {
-            Process p = new Process();
-            p.StartInfo.WorkingDirectory = sPath;
-            //p.StartInfo.FileName = Program.BASE_PATH + @"\PDDL\Planners\ff.exe";
-            p.StartInfo.FileName = @"C:\Program Files\Python\Python.exe";
-            p.StartInfo.Arguments = @"D:\Research\projects\PDDL\Planners\FD\translate\translate.py";
-            p.StartInfo.Arguments += " " + sDomainFileName + " " + sProblemFileName;
-            //p.StartInfo.WorkingDirectory = @"D:\Research\projects\PDDL\Planners\FD\translate";
-            p.StartInfo.WorkingDirectory = sPath;
-            p.StartInfo.UseShellExecute = false;
-
-            p.Start();
-            p.WaitForExit();
-
-            List<List<string>> lVariables = new List<List<string>>();
-            StreamReader srSAS = new StreamReader(sPath + "\\output.sas");
-            while (!srSAS.EndOfStream)
-            {
-                string sLine = srSAS.ReadLine().Trim();
-                if (sLine == "begin_variable")
-                {
-                    bool bVarEnded = false;
-                    List<string> lAtoms = new List<string>();
-                    while (!srSAS.EndOfStream && !bVarEnded)
-                    {
-                        string sAtomLine = srSAS.ReadLine().Trim();
-                        if (sAtomLine.StartsWith("Atom"))
-                        {
-                            lAtoms.Add(sAtomLine.Replace("Atom ", ""));
-
-                        }
-                        if (sAtomLine == "end_variable")
-                            bVarEnded = true;
-                    }
-                    lVariables.Add(lAtoms);
-                }
-
-            }
-
-            return lVariables;
-
-        }
-        public Dictionary<GroundedPredicate, HashSet<GroundedPredicate>> IdentifyMutexSAS(string sPath, string sDomainFileName, string sProblemFileName)
-        {
-            Dictionary<GroundedPredicate, HashSet<GroundedPredicate>> dMutex = new Dictionary<GroundedPredicate, HashSet<GroundedPredicate>>();
-            List<List<string>> lVariables = GetSASVariables(sPath, sDomainFileName, sProblemFileName);
-            foreach (List<string> lVariableAtoms in lVariables)
-            {
-                List<GroundedPredicate> lPredicates = new List<GroundedPredicate>();
-                foreach (string sAtom in lVariableAtoms)
-                {
-                    string[] aAtom = sAtom.Split(new char[] { '(', ',', ')', ' ' }, StringSplitOptions.RemoveEmptyEntries);
-                    Predicate pAtom = null;
-                    List<Constant> lConstants = new List<Constant>();
-                    foreach (Predicate p in Predicates)
-                    {
-                        if (p.Name == aAtom[0])
-                        {
-                            pAtom = p;
-                        }
-                    }
-                    for (int i = 1; i < aAtom.Length; i++)
-                    {
-                        foreach (Constant c in Constants)
-                        {
-                            if (c.Name == aAtom[i])
-                                lConstants.Add(c);
-                        }
-                    }
-                    GroundedPredicate gp = null;
-                    if (pAtom is GroundedPredicate)
-                        gp = (GroundedPredicate)pAtom;
-                    else
-                    {
-                        gp = new GroundedPredicate(pAtom.Name);
-                        foreach (Constant c in lConstants)
-                            gp.AddConstant(c);
-                    }
-                    lPredicates.Add(gp);
-                    dMutex[gp] = new HashSet<GroundedPredicate>();
-                }
-                foreach (GroundedPredicate gp in lPredicates)
-                {
-                    foreach (GroundedPredicate gpOther in lPredicates)
-                    {
-                        if (gp != gpOther)
-                            dMutex[gp].Add(gpOther);
-                    }
-
-                }
-            }
-            return dMutex;
         }
 
         public bool ParentOf(string sType1, string sType2)

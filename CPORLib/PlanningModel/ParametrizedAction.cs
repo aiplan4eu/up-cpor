@@ -3,7 +3,7 @@ using CPORLib.LogicalUtilities;
 
 namespace CPORLib.PlanningModel
 {
-    class ParametrizedAction : PlanningAction
+    public class ParametrizedAction : PlanningAction
     {
         public List<Parameter> Parameters { get; private set; }
         public ParametrizedAction(string sName)
@@ -17,6 +17,11 @@ namespace CPORLib.PlanningModel
         {
             Parameters.Add(parameter);
             ParameterNameToType[parameter.Name] = parameter.Type;
+        }
+        public void AddParameter(string sName, string sType)
+        {
+            Parameter parameter = new Parameter(sType, sName);
+            AddParameter(parameter);
         }
         public override PlanningAction Clone()
         {
