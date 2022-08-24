@@ -28,6 +28,16 @@ namespace CPORLib.Algorithms
             Parser p = new Parser();
             msModel.Position = 0;
             p.ParseDomainAndProblem(msModel, out m_dDomain, out m_pProblem);
+
+            /*
+            Console.WriteLine(m_dDomain);
+            Console.WriteLine("************");
+            Console.WriteLine(m_pProblem);
+            Console.WriteLine("************");
+            */
+
+
+
             m_lGroundedActions = m_dDomain.GroundAllActions(m_pProblem, true);
 
             //m_fHeuristic = new HSPHeuristic(m_dDomain, m_pProblem.Goal, true);
@@ -236,5 +246,9 @@ namespace CPORLib.Algorithms
             lPlan.Reverse();
             return lPlan;
         }
+
+        
+
+
     }
 }

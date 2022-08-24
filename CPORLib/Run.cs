@@ -1,6 +1,7 @@
 ﻿using CPORLib.Algorithms;
 using CPORLib.Parsing;
 using CPORLib.PlanningModel;
+using CPORLib.Tools;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -10,7 +11,7 @@ namespace CPORLib
 {
     public class Run
     {
-        public static void RunPlanner(string sDomainFile, string sProblemFile, string sOutputPath, bool bOnline, int iTimePerProblem)
+        public static void RunPlanner(string sDomainFile, string sProblemFile, bool bOnline)
         {
 
             Debug.WriteLine("Reading domain and problem");
@@ -19,9 +20,21 @@ namespace CPORLib
             Problem problem = parser.ParseProblem(sProblemFile, domain);
             Debug.WriteLine("Done reading domain and problem");
 
-            SDRPlanner.TagsCount = 2;
-            SDRPlanner sdr = new SDRPlanner(sOutputPath, domain, problem, bOnline);
-            sdr.Start();
+            Options.TagsCount = 2;
+
+
+            if (bOnline)
+            {
+                SDRPlanner sdr = new SDRPlanner(domain, problem);
+                sdr.OnlineReplanning();
+            }
+            else
+            {
+                CPORPlanner cpor = new CPORPlanner(domain, problem);
+                cpor.Verbose = true;
+                var n = cpor.OfflinePlanning();
+                cpor.WritePlan("test.dot", n);
+            }
         }
         
 

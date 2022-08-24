@@ -19,6 +19,8 @@ namespace CPORLib.Tools
         public static bool UseCosts { get; private set; }
 
 
+        public static bool SampleDeadendState = true;
+
         public static bool RemoveConflictingConditionalEffects = false;
 
         public static bool SDR_OBS { set; get; }
@@ -26,8 +28,7 @@ namespace CPORLib.Tools
         public enum Translations { SDR, MPSRTagPartitions, MPSRTags, BestCase, Conformant, SingleStateK }
         public enum Planners { FF, FFsa, FFha, MIPS, MetricFF, LPG, FD, CPT, FFX, FF_WSL, TRAPPER_WSL, LocalFSP }
         public static Planners Planner = Planners.LocalFSP;
-        public static bool UseFilesForPlanners = true;
-
+ 
         public static bool AllowChoosingNonDeterministicOptions = true;
         private static Dictionary<Thread, Process> FFProcesses = new Dictionary<Thread, Process>();
 
@@ -39,7 +40,7 @@ namespace CPORLib.Tools
         // OptimizeMemoryConsumption= true in offline planning 
         //OptimizeMemoryConsumption= false in online planning 
         public static bool OptimizeMemoryConsumption = false;
-        // for offline planning use thi flag with true
+        // for offline planning use this flag with true
         public static bool ComputeCompletePlanTree = false;
         //  use this flag with false
 
@@ -59,10 +60,8 @@ namespace CPORLib.Tools
 
         public static List<string> SimulationStartState { get; set; }
         public static string GivenPlanFile = null;
-        internal static string BASE_PATH;
-        internal static bool RedirectShellOutput;
 
-        public static int TagsCount { get; set; }
+        public static int TagsCount = 2;
 
         public const int TIME_STEPS = 0;
         public const int MAX_OPTIONS = 2;

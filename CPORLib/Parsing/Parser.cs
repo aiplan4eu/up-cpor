@@ -37,6 +37,7 @@ namespace CPORLib.Parsing
             sr.Close();
             d = ParseDomain(eDomain, sPath);
             p = ParseProblem(eProblem, DeadEndFile, d);
+            p.PrepareForPlanning();
         }
 
 
@@ -50,6 +51,8 @@ namespace CPORLib.Parsing
             sr.Close();
             d = ParseDomain(eDomain, "");
             p = ParseProblem(eProblem, "", d);
+            p.PrepareForPlanning();
+
         }
 
 
@@ -155,7 +158,11 @@ namespace CPORLib.Parsing
             CompoundExpression exp = (CompoundExpression)ToExpression(sr);
             sr.Close();
 
-            return ParseProblem(exp, sDeadEndFile, d);
+            Problem p = ParseProblem(exp, sDeadEndFile, d);
+
+            p.PrepareForPlanning();
+
+            return p;
 
         }
         private Problem ParseProblem(CompoundExpression exp, string sDeadEndFile, Domain d)
@@ -164,6 +171,7 @@ namespace CPORLib.Parsing
             CompoundExpression eSub = null;
             foreach (Expression e in exp.SubExpressions)
             {
+                //Console.WriteLine("Parsing: " + e);
                 eSub = (CompoundExpression)e;
                 if (eSub.Type == "problem")
                 {
@@ -193,20 +201,12 @@ namespace CPORLib.Parsing
                     ReadMetric(p, d, eSub);
             }
             //p.AddReasoningActions(); not needed as long as we use FF to do the planning for us
-            d.ComputeAlwaysKnown();
-            p.CompleteKnownState();
-
-
-            List<Predicate> lConstantPredicates = new List<Predicate>();
-            foreach (Predicate pKnown in p.Known)
-            {
-                if (d.AlwaysConstant(pKnown))
-                    lConstantPredicates.Add(pKnown);
-            }
-            d.RemoveUniversalQuantifiers(lConstantPredicates);
-            p.RemoveUniversalQuantifiers();
+            
             if (sDeadEndFile != "")
-                p.deadEndList = ParseDeadEndsProblemFormula(sDeadEndFile, d);
+                p.DeadEndList = ParseDeadEndsProblemFormula(sDeadEndFile, d);
+            
+
+            
 
 
             return p;
@@ -541,19 +541,18 @@ namespace CPORLib.Parsing
                 if (bParametrized)
                 {
                     Argument a = null;
-                    if (sName.StartsWith("?"))
+                    if (dParameterNameToType.ContainsKey(sName))
                     {
-                        if (!dParameterNameToType.ContainsKey(sName))
-                            Console.WriteLine("Parameter not found: " + sName);
                         a = new Parameter(dParameterNameToType[sName], sName);
                         bAllConstants = false;
                     }
-                    else
+                    else if (d.ConstantNameToType.ContainsKey(sName))
                     {
-                        if (!d.ConstantNameToType.ContainsKey(sName))
-                            throw new Exception("Predicate " + sName + " undefined");
                         a = new Constant(d.ConstantNameToType[sName], sName);
                     }
+                    else
+                        throw new Exception("Unknown parameter/constant " + sName + " in " + exp);
+                    
                     ((ParametrizedPredicate)p).AddParameter(a);
                 }
                 else

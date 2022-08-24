@@ -110,20 +110,13 @@ namespace CPORLib.PlanningModel
             Unknown = new HashSet<Predicate>(sToCopy.Unknown);
             m_cfCNFHiddenState = sToCopy.m_cfCNFHiddenState;
 
-            m_lDeadendTags = new List<List<Predicate>>(sToCopy.m_lDeadendTags);
-            m_lCurrentTags = new List<List<Predicate>>(sToCopy.m_lCurrentTags);
+            if (sToCopy.m_lDeadendTags != null)
+                m_lDeadendTags = new List<List<Predicate>>(sToCopy.m_lDeadendTags);
+            if (sToCopy.m_lCurrentTags != null)
+                m_lCurrentTags = new List<List<Predicate>>(sToCopy.m_lCurrentTags);
 
 
-            /*m_sPredecessor = sToCopy.m_sPredecessor;
-            AvailableActions = new List<Action>(sToCopy.AvailableActions);
-            m_dMapIndexToPredicate = new List<GroundedPredicate>(sToCopy.m_dMapIndexToPredicate);
-            UnderlyingEnvironmentState = sToCopy.UnderlyingEnvironmentState;
-            if (sToCopy.m_lProblematicTag != null) m_lProblematicTag = new List<Predicate>(sToCopy.m_lProblematicTag);
-            m_lCurrentTags = new List<List<Predicate>>();
-            foreach (List<Predicate> lp in sToCopy.m_lCurrentTags)
-            {
-                m_lCurrentTags.Add(new List<Predicate>(lp));
-            }*/
+            
 
             bsCOUNT++;
             ID = bsCOUNT;
@@ -804,7 +797,7 @@ namespace CPORLib.PlanningModel
 
 
             m_cfCNFHiddenState.AddOperand(cf);
-            if (!cf.IsSimpleConjunction() && !cf.IsSimpleOneOf() && SDRPlanner.EnforceCNF)
+            if (!cf.IsSimpleConjunction() && !cf.IsSimpleOneOf() && Options.EnforceCNF)
             {
 
                 m_cfCNFHiddenState = (CompoundFormula)m_cfCNFHiddenState.ToCNF();
@@ -943,74 +936,21 @@ namespace CPORLib.PlanningModel
         public State ChooseState(bool bRemoveNegativePredicates)
         {
             State s = new State(Problem);
-            if (Problem.Domain.Name == "mines4")
+            List<Predicate> lAssignment = null;
+            Debug.Write("Choosing hidden variables ");
+            while (lAssignment == null)
             {
-                string[] a = new string[]{
-                         "(obs0-at p1-1)",
-                        "(obs0-at p2-1)",
-                        "(obs2-at p3-1)",
-                        "(mine-at p4-1)",
-                        "(obs1-at p4-1)",
-                        "(obs2-at p1-2)",
-                        "(obs2-at p2-2)",
-                        "(obs3-at p3-2)",
-                        "(mine-at p4-2)",
-                        "(obs1-at p4-2)",
-                        "(mine-at p1-3)",
-                        "(obs1-at p1-3)",
-                        "(mine-at p2-3)",
-                        "(obs1-at p2-3)",
-                        "(obs2-at p3-3)",
-                        "(obs1-at p4-3)",
-                        "(obs2-at p1-4)",
-                        "(obs2-at p2-4)",
-                        "(obs1-at p3-4)",
-                        "(obs0-at p4-4)"};
-                foreach (GroundedPredicate p in m_lObserved)
-                    s.AddPredicate(p);
-                foreach (string str in a)
-                {
-                    string[] a1 = str.Replace("(", "").Replace(")", "").Split(' ');
-                    GroundedPredicate gp = new GroundedPredicate(a1[0]);
-                    gp.AddConstant(new Constant("pos", a1[1]));
-                    s.AddPredicate(gp);
-                }
-
+                Debug.Write(".");
+                lAssignment = ChooseHiddenPredicates(m_lHiddenFormulas, true);
             }
-            else if (SDRPlanner.SimulationStartState == null || UnderlyingEnvironmentState != null)
+            Debug.WriteLine("");
+            foreach (Predicate p in lAssignment)
             {
-                if (Problem.Name.Contains("Large"))
-                    throw new NotImplementedException();
-                else
-                {
-                    List<Predicate> lAssignment = null;
-                    Debug.Write("Choosing hidden variables ");
-                    while (lAssignment == null)
-                    {
-                        Debug.Write(".");
-                        lAssignment = ChooseHiddenPredicates(m_lHiddenFormulas, true);
-                    }
-                    Debug.WriteLine("");
-                    foreach (Predicate p in lAssignment)
-                    {
-                        s.AddPredicate(p);
-                    }
-                    foreach (GroundedPredicate p in m_lObserved)
-                    {
-                        s.AddPredicate(p);
-                    }
-                }
+                s.AddPredicate(p);
             }
-            else
+            foreach (GroundedPredicate p in m_lObserved)
             {
-                Parser p = new Parser();
-                string sNextState = SDRPlanner.SimulationStartState[0];
-                SDRPlanner.SimulationStartState.RemoveAt(0);
-                CompoundFormula cfInit = p.ParseFormula(sNextState, Problem.Domain);
-                foreach (PredicateFormula pf in cfInit.Operands)
-                    s.AddPredicate(pf.Predicate);
-                foreach (GroundedPredicate gp in Observed)
-                    s.AddPredicate(gp);
+                s.AddPredicate(p);
             }
             if (bRemoveNegativePredicates)
                 s.RemoveNegativePredicates();
@@ -1022,7 +962,7 @@ namespace CPORLib.PlanningModel
         public State ChooseState(bool bRemoveNegativePredicates, bool bChooseDeadend)
         {
             State s = new State(Problem);
-            if (SDRPlanner.SimulationStartState == null || UnderlyingEnvironmentState != null)
+            if (UnderlyingEnvironmentState != null)
             {
                 if (Problem.Name.Contains("Large"))
                     throw new NotImplementedException();
@@ -1035,10 +975,10 @@ namespace CPORLib.PlanningModel
                         Debug.Write(".");
                         if (bChooseDeadend)
                         {
-                            int idx = RandomGenerator.Next(Problem.deadEndList.Count);
-                            if (idx >= Problem.deadEndList.Count)
+                            int idx = RandomGenerator.Next(Problem.DeadEndList.Count);
+                            if (idx >= Problem.DeadEndList.Count)
                                 Console.Write("*");
-                            Formula f = Problem.deadEndList[idx];
+                            Formula f = Problem.DeadEndList[idx];
                             HashSet<Predicate> hsDeadendPredicates = f.GetAllPredicates();
                             List<Predicate> lDeadendPredicates = new List<Predicate>(hsDeadendPredicates);
                             lAssignment = ChooseHiddenPredicatesForDeadendDetection(m_lHiddenFormulas, lDeadendPredicates, false);
@@ -1048,7 +988,7 @@ namespace CPORLib.PlanningModel
                             List<CompoundFormula> lHidden = new List<CompoundFormula>(m_lHiddenFormulas);
                             CompoundFormula cfAnd = new CompoundFormula("and");
 
-                            foreach (Formula f in Problem.deadEndList)
+                            foreach (Formula f in Problem.DeadEndList)
                             {
                                 Formula fReduced = f.Reduce(Observed);
                                 if (fReduced is CompoundFormula)
@@ -1074,17 +1014,7 @@ namespace CPORLib.PlanningModel
                     }
                 }
             }
-            else
-            {
-                Parser p = new Parser();
-                string sNextState = SDRPlanner.SimulationStartState[0];
-                SDRPlanner.SimulationStartState.RemoveAt(0);
-                CompoundFormula cfInit = p.ParseFormula(sNextState, Problem.Domain);
-                foreach (PredicateFormula pf in cfInit.Operands)
-                    s.AddPredicate(pf.Predicate);
-                foreach (GroundedPredicate gp in Observed)
-                    s.AddPredicate(gp);
-            }
+            
             if (bRemoveNegativePredicates)
                 s.RemoveNegativePredicates();
             if (UnderlyingEnvironmentState == null)
@@ -1382,7 +1312,7 @@ namespace CPORLib.PlanningModel
                     lCanonicalOneofPredicates.Add(pCanonical);
 
             }
-            if (!SDRPlanner.ComputeCompletePlanTree)
+            if (!Options.ComputeCompletePlanTree)
             {
                 lCanonicalPredicates = Permute(lCanonicalPredicates);
                 lCanonicalOneofPredicates = Permute(lCanonicalOneofPredicates);
@@ -1586,7 +1516,7 @@ namespace CPORLib.PlanningModel
                 lUnknown.Remove(pCurrent);
                 if (bAllTrue)
                     pCurrent = pCurrent.Negate();
-                else if (!bAllFalse && !SDRPlanner.ComputeCompletePlanTree && RandomGenerator.NextDouble() < 0.5 && random)
+                else if (!bAllFalse && !Options.ComputeCompletePlanTree && RandomGenerator.NextDouble() < 0.5 && random)
                 {
                     pCurrent = pCurrent.Negate();
                 }
@@ -1613,7 +1543,7 @@ namespace CPORLib.PlanningModel
             lUnknown.Remove(pCurrent);
             if (bAllTrue)
                 pCurrent = pCurrent.Negate();
-            else if (!bAllFalse && !SDRPlanner.ComputeCompletePlanTree && RandomGenerator.NextDouble() < 0.5)
+            else if (!bAllFalse && !Options.ComputeCompletePlanTree && RandomGenerator.NextDouble() < 0.5)
             {
                 pCurrent = pCurrent.Negate();
             }
@@ -1639,7 +1569,7 @@ namespace CPORLib.PlanningModel
             List<Predicate> lFullAssignment = null;
             Predicate pCurrent = lUnknown.First();
             lUnknown.Remove(pCurrent);
-            if (/*bRandomAssignment && */!SDRPlanner.ComputeCompletePlanTree)
+            if (/*bRandomAssignment && */!Options.ComputeCompletePlanTree)
                 if (RandomGenerator.NextDouble() < 0.5)
                     pCurrent = pCurrent.Negate();
             List<Predicate> lNewHidden = new List<Predicate>(lUnknown);
@@ -1905,7 +1835,7 @@ namespace CPORLib.PlanningModel
         }
 
 
-        public State WriteTaggedDomainAndProblem(string sDomainFile, string sProblemFile, CompoundFormula cfGoal, List<Action> lAppliedActions, out int cTags, out MemoryStream msModels)
+        public State WriteTaggedDomainAndProblem(CompoundFormula cfGoal, List<Action> lAppliedActions, out int cTags, out MemoryStream msModels)
         {
             List<List<Predicate>> lChosen = ChooseStateSet();
             List<State> lStates = ApplyActions(lChosen, lAppliedActions);
@@ -1914,8 +1844,8 @@ namespace CPORLib.PlanningModel
 
             if (lStates.Count == 1)
             {
-                MemoryStream msProblem = Problem.WriteSimpleProblem(sProblemFile, lStates[0]);
-                MemoryStream msDomain = Problem.Domain.WriteSimpleDomain(sDomainFile);
+                MemoryStream msProblem = Problem.WriteSimpleProblem(lStates[0]);
+                MemoryStream msDomain = Problem.Domain.WriteSimpleDomain();
 
                 msModels = new MemoryStream();
                 StreamWriter sw = new StreamWriter(msModels);
@@ -1933,30 +1863,31 @@ namespace CPORLib.PlanningModel
                 return lStates[0];
             }
 
-            if (SDRPlanner.ConsiderStateNegations)
+            if (Options.ConsiderStateNegations)
             {
                 List<List<Predicate>> lAllOthers = new List<List<Predicate>>();
                 lAllOthers.Add(GetNonAppearingPredicates(lChosen));
                 lStates.AddRange(ApplyActions(lAllOthers, lAppliedActions));
             }
-            return WriteTaggedDomainAndProblem(sDomainFile, sProblemFile, cfGoal, lStates, DeadendStrategies.Lazy, out cTags, out msModels);
+            return WriteTaggedDomainAndProblem(cfGoal, lStates, DeadendStrategies.Lazy, out cTags, out msModels);
         }
 
-        public State WriteTaggedDomainAndProblem(PartiallySpecifiedState pssCurrent, string sDomainFile, string sProblemFile, List<Action> lAppliedActions, out int cTags, out MemoryStream msModels)
+        public State WriteTaggedDomainAndProblem(PartiallySpecifiedState pssCurrent, List<Action> lAppliedActions, out int cTags, out MemoryStream msModels)
         {
             msModels = null;
             cTags = 0;
             List<List<Predicate>> lChosen = ChooseStateSet();
+
             if (lChosen == null)
                 return null;
 
             List<State> lStates = ApplyActions(lChosen, lAppliedActions);
 
 
-            if (lStates.Count == 1 && !Problem.Domain.ContainsNonDeterministicActions && SDRPlanner.Translation != SDRPlanner.Translations.BestCase)
+            if (lStates.Count == 1 && !Problem.Domain.ContainsNonDeterministicActions && Options.Translation != Options.Translations.BestCase)
             {
-                MemoryStream msProblem = Problem.WriteSimpleProblem(sProblemFile, lStates[0]);
-                MemoryStream msDomain = Problem.Domain.WriteSimpleDomain(sDomainFile);
+                MemoryStream msProblem = Problem.WriteSimpleProblem( lStates[0]);
+                MemoryStream msDomain = Problem.Domain.WriteSimpleDomain();
 
                 msModels = new MemoryStream();
                 StreamWriter sw = new StreamWriter(msModels);
@@ -1974,78 +1905,18 @@ namespace CPORLib.PlanningModel
                 return lStates[0];
             }
 
-            if (SDRPlanner.WriteAllKVariations)
-            {
-                /*
-                for (int i = 0; i < lStates.Count; i++)
-                {
-                    WriteTaggedDomainAndProblem(sDomainFile.Replace(".pddl", i + ".pddl"), sProblemFile.Replace(".pddl", i + ".pddl"), lStates, false, out cTags);
-                    lStates.Add(lStates[0]);
-                    lStates.RemoveAt(0);
-                }
-                WriteTaggedDomainAndProblem(sDomainFile.Replace(".pddl", lStates.Count + ".pddl"), sProblemFile.Replace(".pddl", lStates.Count + ".pddl"), lStates, true, out cTags);
-                 * */
-                int cVersions = 0;
-                if (lStates.Count > 2)
-                {
-                    /*
-                    for (int i = 0; i < lStates.Count - 1; i++)
-                    {
-                        for (int j = i + 1; j < lStates.Count; j++)
-                        {
-                            List<State> lSelectedStates = new List<State>();
-                            lSelectedStates.Add(lStates[i]);
-                            lSelectedStates.Add(lStates[j]);
-                            WriteTaggedDomainAndProblem(sDomainFile.Replace(".pddl", cVersions + ".pddl"), sProblemFile.Replace(".pddl", cVersions + ".pddl"), lSelectedStates, false, out cTags);
-                            cVersions++;
-                        }
-                    }
-                     * */
-                    for (int i = 0; i < lStates.Count - 1; i++)
-                    {
-                        List<State> lSelectedStates = new List<State>();
-                        lSelectedStates.Add(lStates[i]);
-                        lSelectedStates.Add(lStates[i + 1]);
-                        if (SDRPlanner.ConsiderStateNegations)
-                        {
-                            List<List<Predicate>> lCurrentChosen = new List<List<Predicate>>();
-                            lCurrentChosen.Add(lChosen[i]);
-                            lCurrentChosen.Add(lChosen[i + 1]);
-                            List<List<Predicate>> lAllOthers = new List<List<Predicate>>();
-                            lAllOthers.Add(GetNonAppearingPredicates(lCurrentChosen));
-                            lSelectedStates.AddRange(ApplyActions(lAllOthers, lAppliedActions));
-                        }
-                        WriteTaggedDomainAndProblem(pssCurrent, sDomainFile.Replace(".pddl", cVersions + ".pddl"), sProblemFile.Replace(".pddl", cVersions + ".pddl"), lSelectedStates, DeadendStrategies.Lazy, out cTags, out msModels);
-                        cVersions++;
-                    }
-                }
-                else
-                {
-                    if (SDRPlanner.ConsiderStateNegations)
-                    {
-                        List<List<Predicate>> lAllOthers = new List<List<Predicate>>();
-                        lAllOthers.Add(GetNonAppearingPredicates(lChosen));
-                        lStates.AddRange(ApplyActions(lAllOthers, lAppliedActions));
-                    }
-                    WriteTaggedDomainAndProblem(pssCurrent, sDomainFile, sProblemFile, lStates, DeadendStrategies.Lazy, out cTags, out msModels);
-                    cVersions = 1;
-                }
-                cTags = cVersions;
-                return lStates[0];
-            }
-
-            if (SDRPlanner.ConsiderStateNegations)
+            if (Options.ConsiderStateNegations)
             {
                 List<List<Predicate>> lAllOthers = new List<List<Predicate>>();
                 lAllOthers.Add(GetNonAppearingPredicates(lChosen));
                 lStates.AddRange(ApplyActions(lAllOthers, lAppliedActions));
             }
-            return WriteTaggedDomainAndProblem(pssCurrent, sDomainFile, sProblemFile, lStates, DeadendStrategies.Lazy, out cTags, out msModels);
+            return WriteTaggedDomainAndProblem(pssCurrent, lStates, DeadendStrategies.Lazy, out cTags, out msModels);
         }
 
 
         //static int cChoose = 0;
-        public State WriteTaggedDomainAndProblemDeadEnd(PartiallySpecifiedState pssCurrent, string sDomainFile, string sProblemFile, List<Action> lAppliedActions,
+        public State WriteTaggedDomainAndProblemDeadEnd(PartiallySpecifiedState pssCurrent, List<Action> lAppliedActions,
             List<Formula> lMaybeDeadends, DeadendStrategies dsStrategy, bool bPreconditionFailure, out int cTags, out MemoryStream msModels)
         {
             List<List<Predicate>> lChosen = null;
@@ -2068,10 +1939,10 @@ namespace CPORLib.PlanningModel
 
             msModels = null;
 
-            if (lStates.Count == 1 && !Problem.Domain.ContainsNonDeterministicActions && SDRPlanner.Translation != SDRPlanner.Translations.BestCase)
+            if (lStates.Count == 1 && !Problem.Domain.ContainsNonDeterministicActions && Options.Translation != Options.Translations.BestCase)
             {
-                MemoryStream msProblem = Problem.WriteSimpleProblem(sProblemFile, lStates[0]);
-                MemoryStream msDomain = Problem.Domain.WriteSimpleDomain(sDomainFile);
+                MemoryStream msProblem = Problem.WriteSimpleProblem(lStates[0]);
+                MemoryStream msDomain = Problem.Domain.WriteSimpleDomain();
 
                 msModels = new MemoryStream();
                 StreamWriter sw = new StreamWriter(msModels);
@@ -2089,67 +1960,7 @@ namespace CPORLib.PlanningModel
                 return lStates[0];
             }
 
-            if (SDRPlanner.WriteAllKVariations)
-            {
-                /*
-                for (int i = 0; i < lStates.Count; i++)
-                {
-                    WriteTaggedDomainAndProblem(sDomainFile.Replace(".pddl", i + ".pddl"), sProblemFile.Replace(".pddl", i + ".pddl"), lStates, false, out cTags);
-                    lStates.Add(lStates[0]);
-                    lStates.RemoveAt(0);
-                }
-                WriteTaggedDomainAndProblem(sDomainFile.Replace(".pddl", lStates.Count + ".pddl"), sProblemFile.Replace(".pddl", lStates.Count + ".pddl"), lStates, true, out cTags);
-                 * */
-                int cVersions = 0;
-                if (lStates.Count > 2)
-                {
-                    /*
-                    for (int i = 0; i < lStates.Count - 1; i++)
-                    {
-                        for (int j = i + 1; j < lStates.Count; j++)
-                        {
-                            List<State> lSelectedStates = new List<State>();
-                            lSelectedStates.Add(lStates[i]);
-                            lSelectedStates.Add(lStates[j]);
-                            WriteTaggedDomainAndProblem(sDomainFile.Replace(".pddl", cVersions + ".pddl"), sProblemFile.Replace(".pddl", cVersions + ".pddl"), lSelectedStates, false, out cTags);
-                            cVersions++;
-                        }
-                    }
-                     * */
-                    for (int i = 0; i < lStates.Count - 1; i++)
-                    {
-                        List<State> lSelectedStates = new List<State>();
-                        lSelectedStates.Add(lStates[i]);
-                        lSelectedStates.Add(lStates[i + 1]);
-                        if (SDRPlanner.ConsiderStateNegations)
-                        {
-                            List<List<Predicate>> lCurrentChosen = new List<List<Predicate>>();
-                            lCurrentChosen.Add(lChosen[i]);
-                            lCurrentChosen.Add(lChosen[i + 1]);
-                            List<List<Predicate>> lAllOthers = new List<List<Predicate>>();
-                            lAllOthers.Add(GetNonAppearingPredicates(lCurrentChosen));
-                            lSelectedStates.AddRange(ApplyActions(lAllOthers, lAppliedActions));
-                        }
-                        WriteTaggedDomainAndProblem(pssCurrent, sDomainFile.Replace(".pddl", cVersions + ".pddl"), sProblemFile.Replace(".pddl", cVersions + ".pddl"), lSelectedStates, DeadendStrategies.Lazy, out cTags, out msModels);
-                        cVersions++;
-                    }
-                }
-                else
-                {
-                    if (SDRPlanner.ConsiderStateNegations)
-                    {
-                        List<List<Predicate>> lAllOthers = new List<List<Predicate>>();
-                        lAllOthers.Add(GetNonAppearingPredicates(lChosen));
-                        lStates.AddRange(ApplyActions(lAllOthers, lAppliedActions));
-                    }
-                    WriteTaggedDomainAndProblem(pssCurrent, sDomainFile, sProblemFile, lStates, DeadendStrategies.Lazy, out cTags, out msModels);
-                    cVersions = 1;
-                }
-                cTags = cVersions;
-                return lStates[0];
-            }
-
-            if (SDRPlanner.ConsiderStateNegations)
+            if (Options.ConsiderStateNegations)
             {
                 List<List<Predicate>> lAllOthers = new List<List<Predicate>>();
                 lAllOthers.Add(GetNonAppearingPredicates(lChosen));
@@ -2161,9 +1972,9 @@ namespace CPORLib.PlanningModel
                 dsStrategy = DeadendStrategies.Active;
 
 
-            return WriteTaggedDomainAndProblem(pssCurrent, sDomainFile, sProblemFile, lStates, dsStrategy, out cTags, out msModels);
+            return WriteTaggedDomainAndProblem(pssCurrent, lStates, dsStrategy, out cTags, out msModels);
         }
-        public State WriteTaggedDomainAndProblem(string sDomainFile, string sProblemFile, CompoundFormula cfGoal, List<State> lStates, DeadendStrategies dsStrategy, out int cTags, out MemoryStream msModels)
+        public State WriteTaggedDomainAndProblem(CompoundFormula cfGoal, List<State> lStates, DeadendStrategies dsStrategy, out int cTags, out MemoryStream msModels)
         {
             HashSet<Predicate> lObserved = new HashSet<Predicate>();
             Dictionary<string, List<Predicate>> dTags = GetTags(lStates, lObserved);
@@ -2175,8 +1986,8 @@ namespace CPORLib.PlanningModel
 
             //Debug.WriteLine("Writing tagged domain");
             MemoryStream msDomain = null, msProblem = null;
-            if (SDRPlanner.Translation == SDRPlanner.Translations.SDR)
-                msDomain = Problem.Domain.WriteTaggedDomain(dTags, Problem, Problem.deadEndList);
+            if (Options.Translation == Options.Translations.SDR)
+                msDomain = Problem.Domain.WriteTaggedDomain(dTags, Problem, Problem.DeadEndList);
             else
                 msDomain = Problem.Domain.WriteTaggedDomainNoState(dTags, Problem);
 
@@ -2198,22 +2009,10 @@ namespace CPORLib.PlanningModel
             //sr.Close();
 
 
-#if !DEBUG
-            if (SDRPlanner.UseFilesForPlanners)
-            {
-#endif
-            StreamWriter swDomainFile = new StreamWriter(sDomainFile);
-            msDomain.Position = 0;
-            StreamReader srDomainFile = new StreamReader(msDomain);
-            swDomainFile.Write(srDomainFile.ReadToEnd());
-            swDomainFile.Close();
-#if !DEBUG
-            }
-#endif
 
 
             //Debug.WriteLine("Writing tagged problem");
-            if (SDRPlanner.Translation == SDRPlanner.Translations.SDR)
+            if (Options.Translation == Options.Translations.SDR)
                 msProblem = Problem.WriteTaggedProblem(dTags, cfGoal, lObserved, dTags.Values.First(), lStates.First().FunctionValues, dsStrategy); //the first tag is the real state
             else
                 msProblem = Problem.WriteTaggedProblemNoState(dTags, lObserved, lStates.First().FunctionValues);
@@ -2236,27 +2035,12 @@ namespace CPORLib.PlanningModel
             swModels.Flush();
 
 
-#if !DEBUG
-            if (SDRPlanner.UseFilesForPlanners)
-            {
-#endif
-
-            Thread.Sleep(50);
-            StreamWriter swProblemFile = new StreamWriter(sProblemFile);
-            msProblem.Position = 0;
-            StreamReader srProblemFile = new StreamReader(msProblem);
-            swProblemFile.Write(srProblemFile.ReadToEnd());
-            swProblemFile.Close();
-#if !DEBUG
-
-            }
-#endif
 
             return lStates[0];
         }
 
 
-        public State WriteTaggedDomainAndProblem(PartiallySpecifiedState pssCurrent, string sDomainFile, string sProblemFile, List<State> lStates, DeadendStrategies dsStrategy, out int cTags, out MemoryStream msModels)
+        public State WriteTaggedDomainAndProblem(PartiallySpecifiedState pssCurrent, List<State> lStates, DeadendStrategies dsStrategy, out int cTags, out MemoryStream msModels)
         {
             HashSet<Predicate> lObserved = new HashSet<Predicate>();
             Dictionary<string, List<Predicate>> dTags = GetTags(lStates, lObserved);
@@ -2268,11 +2052,11 @@ namespace CPORLib.PlanningModel
 
             //Debug.WriteLine("Writing tagged domain");
             MemoryStream msDomain = null, msProblem = null;
-            if (SDRPlanner.Translation == SDRPlanner.Translations.BestCase || SDRPlanner.Translation == SDRPlanner.Translations.Conformant)
+            if (Options.Translation == Options.Translations.BestCase || Options.Translation == Options.Translations.Conformant)
                 msDomain = Problem.Domain.WriteKnowledgeDomain(Problem, pssCurrent.MishapCount, pssCurrent.MinMishapCount, pssCurrent.MishapType, false);
-            else if (SDRPlanner.Translation == SDRPlanner.Translations.SingleStateK)
+            else if (Options.Translation == Options.Translations.SingleStateK)
                 msDomain = Problem.Domain.WriteKnowledgeDomain(Problem, pssCurrent.MishapCount, pssCurrent.MinMishapCount, pssCurrent.MishapType, true);
-            else if (SDRPlanner.Translation == SDRPlanner.Translations.SDR)
+            else if (Options.Translation == Options.Translations.SDR)
                 msDomain = Problem.Domain.WriteTaggedDomain(dTags, Problem, null);
             else
                 msDomain = Problem.Domain.WriteTaggedDomainNoState(dTags, Problem);
@@ -2295,35 +2079,15 @@ namespace CPORLib.PlanningModel
             //sr.Close();
 
 
-            //#if !DEBUG
-            if (SDRPlanner.UseFilesForPlanners)
-            {
-                //#endif
-                bool bDone = false;
-                while (!bDone)
-                {
-                    try
-                    {
-                        StreamWriter swDomainFile = new StreamWriter(sDomainFile);
-                        msDomain.Position = 0;
-                        StreamReader srDomainFile = new StreamReader(msDomain);
-                        swDomainFile.Write(srDomainFile.ReadToEnd().Replace("&", "_"));
-                        swDomainFile.Close();
-                        bDone = true;
-                    }
-                    catch (Exception e) { }
-                }
-                //#if !DEBUG
-            }
-            //#endif
+            
 
 
             //Debug.WriteLine("Writing tagged problem");
-            if (SDRPlanner.Translation == SDRPlanner.Translations.BestCase || SDRPlanner.Translation == SDRPlanner.Translations.Conformant)
+            if (Options.Translation == Options.Translations.BestCase || Options.Translation == Options.Translations.Conformant)
                 msProblem = Problem.WriteKnowledgeProblem(new HashSet<Predicate>(pssCurrent.Observed), new HashSet<Predicate>(pssCurrent.Hidden), pssCurrent.MinMishapCount, pssCurrent.MishapCount);
-            else if (SDRPlanner.Translation == SDRPlanner.Translations.SingleStateK)
+            else if (Options.Translation == Options.Translations.SingleStateK)
                 msProblem = Problem.WriteKnowledgeProblem(new HashSet<Predicate>(pssCurrent.Observed), new HashSet<Predicate>(lStates[0].Predicates));
-            else if (SDRPlanner.Translation == SDRPlanner.Translations.SDR)
+            else if (Options.Translation == Options.Translations.SDR)
                 msProblem = Problem.WriteTaggedProblem(dTags, lObserved, dTags.Values.First(), lStates.First().FunctionValues, dsStrategy); //the first tag is the real state
             else
                 msProblem = Problem.WriteTaggedProblemNoState(dTags, lObserved, lStates.First().FunctionValues);
@@ -2345,39 +2109,8 @@ namespace CPORLib.PlanningModel
             //sr.Close();
             swModels.Flush();
 
-            /*
-            msModels.Position = 0;
-            StreamReader sr2 = new StreamReader(msModels);
-            for (int i = 0; i < 10; i++)
-                Debug.Write(sr2.Read() + ",");
-            Debug.WriteLine();
-            */
-
-            //#if !DEBUG
-            if (SDRPlanner.UseFilesForPlanners)
-            {
-                //#endif
-                bool bDoneIO = false;
-                //while (!bDone)
-                {
-                    //try
-                    {
-                        Thread.Sleep(200);
-                        StreamWriter swProblemFile = new StreamWriter(sProblemFile);
-                        msProblem.Position = 0;
-                        StreamReader srProblemFile = new StreamReader(msProblem);
-                        swProblemFile.Write(srProblemFile.ReadToEnd().Replace("&", "_"));
-                        swProblemFile.Close();
-                        bDoneIO = true;
-                    }
-                    //catch (Exception e) { }
-                }
-                //#if !DEBUG
-
-            }
-            //#endif
-            // SASWriter sw = new SASWriter(Problem.Domain, Problem, dTags, dTags.Values.First(), lObserved);
-            //sw.WriteDomainAndProblem(sDomainFile.Replace(".pddl",".sas"));
+            
+            
 
             return lStates[0];
         }
@@ -2440,15 +2173,14 @@ namespace CPORLib.PlanningModel
 
         private List<List<Predicate>> ChooseStateSet()
         {
-            if (SDRPlanner.Translation == SDRPlanner.Translations.BestCase || (Unknown.Count == 0 && !Problem.Domain.ContainsNonDeterministicActions))
+            if (Options.Translation == Options.Translations.BestCase || (Unknown.Count == 0 && !Problem.Domain.ContainsNonDeterministicActions))
             {
                 List<List<Predicate>> lState = new List<List<Predicate>>();
                 lState.Add(new List<Predicate>(m_lObserved));
                 return lState;
             }
 
-
-            return ReviseExistingTags(SDRPlanner.TagsCount);
+            return ReviseExistingTags(Options.TagsCount);
         }
 
         private List<List<Predicate>> ChooseDeadEndState(List<Formula> lMaybeDeadends, DeadendStrategies dsStrategy, bool bPreconditionFailure)
@@ -2626,7 +2358,7 @@ namespace CPORLib.PlanningModel
                         List<Predicate> lFullAssignment = ChooseHiddenPredicates(lHidden, m_lProblematicTag, lHiddenPredicates.ToList());
 
                         List<List<Predicate>> lRefutationTags = new List<List<Predicate>>();
-                        int cContinuingTags = Math.Min(m_lCurrentTags.Count, SDRPlanner.TagsCount - 1);
+                        int cContinuingTags = Math.Min(m_lCurrentTags.Count, Options.TagsCount - 1);
                         if (cContinuingTags == 0)
                             cContinuingTags = 1;
                         for (int i = 0; i < cContinuingTags; i++)
@@ -3400,7 +3132,7 @@ namespace CPORLib.PlanningModel
         public PartiallySpecifiedState GetPartiallySpecifiedState()
         {
             PartiallySpecifiedState pss = new PartiallySpecifiedState(this);
-            if (SDRPlanner.EnforceCNF)
+            if (Options.EnforceCNF)
                 m_cfCNFHiddenState = (CompoundFormula)m_cfCNFHiddenState.ToCNF();
             return pss;
         }
@@ -3490,7 +3222,7 @@ namespace CPORLib.PlanningModel
                     //dt = DateTime.Now;
                     //must be after the regression so as not to make everything already known
                     //we are not propgating the things that we learn if we are in offline mode
-                    if (!SDRPlanner.OptimizeMemoryConsumption && !SDRPlanner.ComputeCompletePlanTree)
+                    if (!Options.OptimizeMemoryConsumption && !Options.ComputeCompletePlanTree)
                         hsNew.UnionWith(pssCurrent.AddObserved(fCurrent));
                     //ts2 += DateTime.Now - dt;
                     //pssCurrent.AddObserved(fToRegress); //Not sure that this is valid!
@@ -3547,13 +3279,13 @@ namespace CPORLib.PlanningModel
             if (lLearned.Count > 0)
             {
                 //HashSet<Predicate> lLearned = pssCurrent.ApplyReasoning(); not needed since we got the learned predicates from the belief update
-                if (!SDRPlanner.ComputeCompletePlanTree)
+                if (!Options.ComputeCompletePlanTree)
                     pssCurrent.AddObserved(lLearned);
                 dtAfterReasoning = DateTime.Now;
                 if (bTrueRegression)
                 {
                     //while (bUpdate && sTrace.Count > 0)
-                    if ((SDRPlanner.OptimizeMemoryConsumption || SDRPlanner.ComputeCompletePlanTree) && lLearned.Count > 0)
+                    if ((Options.OptimizeMemoryConsumption || Options.ComputeCompletePlanTree) && lLearned.Count > 0)
                     {
                         pssLast.AddObserved(lLearned);
                     }
@@ -3569,7 +3301,7 @@ namespace CPORLib.PlanningModel
                 }
                 else
                 {
-                    if (!SDRPlanner.OptimizeMemoryConsumption && !SDRPlanner.ComputeCompletePlanTree)
+                    if (!Options.OptimizeMemoryConsumption && !Options.ComputeCompletePlanTree)
                     {
                         while (sTrace.Count > 0)
                         {

@@ -128,6 +128,11 @@ namespace CPORLib.PlanningModel
         {
             Constants.Add(c);
         }
+        public void AddConstant(string sName, string sType)
+        {
+            Constant c = new Constant(sType, sName);
+            AddConstant(c);
+        }
         public void AddPredicate(Predicate p)
         {
             Predicates.Add(p);
@@ -2923,7 +2928,7 @@ namespace CPORLib.PlanningModel
             return a.Observe != null;
         }
 
-        public MemoryStream WriteSimpleDomain(string sFileName, bool bWriteObserveActions = false, bool bAddKToDomainName = true)
+        public MemoryStream WriteSimpleDomain(bool bWriteObserveActions = false, bool bAddKToDomainName = true)
         {
             MemoryStream msDomain = new MemoryStream();
             StreamWriter sw = new StreamWriter(msDomain);
@@ -2941,23 +2946,7 @@ namespace CPORLib.PlanningModel
             sw.WriteLine(")");
             sw.Flush();
 
-            if (Options.UseFilesForPlanners)
-            {
-                bool bDone = false;
-                while (!bDone)
-                {
-                    try
-                    {
-                        msDomain.Position = 0;
-                        StreamReader sr = new StreamReader(msDomain);
-                        StreamWriter swFile = new StreamWriter(sFileName);
-                        swFile.Write(sr.ReadToEnd());
-                        swFile.Close();
-                        bDone = true;
-                    }
-                    catch (Exception e) { }
-                }
-            }
+            
             return msDomain;
 
         }

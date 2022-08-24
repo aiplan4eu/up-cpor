@@ -322,7 +322,7 @@ namespace CPORLib.PlanningModel
             m_nPlan = new ConditionalPlanTreeNode();
             m_lDirectlyObserved = new List<Predicate>();
 
-            SetDeadendList(Problem.deadEndList);
+            SetDeadendList(Problem.DeadEndList);
 
         }
         public PartiallySpecifiedState(PartiallySpecifiedState sPredecessor, Action aGeneratingAction)
@@ -829,7 +829,7 @@ namespace CPORLib.PlanningModel
                     //                    }
                     //deadEnd = daedendTmp;
 
-                    foreach (Formula daedendTmp2 in Problem.deadEndList)
+                    foreach (Formula daedendTmp2 in Problem.DeadEndList)
                     {
                         if (daedendTmp2.IsTrue(m_lObserved))
                         {
@@ -935,7 +935,7 @@ namespace CPORLib.PlanningModel
         public List<Formula> returnListOfMaybeDeadEnd()
         {
             List<Formula> deadEndsReturn = new List<Formula>();
-            foreach (Formula daedend in Problem.deadEndList)
+            foreach (Formula daedend in Problem.DeadEndList)
             {
                 if (daedend.IsTrue(m_lObserved) == false && daedend.IsFalse(m_lObserved) == false)
                     deadEndsReturn.Add(daedend);
@@ -953,7 +953,7 @@ namespace CPORLib.PlanningModel
         public List<Formula> returnListOfDeadEnd()
         {
             List<Formula> deadEndsReturn = new List<Formula>();
-            foreach (Formula daedend in Problem.deadEndList)
+            foreach (Formula daedend in Problem.DeadEndList)
             {
                 if (daedend.IsTrue(m_lObserved))
                     deadEndsReturn.Add(daedend);
@@ -1945,19 +1945,19 @@ namespace CPORLib.PlanningModel
             return true;
         }
 
-        public State WriteTaggedDomainAndProblem(string sDomainFile, string sProblemFile, out int cTags, out MemoryStream msModels)
+        public State WriteTaggedDomainAndProblem(out int cTags, out MemoryStream msModels)
         {
-            return WriteTaggedDomainAndProblem(sDomainFile, sProblemFile, new List<Action>(), out cTags, out msModels);
+            return WriteTaggedDomainAndProblem(new List<Action>(), out cTags, out msModels);
         }
 
-        public State WriteTaggedDomainAndProblemDeadEnd(string sDomainFile, string sProblemFile, List<Formula> lMaybeDeadends, DeadendStrategies dsStrategy, bool bPreconditionFailure, out int cTags, out MemoryStream msModels)
+        public State WriteTaggedDomainAndProblemDeadEnd(List<Formula> lMaybeDeadends, DeadendStrategies dsStrategy, bool bPreconditionFailure, out int cTags, out MemoryStream msModels)
         {
-            return WriteTaggedDomainAndProblemDeadEnd(sDomainFile, sProblemFile, new List<Action>(), lMaybeDeadends, dsStrategy, bPreconditionFailure, out cTags, out msModels);
+            return WriteTaggedDomainAndProblemDeadEnd(new List<Action>(), lMaybeDeadends, dsStrategy, bPreconditionFailure, out cTags, out msModels);
         }
 
-        public State WriteTaggedDomainAndProblem(string sDomainFile, string sProblemFile, CompoundFormula cfGoal, out int cTags, out MemoryStream msModels)
+        public State WriteTaggedDomainAndProblem(CompoundFormula cfGoal, out int cTags, out MemoryStream msModels)
         {
-            return WriteTaggedDomainAndProblem(sDomainFile, sProblemFile, cfGoal, new List<Action>(), out cTags, out msModels);
+            return WriteTaggedDomainAndProblem(cfGoal, new List<Action>(), out cTags, out msModels);
         }
 
         private State GetCurrentState(List<Predicate> lPredicates)
@@ -1969,7 +1969,7 @@ namespace CPORLib.PlanningModel
             return s;
         }
 
-        private State WriteTaggedDomainAndProblem(string sDomainFile, string sProblemFile, List<Action> lActions, out int cTags, out MemoryStream msModels)
+        private State WriteTaggedDomainAndProblem(List<Action> lActions, out int cTags, out MemoryStream msModels)
         {
             PartiallySpecifiedState pssCurrent = this;
             while (pssCurrent.m_sPredecessor != null)
@@ -1977,10 +1977,10 @@ namespace CPORLib.PlanningModel
                 lActions.Insert(0, pssCurrent.GeneratingAction);
                 pssCurrent = pssCurrent.m_sPredecessor;
             }
-            return m_bsInitialBelief.WriteTaggedDomainAndProblem(this, sDomainFile, sProblemFile, lActions, out cTags, out msModels);
+            return m_bsInitialBelief.WriteTaggedDomainAndProblem(this, lActions, out cTags, out msModels);
         }
 
-        private State WriteTaggedDomainAndProblemDeadEnd(string sDomainFile, string sProblemFile, List<Action> lActions, List<Formula> lMaybeDeadends, DeadendStrategies dsStrategy, bool bPreconditionFailure, out int cTags, out MemoryStream msModels)
+        private State WriteTaggedDomainAndProblemDeadEnd(List<Action> lActions, List<Formula> lMaybeDeadends, DeadendStrategies dsStrategy, bool bPreconditionFailure, out int cTags, out MemoryStream msModels)
         {
             PartiallySpecifiedState pssCurrent = this;
             while (pssCurrent.m_sPredecessor != null)
@@ -1988,11 +1988,11 @@ namespace CPORLib.PlanningModel
                 lActions.Insert(0, pssCurrent.GeneratingAction);
                 pssCurrent = pssCurrent.m_sPredecessor;
             }
-            return m_bsInitialBelief.WriteTaggedDomainAndProblemDeadEnd(this, sDomainFile, sProblemFile, lActions, lMaybeDeadends, dsStrategy, bPreconditionFailure, out cTags, out msModels);
+            return m_bsInitialBelief.WriteTaggedDomainAndProblemDeadEnd(this, lActions, lMaybeDeadends, dsStrategy, bPreconditionFailure, out cTags, out msModels);
         }
 
 
-        private State WriteTaggedDomainAndProblem(string sDomainFile, string sProblemFile, CompoundFormula cfGoal, List<Action> lActions, out int cTags, out MemoryStream msModels)
+        private State WriteTaggedDomainAndProblem(CompoundFormula cfGoal, List<Action> lActions, out int cTags, out MemoryStream msModels)
         {
             PartiallySpecifiedState pssCurrent = this;
             while (pssCurrent.m_sPredecessor != null)
@@ -2000,7 +2000,7 @@ namespace CPORLib.PlanningModel
                 lActions.Insert(0, pssCurrent.GeneratingAction);
                 pssCurrent = pssCurrent.m_sPredecessor;
             }
-            return m_bsInitialBelief.WriteTaggedDomainAndProblem(sDomainFile, sProblemFile, cfGoal, lActions, out cTags, out msModels);
+            return m_bsInitialBelief.WriteTaggedDomainAndProblem(cfGoal, lActions, out cTags, out msModels);
         }
 
         public PartiallySpecifiedState Predecessor { get { return m_sPredecessor; } }

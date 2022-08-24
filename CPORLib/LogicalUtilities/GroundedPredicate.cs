@@ -125,6 +125,11 @@ namespace CPORLib.LogicalUtilities
             Constants.Add(c);
             m_sCachedToString = null;
         }
+        public void AddConstant(string sName, string sType)
+        {
+            Constant c = new Constant(sType, sName);
+            AddConstant(c);
+        }
 
         public override Predicate Negate()
         {

@@ -25,7 +25,7 @@ namespace CPORLib.PlanningModel
 
         private Dictionary<GroundedPredicate, HashSet<GroundedPredicate>> m_dRelevantPredicates;
 
-        public List<Formula> deadEndList;
+        public List<Formula> DeadEndList { get; set; }
 
         public Problem(string sName, Domain d)
         {
@@ -37,7 +37,7 @@ namespace CPORLib.PlanningModel
             ReasoningActions = new List<PlanningAction>();
             m_dRelevantPredicates = new Dictionary<GroundedPredicate, HashSet<GroundedPredicate>>();
             m_lInitiallyUnknown = new HashSet<Predicate>();
-            deadEndList = new List<Formula>();
+            DeadEndList = new List<Formula>();
         }
 
         public void AddKnown(Predicate p)
@@ -78,9 +78,14 @@ namespace CPORLib.PlanningModel
         {
             string s = "(problem " + Name + "\n";
             s += "(domain " + Domain.Name + ")\n";
-            s += "(init ";
-            //s += "(known " + Parser.ListToString(m_lKnown) + ")\n";
-            s += "(hidden " + Utilities.ListToString(m_lHidden) + "))\n";
+            s += "(init \n";
+            s += "(known";
+            foreach (Predicate p in m_lKnown)
+                s += " " + p;
+            s+= ")\n";
+            
+            s += "(hidden " + Utilities.ListToString(m_lHidden) + ")\n)\n";
+            s+= "(goal " + Goal + ")\n";
             s += ")";
             return s;
         }
@@ -1206,7 +1211,7 @@ namespace CPORLib.PlanningModel
 
 
 
-        public MemoryStream WriteSimpleProblem(string sProblemFile, State sCurrent)
+        public MemoryStream WriteSimpleProblem(State sCurrent)
         {
             MemoryStream msProblem = new MemoryStream();
             StreamWriter sw = new StreamWriter(msProblem);
@@ -1239,31 +1244,13 @@ namespace CPORLib.PlanningModel
             sw.WriteLine(")");
             sw.Flush();
 
-            if (Options.UseFilesForPlanners)
-            {
-                bool bDone = false;
-                while (!bDone)
-                {
-                    try
-                    {
-                        msProblem.Position = 0;
-                        StreamReader sr = new StreamReader(msProblem);
-                        StreamWriter swFile = new StreamWriter(sProblemFile);
-                        swFile.Write(sr.ReadToEnd());
-                        swFile.Close();
-                        bDone = true;
-                    }
-                    catch (Exception e)
-                    { }
-                }
-
-            }
+            
 
             return msProblem;
         }
 
 
-        public MemoryStream WriteDeadendDetectionProblem(string sProblemFile)
+        public MemoryStream WriteDeadendDetectionProblem()
         {
             MemoryStream msProblem = new MemoryStream();
             StreamWriter sw = new StreamWriter(msProblem);
@@ -1305,9 +1292,7 @@ namespace CPORLib.PlanningModel
                 {
                     msProblem.Position = 0;
                     StreamReader sr = new StreamReader(msProblem);
-                    StreamWriter swFile = new StreamWriter(sProblemFile);
-                    swFile.Write(sr.ReadToEnd());
-                    swFile.Close();
+                    
                     bDone = true;
                 }
                 catch (Exception e)
@@ -1400,5 +1385,27 @@ namespace CPORLib.PlanningModel
             return m_dSATVariables.Count;
         }
 
+        public bool Ready { get; set; }
+
+        public void PrepareForPlanning()
+        {
+            if (!Ready)
+            {
+                Domain.ComputeAlwaysKnown();
+                CompleteKnownState();
+
+
+                List<Predicate> lConstantPredicates = new List<Predicate>();
+                foreach (Predicate pKnown in Known)
+                {
+                    if (Domain.AlwaysConstant(pKnown))
+                        lConstantPredicates.Add(pKnown);
+                }
+                Domain.RemoveUniversalQuantifiers(lConstantPredicates);
+                RemoveUniversalQuantifiers();
+
+                Ready = true;
+            }
+        }
     }
 }

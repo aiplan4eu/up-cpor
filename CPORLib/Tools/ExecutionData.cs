@@ -24,6 +24,8 @@ namespace CPORLib.Tools
         public string Exception { get; set; }
         public bool Failure { get { return Exception != ""; } }
 
+
+
         public Options.DeadendStrategies DeadendStrategy { get; set; }
 
         public ExecutionData(string sPath, string sDeadEndFile, Domain d, Problem p, Options.DeadendStrategies ds)

@@ -50,14 +50,23 @@ namespace CPORLib.LogicalUtilities
             if (a is Parameter)
                 Parameterized = true;
             m_lParameters.Add(a);
-
         }
+
+
+
+
 
         public void AddParameter(string sName, string sType)
         {
             Parameter p = new Parameter(sType, sName);
-            Parameterized = true;
-            m_lParameters.Add(p);
+            AddParameter(p);
+
+        }
+
+        public void AddConstant(string sName, string sType)
+        {
+            Constant c = new Constant(sType, sName);
+            AddParameter(c);
 
         }
 

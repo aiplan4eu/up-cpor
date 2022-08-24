@@ -27,7 +27,22 @@ namespace CPORLib.Tools
 
 
 
+        public static bool SameList(List<string> l1, List<string> l2)
+        {
+            if (l1 == null && l2 == null)
+                return true;
+            if (l1 == null && l2 != null)
+                return false;
+            if (l1 != null && l2 == null)
+                return false;
 
+            if (l1.Count != l2.Count)
+                return false;
+            for (int i = 0; i < l1.Count; i++)
+                if (l1[i] != l2[i])
+                    return false;
+            return true;
+        }
         public static string ListToString(IList l)
         {
             if (l.Count == 0)
