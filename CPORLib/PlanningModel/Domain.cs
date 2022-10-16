@@ -2608,8 +2608,7 @@ namespace CPORLib.PlanningModel
                     HashSet<GroundedPredicate> lCandidates = dPredicates[ppCurrent.Name];
                     foreach (GroundedPredicate gpCandidate in lCandidates)
                     {
-                        //if (pa.Name.Contains("smell") && gpCandidate.Name == "Givenat" /*&& gpCandidate.ToString().Contains("1-4") */&& gpCandidate.ToString().Contains("2-4"))
-                        //    Debug.WriteLine("*");
+
                         Dictionary<Parameter, Constant> dNewBindings = gpCandidate.Bind(ppCurrent);
                         if (ConsistentBindings(dBindings, dNewBindings))
                         {

@@ -178,9 +178,9 @@ namespace CPORLib.Algorithms
                 foreach (Action a in m_lGroundedActions)
                 {
 
-                    //if (a.Name.Contains("feel") & a.Name.Contains("3-5"))
-                    //    Console.Write("*");
-                    if (a.Preconditions.IsTrue(lCurrentPredicates, false))
+                    //if (a.Preconditions == null)
+                        //Console.Write("*");
+                    if (a.Preconditions == null || a.Preconditions.IsTrue(lCurrentPredicates, false))
                     {
                         if (cExpansions == 0 || !lAllObservedActions.Contains(a))
                         {
@@ -190,7 +190,7 @@ namespace CPORLib.Algorithms
                         if (a.Effects != null)
                         {
                             Dictionary<Predicate, Formula> dCurrentEffectToPreconditions = new Dictionary<Predicate, Formula>();
-                            SortedSet<Predicate> lEffects = a.GetApplicableEffects(lCurrentPredicates, true, dCurrentEffectToPreconditions);
+                            HashSet<Predicate> lEffects = a.GetApplicableEffects(lCurrentPredicates, false, dCurrentEffectToPreconditions);
                             bool bNewAction = false;
                             foreach (Predicate p in lEffects)
                             {

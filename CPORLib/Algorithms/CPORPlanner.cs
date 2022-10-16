@@ -85,7 +85,10 @@ namespace CPORLib.Algorithms
                     if (TagsCount > 2)
                         TagsCount--;
                 }
+                
 
+                if (Verbose)
+                    Console.WriteLine("Planning for state: " + pssCurrent);
                 List<string> lPlan = Plan(pssCurrent, stateStack, lClosedStates, dAlreadyVisitedStates, bPreconditionFailure, ref cPlanning, out sChosen, out bDone);
 
                 if (bDone)
@@ -93,8 +96,6 @@ namespace CPORLib.Algorithms
 
                 PartiallySpecifiedState pssPlanState = pssCurrent;
 
-                if (Verbose)
-                    Console.WriteLine("Planning for state: " + pssCurrent);
 
                 if (lPlan != null)
                 {
@@ -136,9 +137,9 @@ namespace CPORLib.Algorithms
                             }
 
 
-                            pssCurrent.ApplyOffline(sAction, out a, out bPreconditionFailure, out fObserved, out psTrueState, out psFalseState);
                             if (Verbose)
                                 Console.WriteLine("Executing: " + sAction);
+                            pssCurrent.ApplyOffline(sAction, out a, out bPreconditionFailure, out fObserved, out psTrueState, out psFalseState);
 
 
                             if (psTrueState == null && psFalseState == null)
@@ -162,6 +163,8 @@ namespace CPORLib.Algorithms
                                     int spaceIndex = sAction.IndexOf(' ');
                                     if (spaceIndex == -1)
                                         spaceIndex = sAction.IndexOf(Utilities.DELIMITER_CHAR);
+                                    if (spaceIndex == -1)
+                                        spaceIndex = sAction.Length;
                                     char lastWord = sAction[spaceIndex - 1];
                                     if (lastWord == 'f')
                                     {
@@ -736,6 +739,24 @@ namespace CPORLib.Algorithms
             sChosen = null;
             bDone = false;
 
+            /*
+            //BUGBUG: only for debugging localize 5
+            lPlan = new List<string>();
+            lPlan.Add("checking");
+            lPlan.Add("sense-right-t");
+            lPlan.Add("sense-left-t");
+            lPlan.Add("move-right");
+            lPlan.Add("checking");
+            lPlan.Add("sense-right-t");
+            lPlan.Add("move-right");
+            return lPlan;
+            */
+
+
+
+
+
+
             while (lPlan == null || lPlan.Count == 0)
             {
                 
@@ -772,7 +793,7 @@ namespace CPORLib.Algorithms
                         bDeadendClosed = false;
 
                         List<Formula> lDeadends = null;
-                        Debug.WriteLine(pssCurrent);
+                        //Debug.WriteLine(pssCurrent);
                         DeadEndExistence isDeadEnd = pssCurrent.IsDeadEndExistenceAll(out lDeadends);
                         if (isDeadEnd == DeadEndExistence.MaybeDeadEnd)
                         {

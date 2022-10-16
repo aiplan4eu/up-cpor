@@ -1824,8 +1824,8 @@ namespace CPORLib.PlanningModel
                 foreach (State s in lCurrent)
                 {
                     State sTag = s.Apply(a);
-                    if (sTag == null)
-                        sTag = s.Apply(a);
+                    //if (sTag == null)
+                    //    sTag = s.Apply(a);
                     lNext.Add(sTag);
                 }
                 lCurrent = lNext;
@@ -3170,6 +3170,7 @@ namespace CPORLib.PlanningModel
         int count_revisions = 0;
         public HashSet<int> ReviseInitialBelief(Formula fObserve, PartiallySpecifiedState pssLast)
         {
+            
             DateTime dtBefore = DateTime.Now;
             Stack<PartiallySpecifiedState> sTrace = new Stack<PartiallySpecifiedState>();
             Stack<List<Formula>> sForumalsTrace = new Stack<List<Formula>>();
@@ -3284,12 +3285,15 @@ namespace CPORLib.PlanningModel
                 dtAfterReasoning = DateTime.Now;
                 if (bTrueRegression)
                 {
-                    //while (bUpdate && sTrace.Count > 0)
+                    //commenting out the condition below - PropogateObservedPredicates already takes all this into consideration
+                    /*
                     if ((Options.OptimizeMemoryConsumption || Options.ComputeCompletePlanTree) && lLearned.Count > 0)
                     {
+                        
                         pssLast.AddObserved(lLearned);
                     }
                     else
+                    */
                     {
                         while (sTrace.Count > 0 && lLearned.Count > 0)
                         {

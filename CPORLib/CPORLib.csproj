@@ -8,8 +8,4 @@
     <PackageReference Include="Microsoft.Solver.Foundation" Version="3.1.0" />
   </ItemGroup>
 
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="copy /Y &quot;$(TargetDir)$(ProjectName).dll&quot; &quot;C:\Users\shanigu\OneDrive - Ben Gurion University of the Negev\Research\projects\AIPlan4EU\unified-planning\unified-planning\$(ProjectName).dll&quot;" />
-  </Target>
-
 </Project>

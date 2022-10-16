@@ -509,6 +509,8 @@ namespace CPORLib.PlanningModel
 
         private bool AddToObservedList(Predicate p)
         {
+
+
 #if DEBUG
             if (p.Name != "Choice" && !p.Negation)
             {
@@ -546,6 +548,7 @@ namespace CPORLib.PlanningModel
 
         public HashSet<Predicate> AddObserved(Formula f)
         {
+
             HashSet<Predicate> hsNew = new HashSet<Predicate>();
             if (f is PredicateFormula)
             {
@@ -1934,11 +1937,11 @@ namespace CPORLib.PlanningModel
             Formula fReduced = Problem.Goal.Reduce(m_lObserved);
             if (fReduced.IsTrue(m_lObserved))
                 return true;
-            return false;
+            
             if (fReduced.IsFalse(m_lObserved))
                 return false;
             Formula fNegatePreconditions = fReduced.Negate();
-            if (ConsistentWith(fNegatePreconditions, true))
+            if (ConsistentWith(fNegatePreconditions, false))
             {
                 return false;
             }

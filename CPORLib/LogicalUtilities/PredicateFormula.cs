@@ -160,6 +160,17 @@ namespace CPORLib.LogicalUtilities
 
         public override bool ContainedIn(IEnumerable<Predicate> lPredicates, bool bContainsNegations)
         {
+            if(!bContainsNegations)
+            {
+                if (Predicate.Negation)
+                    return true;
+                else
+                {
+                    return lPredicates.Contains(Predicate);
+                }
+            }
+
+
             Predicate pNegate = Predicate.Negate();
             foreach (Predicate pOther in lPredicates)
             {
@@ -284,11 +295,15 @@ namespace CPORLib.LogicalUtilities
                 HashSet<Predicate> lEffects = cfCondition.Operands[1].GetAllPredicates();
                 if (lEffects.Contains(Predicate))
                 {
-                    cfOr.AddOperand(cfCondition.Operands[0].CreateRegression(Predicate, -1));
+                    Formula fReg = cfCondition.Operands[0].CreateRegression(Predicate, -1);
+                    cfOr.AddOperand(fReg);
+                    cfOr.AddOperand(cfCondition.Operands[0]);
                 }
                 else if (lEffects.Contains(pNegate))
                 {
-                    cfAndNot.AddOperand(cfCondition.Operands[0].CreateRegression(pNegate, -1).Negate());
+                    Formula fReg = cfCondition.Operands[0].CreateRegression(pNegate, -1).Negate();
+                    cfAndNot.AddOperand(fReg);
+                    cfOr.AddOperand(cfCondition.Operands[0].Negate());
                 }
                 iCondition++;
             }
@@ -370,9 +385,8 @@ namespace CPORLib.LogicalUtilities
 
         public override Formula CreateRegression(Predicate p, int iChoice)
         {
-            throw new NotImplementedException();
-            //RegressedPredicate rpNew = new RegressedPredicate((GroundedPredicate)Predicate, p, iChoice);
-            //return new PredicateFormula(rpNew);
+            RegressedPredicate rpNew = new RegressedPredicate((GroundedPredicate)Predicate, p, iChoice);
+            return new PredicateFormula(rpNew);
         }
 
         public override Formula GenerateGiven(string sTag, List<string> lAlwaysKnown)

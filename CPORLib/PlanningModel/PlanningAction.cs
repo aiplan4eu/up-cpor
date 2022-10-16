@@ -399,9 +399,9 @@ namespace CPORLib.PlanningModel
             return lEffects;
         }
 
-        public SortedSet<Predicate> GetApplicableEffects(IEnumerable<Predicate> lPredicates, bool bContainsNegations, Dictionary<Predicate, Formula> dEffectPreconditions)
+        public HashSet<Predicate> GetApplicableEffects(IEnumerable<Predicate> lPredicates, bool bContainsNegations, Dictionary<Predicate, Formula> dEffectPreconditions)
         {
-            SortedSet<Predicate> lEffects = new SortedSet<Predicate>();
+            HashSet<Predicate> lEffects = new HashSet<Predicate>();
             List<CompoundFormula> lConditions = new List<CompoundFormula>();
             List<Formula> lObligatory = new List<Formula>();
             SplitEffects(lConditions, lObligatory);
@@ -416,6 +416,7 @@ namespace CPORLib.PlanningModel
             int iCondition = 0;
             foreach (CompoundFormula cfWhen in lConditions)
             {
+
                 if (cfWhen.Operands[0].ContainedIn(lPredicates, bContainsNegations))
                 {
 
