@@ -25,6 +25,8 @@ namespace CPORLib.Tools
         public static readonly GroundedPredicate TRUE_PREDICATE = new GroundedPredicate(TRUE_PREDICATE_NAME);
         public static readonly GroundedPredicate FALSE_PREDICATE = new GroundedPredicate(FALSE_PREDICATE_NAME);
 
+        public static readonly Predicate Observed = new GroundedPredicate("observed");
+
 
 
         public static bool SameList(List<string> l1, List<string> l2)

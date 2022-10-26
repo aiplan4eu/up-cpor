@@ -59,9 +59,9 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\shanigu\\OneDrive - Ben Gurion University of the Negev\\Research\\projects\\AIPlan4EU\\up-cpor\\TestCPORLib\\TestCPORLib.csproj",
-      "projectName": "TestCPORLib",
-      "projectPath": "C:\\Users\\shanigu\\OneDrive - Ben Gurion University of the Negev\\Research\\projects\\AIPlan4EU\\up-cpor\\TestCPORLib\\TestCPORLib.csproj",
+      "projectUniqueName": "C:\\Users\\shanigu\\OneDrive - Ben Gurion University of the Negev\\Research\\projects\\AIPlan4EU\\up-cpor\\TestCPORLib\\RunCPOR.csproj",
+      "projectName": "RunCPOR",
+      "projectPath": "C:\\Users\\shanigu\\OneDrive - Ben Gurion University of the Negev\\Research\\projects\\AIPlan4EU\\up-cpor\\TestCPORLib\\RunCPOR.csproj",
       "packagesPath": "C:\\Users\\shanigu\\.nuget\\packages\\",
       "outputPath": "C:\\Users\\shanigu\\OneDrive - Ben Gurion University of the Negev\\Research\\projects\\AIPlan4EU\\up-cpor\\TestCPORLib\\obj\\",
       "projectStyle": "PackageReference",

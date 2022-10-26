@@ -17,7 +17,9 @@ namespace CPORLib.PlanningModel
         protected HashSet<Predicate> m_lChangingPredicates;
 
         public List<Action> AvailableActions { get; protected set; }
-        private State m_sPredecessor;
+        public State Predecessor { private set; get; }
+        public PlanningAction GeneratingAction { private set; get; }
+        public List<string> History { private set; get; }
         public bool MaintainNegations { get; private set; }
         public Problem Problem { get; private set; }
         public int ID { get; private set; }
@@ -30,7 +32,7 @@ namespace CPORLib.PlanningModel
         public State(Problem p)
         {
             Problem = p;
-            m_sPredecessor = null;
+            Predecessor = null;
             m_lPredicates = new HashSet<Predicate>();
             m_lAlwaysTrue = new HashSet<Predicate>();
             m_lChangingPredicates = new HashSet<Predicate>();
@@ -44,14 +46,16 @@ namespace CPORLib.PlanningModel
             {
                 FunctionValues[sFunction] = 0.0;
             }
+            History = new List<string>();
+            History.Add(ToString());
         }
         public State(State sPredecessor)
             : this(sPredecessor.Problem)
         {
-            m_sPredecessor = sPredecessor;
+            Predecessor = sPredecessor;
             m_lPredicates = new HashSet<Predicate>(sPredecessor.Predicates);
-            m_lChangingPredicates = new HashSet<Predicate>(m_sPredecessor.m_lChangingPredicates);
-            m_lAlwaysTrue = m_sPredecessor.m_lAlwaysTrue;
+            m_lChangingPredicates = new HashSet<Predicate>(Predecessor.m_lChangingPredicates);
+            m_lAlwaysTrue = Predecessor.m_lAlwaysTrue;
 
             foreach (Predicate p in Problem.Known)
             {
@@ -194,6 +198,12 @@ namespace CPORLib.PlanningModel
                 return null;
 
             State sNew = Clone();
+
+            sNew.GeneratingAction = a;
+            sNew.History = new List<string>(History);
+            sNew.History.Add(ToString());
+            sNew.History.Add(a.Name);
+
             sNew.Time = Time + 1;
 
             if (a.Effects == null)
@@ -232,7 +242,7 @@ namespace CPORLib.PlanningModel
             if (Problem.Domain.IsFunctionExpression(pEffect.Name))
             {
                 GroundedPredicate gpIncreaseDecrease = (GroundedPredicate)pEffect;
-                double dPreviousValue = m_sPredecessor.FunctionValues[gpIncreaseDecrease.Constants[0].Name];
+                double dPreviousValue = Predecessor.FunctionValues[gpIncreaseDecrease.Constants[0].Name];
                 double dDiff = double.Parse(gpIncreaseDecrease.Constants[1].Name);
                 double dNewValue = double.NaN;
                 if (gpIncreaseDecrease.Name.ToLower() == "increase")
@@ -272,7 +282,7 @@ namespace CPORLib.PlanningModel
                     while (s != null)
                     {
                         s.AddPredicate(pChoice);
-                        s = s.m_sPredecessor;
+                        s = s.Predecessor;
                     }
                 }
                 else if (cf.Operator == "and")
@@ -289,7 +299,7 @@ namespace CPORLib.PlanningModel
                 }
                 else if (cf.Operator == "when")
                 {
-                    if (m_sPredecessor.Contains(cf.Operands[0]))
+                    if (Predecessor.Contains(cf.Operands[0]))
                         AddEffects(cf.Operands[1]);
                 }
                 else
@@ -336,7 +346,7 @@ namespace CPORLib.PlanningModel
                 while (s != null)
                 {
                     s.AddPredicate(pChoice);
-                    s = s.m_sPredecessor;
+                    s = s.Predecessor;
                 }
 
 
@@ -356,7 +366,7 @@ namespace CPORLib.PlanningModel
                     while (s != null)
                     {
                         s.AddPredicate(pChoice);
-                        s = s.m_sPredecessor;
+                        s = s.Predecessor;
                     }
                 }
                 else if (cf.Operator == "and")

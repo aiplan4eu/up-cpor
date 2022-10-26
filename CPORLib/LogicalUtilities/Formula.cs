@@ -17,7 +17,7 @@ namespace CPORLib.LogicalUtilities
         public abstract bool IsTrue(IEnumerable<Predicate> lKnown, bool bContainsNegations);
         public abstract bool IsFalse(IEnumerable<Predicate> lKnown, bool bContainsNegations);
 
-
+        public abstract bool IsTrueDeleteRelaxation(IEnumerable<Predicate> lKnown);
         public bool IsTrue(IEnumerable<Predicate> lKnown)
         {
             return IsTrue(lKnown, true);

@@ -250,7 +250,6 @@ namespace CPORLib.PlanningModel
         }
 
 
-        private Predicate Observed = new GroundedPredicate("observed");
         public MemoryStream WriteTaggedDomain(Dictionary<string, List<Predicate>> dTags, Problem pCurrent, List<Formula> lDeadends)
         {
             if (HasNonDeterministicActions() && Options.UseOptions)
@@ -951,10 +950,10 @@ namespace CPORLib.PlanningModel
                 else if (a.Effects == null && a.Observe != null)
                 {
                     PlanningAction aObserveTrue = a.NonConditionalObservationTranslation(dTags, m_lAlwaysKnown, true);
-                    aObserveTrue.AddEffect(Observed);
+                    aObserveTrue.AddEffect(Utilities.Observed);
                     WriteConditionalAction(sw, aObserveTrue, lDeadends);
                     PlanningAction aObserveFalse = a.NonConditionalObservationTranslation(dTags, m_lAlwaysKnown, false);
-                    aObserveFalse.AddEffect(Observed);
+                    aObserveFalse.AddEffect(Utilities.Observed);
                     WriteConditionalAction(sw, aObserveFalse, lDeadends);
                 }
 
@@ -990,13 +989,13 @@ namespace CPORLib.PlanningModel
                     if (!AlwaysKnown(pp))
                     {
                         PlanningAction aMerge = GenerateMergeAction(pp, dTags);
-                        aMerge.AddPrecondition(Observed);
+                        aMerge.AddPrecondition(Utilities.Observed);
                         WriteAction(sw, aMerge, lDeadends);
                         PlanningAction aRefute = GenerateRefutationAction(pp, true);
-                        aRefute.AddPrecondition(Observed);
+                        aRefute.AddPrecondition(Utilities.Observed);
                         WriteAction(sw, aRefute, lDeadends);
                         aRefute = GenerateRefutationAction(pp, false);
-                        aRefute.AddPrecondition(Observed);
+                        aRefute.AddPrecondition(Utilities.Observed);
                         WriteAction(sw, aRefute, lDeadends);
 
                         //Action aAssert = GenerateAssertInvalid(pp, pCurrent.Goal);
@@ -1604,7 +1603,7 @@ namespace CPORLib.PlanningModel
         {
             sw.WriteLine("(:predicates");
 
-            sw.WriteLine(Observed);
+            sw.WriteLine(Utilities.Observed);
 
             foreach (Predicate p in Predicates)
             {
@@ -2128,7 +2127,7 @@ namespace CPORLib.PlanningModel
                 }
             }
 
-
+            //BUGBUG; //why don't we get the refutet stain grounded?
 
             bool bNewPredciatesAdded = true;
             int cIterations = 0;
@@ -2141,8 +2140,8 @@ namespace CPORLib.PlanningModel
                     if (a is ParametrizedAction)
                     {
                         ParametrizedAction pa = (ParametrizedAction)a;
-                        //if (pa.Name.Contains("refute") && pa.Name.Contains("stench"))
-                        //    Console.Write("*");
+                        //if (pa.Name.Contains("ls-f") )
+                        //   Console.Write("*");
                         lToBind = new List<Parameter>(pa.Parameters);
                         dBindings.Clear();
 
@@ -2196,6 +2195,7 @@ namespace CPORLib.PlanningModel
                     }
                     else
                     {
+                        ProcessEffects(a, dNewPredicates, lPredicates);
                         lGrounded.Add(a);
                     }
                 }
@@ -2636,43 +2636,71 @@ namespace CPORLib.PlanningModel
             }
             else
             {
-                Formula fGroundedPreconditions = null;
-                if (pa.Preconditions != null)
+                if (lToBind.Count > dBindings.Keys.Count)
                 {
-                    fGroundedPreconditions = pa.Preconditions.Ground(dBindings);
-                }
-                string sName = pa.Name;
-                foreach (Parameter p in pa.Parameters)
-                    sName += Utilities.DELIMITER_CHAR + dBindings[p].Name;
-                PlanningAction aGrounded = new PlanningAction(sName);
-                aGrounded.Preconditions = fGroundedPreconditions;
-                bool bInvalidEffects = false;
-                if (pa.Effects != null)
-                {
-                    aGrounded.SetEffects(pa.Effects.Ground(dBindings));
-                    HashSet<Predicate> lApplicableEffects = aGrounded.GetApplicableEffects(lGroundedPredicates, false).GetAllPredicates();
-                    //foreach (GroundedPredicate gp in aGrounded.Effects.GetAllPredicates())
-                    foreach (GroundedPredicate gp in lApplicableEffects)
+                    foreach(Parameter p in lToBind)
                     {
-                        if (gp == Utilities.FALSE_PREDICATE)
-                            bInvalidEffects = true;
-                        if (!gp.Negation)
+                        if(!dBindings.ContainsKey(p))
                         {
-                            if (!dNewPredicates.ContainsKey(gp.Name))
-                                dNewPredicates[gp.Name] = new HashSet<GroundedPredicate>();
-                            dNewPredicates[gp.Name].Add(gp);
+                            foreach(Constant c in Constants)
+                            {
+                                if(c.Type == p.Type)
+                                {
+                                    Dictionary<Parameter, Constant> dNewBindings = new Dictionary<Parameter, Constant>(dBindings);
+                                    dNewBindings[p] = c;
+                                    GroundAction(pa, dPredicates, lOptionalPreconditions, lToBind, dNewBindings, lPredicatesToBind, dPredicateBindings, lGrounded, dNewPredicates, lGroundedPredicates);
+                                }
+                            }
                         }
                     }
                 }
-                if (!bInvalidEffects)
+                else
                 {
+                    Formula fGroundedPreconditions = null;
+                    if (pa.Preconditions != null)
+                    {
+                        fGroundedPreconditions = pa.Preconditions.Ground(dBindings);
+                    }
+                    string sName = pa.Name;
+                    foreach (Parameter p in pa.Parameters)
+                        sName += Utilities.DELIMITER_CHAR + dBindings[p].Name;
+                    PlanningAction aGrounded = new PlanningAction(sName);
+                    aGrounded.Preconditions = fGroundedPreconditions;
+                    bool bValidEffects = true;
+                    if (pa.Effects != null)
+                    {
+                        aGrounded.SetEffects(pa.Effects.Ground(dBindings));
+                        bValidEffects = ProcessEffects(aGrounded, dNewPredicates, lGroundedPredicates);
 
-                    if (pa.Observe != null)
-                        aGrounded.Observe = pa.Observe.Ground(dBindings);
-                    lGrounded.Add(aGrounded);
+                    }
+                    if (bValidEffects)
+                    {
+
+                        if (pa.Observe != null)
+                            aGrounded.Observe = pa.Observe.Ground(dBindings);
+                        lGrounded.Add(aGrounded);
+                    }
                 }
-
             }
+        }
+
+        private bool ProcessEffects(PlanningAction a, Dictionary<string, HashSet<GroundedPredicate>> dNewPredicates, HashSet<Predicate> lGroundedPredicates)
+        {
+            if (a.Effects == null)
+                return true;
+            HashSet<Predicate> lApplicableEffects = a.GetApplicableEffects(lGroundedPredicates, false).GetAllPredicates();
+            foreach (GroundedPredicate gp in lApplicableEffects)
+            {
+                if (gp == Utilities.FALSE_PREDICATE)
+                    return false;
+                if (!gp.Negation)
+                {
+                    if (!dNewPredicates.ContainsKey(gp.Name))
+                        dNewPredicates[gp.Name] = new HashSet<GroundedPredicate>();
+                    dNewPredicates[gp.Name].Add(gp);
+                }
+            }
+            return true;
         }
 
         private bool ConsistentBindings(Dictionary<Parameter, Constant> d1, Dictionary<Parameter, Constant> d2)

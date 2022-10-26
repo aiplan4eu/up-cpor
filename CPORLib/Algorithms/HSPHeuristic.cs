@@ -4,6 +4,8 @@ using System.Diagnostics;
 using Action = CPORLib.PlanningModel.PlanningAction;
 using CPORLib.PlanningModel;
 using CPORLib.LogicalUtilities;
+using System.Linq;
+using CPORLib.Tools;
 
 namespace CPORLib.Algorithms
 {
@@ -173,14 +175,20 @@ namespace CPORLib.Algorithms
             {
                 lExpansions.Add(new HashSet<Action>());
                 HashSet<Predicate> lCurrentPredicates = new HashSet<Predicate>(lAllAcheavablePredicates);
-                //List<Action> lActions = m_dDomain.GroundAllActions(lCurrentPredicates, true);
                 bChanged = false;
                 foreach (Action a in m_lGroundedActions)
                 {
 
-                    //if (a.Preconditions == null)
-                        //Console.Write("*");
-                    if (a.Preconditions == null || a.Preconditions.IsTrue(lCurrentPredicates, false))
+                    //if (a.Name.Contains("merge-ill"))
+                    //    Console.Write("*");
+
+                    bool bPreconditionsStatisfied = true;
+                    if(a.Preconditions != null)
+                    {
+                        bPreconditionsStatisfied = a.Preconditions.IsTrueDeleteRelaxation(lCurrentPredicates);
+                    }
+
+                    if (bPreconditionsStatisfied)
                     {
                         if (cExpansions == 0 || !lAllObservedActions.Contains(a))
                         {
@@ -194,12 +202,21 @@ namespace CPORLib.Algorithms
                             bool bNewAction = false;
                             foreach (Predicate p in lEffects)
                             {
+                                if (p.Negation)
+                                    continue;
                                 if (!lAllAcheavablePredicates.Contains(p))
                                 {
                                     bNewAction = true;
                                     dParentAction[p] = a;
                                     if (dCurrentEffectToPreconditions[p] != null)
-                                        dEffectToPreconditions[p] = dCurrentEffectToPreconditions[p].GetAllPredicates();
+                                    {
+                                        dEffectToPreconditions[p] = new HashSet<Predicate>();
+                                        foreach(Predicate pre in dCurrentEffectToPreconditions[p].GetAllPredicates())
+                                        {
+                                            if (!pre.Negation && lAllAcheavablePredicates.Contains(pre))
+                                                dEffectToPreconditions[p].Add(pre);
+                                        }
+                                    }
                                     else
                                         dEffectToPreconditions[p] = null;
                                     lAllAcheavablePredicates.Add(p);
@@ -213,43 +230,55 @@ namespace CPORLib.Algorithms
                 }
                 cExpansions++;
             }
-            int cActions = 0;
-            List<Predicate> lNeedToAchievePredicates = new List<Predicate>(m_lGoal);
-            List<Predicate> lAchieved = new List<Predicate>();
+            double cActions = 0;
+            HashSet<Predicate> lNeedToAchievePredicates = new HashSet<Predicate>(m_lGoal);
+            HashSet<Predicate> lAchieved = new HashSet<Predicate>();
             while (lNeedToAchievePredicates.Count > 0)
             {
-                List<Action> lActions = new List<Action>();
-                SortedSet<Predicate> lPreconditions = new SortedSet<Predicate>();
+                HashSet<Predicate> lPreconditions = new HashSet<Predicate>();
                 foreach (Predicate p in lNeedToAchievePredicates)
                 {
-                    if (dParentAction.ContainsKey(p))
+                    if (!lAchieved.Contains(p))
                     {
-                        if (!lActions.Contains(dParentAction[p]) && dParentAction[p] != null)
+                        if (dParentAction.ContainsKey(p))
                         {
-                            lActions.Add(dParentAction[p]);
-                            lPlan.Add(dParentAction[p]);
-                        }
-                        if (dParentAction[p] != null)
-                        {
-                            if (dEffectToPreconditions[p] != null)
+                            if (dParentAction[p] != null)
                             {
-                                foreach (Predicate pTag in dEffectToPreconditions[p])
+                                PlanningAction a = dParentAction[p];
+
+                                lPlan.Add(a);
+
+                                if (dEffectToPreconditions[p] != null)
                                 {
-                                    if (!lAchieved.Contains(pTag))
-                                        lPreconditions.Add(pTag);
+                                    foreach (Predicate pTag in dEffectToPreconditions[p])
+                                    {
+                                        if (!lAchieved.Contains(pTag))
+                                            lPreconditions.Add(pTag);
+                                    }
                                 }
+
                             }
+                            lAchieved.Add(p);
                         }
-                        lAchieved.Add(p);
+                        else// if (m_lGoal.Contains(p))//there is a goal predicate that no action achieves
+                            return double.PositiveInfinity;
                     }
-                    else if (m_lGoal.Contains(p))
-                        return double.PositiveInfinity;
                 }
-                cActions += lActions.Count;
-                lNeedToAchievePredicates = new List<Predicate>(lPreconditions);
+                lNeedToAchievePredicates = new HashSet<Predicate>(lPreconditions);
             }
             lPlan.Reverse();
 
+            cActions = lPlan.Count;
+            /*
+            foreach(PlanningAction a in lPlan)
+            {
+                HashSet<Predicate> lPredicates = a.GetMandatoryEffects();
+                if (lPredicates.Contains(Utilities.Observed))
+                    cActions += 0.5;
+                else
+                    cActions++;
+            }
+            */
             if (cActions == 0)
                 Debug.WriteLine("BUGBUG");
             return cActions;

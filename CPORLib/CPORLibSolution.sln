@@ -5,7 +5,7 @@ VisualStudioVersion = 17.3.32804.467
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CPORLib", "CPORLib.csproj", "{696F9B06-9831-4A12-9CEF-5478567007DE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestCPORLib", "..\TestCPORLib\TestCPORLib.csproj", "{B81BA255-94D2-49F7-93BC-AD99D31FD3EF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RunCPOR", "..\TestCPORLib\RunCPOR.csproj", "{B81BA255-94D2-49F7-93BC-AD99D31FD3EF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

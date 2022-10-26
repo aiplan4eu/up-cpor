@@ -1,6 +1,7 @@
 ﻿using CPORLib.LogicalUtilities;
 using CPORLib.Parsing;
 using CPORLib.PlanningModel;
+using CPORLib.Tools;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -39,6 +40,7 @@ namespace CPORLib.Algorithms
 
 
             m_lGroundedActions = m_dDomain.GroundAllActions(m_pProblem, true);
+            
 
             //m_fHeuristic = new HSPHeuristic(m_dDomain, m_pProblem.Goal, true);
             m_fHeuristic = new HSPHeuristic(m_lGroundedActions, m_pProblem.Goal, true);
@@ -96,7 +98,8 @@ namespace CPORLib.Algorithms
         public List<Action> Plan()
         {
             State sStartState = m_pProblem.GetInitialBelief().ChooseState(true);
-            return Plan(sStartState);
+            List<Action> lActions = Plan(sStartState);
+            return lActions;
         }
         public override List<Action> Plan(State sStartState)
         {
@@ -131,7 +134,8 @@ namespace CPORLib.Algorithms
                     {
                         m_cObservedStates++;
                         dParents[sNext] = sCurrent;
-                        dGeneratingAction[sNext] = dNextStates[sNext];
+                        PlanningAction aGenerating = dNextStates[sNext];
+                        dGeneratingAction[sNext] = aGenerating;
                         if (sNext.Contains(fGoal))
                         {
                             List<Action> lPlan = CreatePlan(sNext, dParents, dGeneratingAction);
@@ -141,9 +145,21 @@ namespace CPORLib.Algorithms
                         else
                         {
                             dCost[sNext] = dCost[sCurrent] + 1;
-                            dHeuristic[sNext] = m_fHeuristic.h(sNext);
+
+                            double dH = m_fHeuristic.h(sNext);
+
+                            if (aGenerating.Name.Contains("refute"))
+                                dH -= 0.5;
+                            else
+                            {
+                                HashSet<Predicate> lPredicates = aGenerating.GetMandatoryEffects();
+                                if (lPredicates.Contains(Utilities.Observed))
+                                    dH -= 0.2;
+                            }
+                            dHeuristic[sNext] = dH;
+
                             lOpenList.Add(sNext);
-                        }
+                       }
                     }
                     else if (sNext != null)
                         cRepeated++;

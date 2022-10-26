@@ -201,6 +201,27 @@ namespace CPORLib.LogicalUtilities
             return AddOperand(pf);
 
         }
+
+        public override bool IsTrueDeleteRelaxation(IEnumerable<Predicate> lKnown)
+        {
+            int cCountTrue = 0;
+            foreach (Formula f in Operands)
+            {
+                bool bValue = f.IsTrueDeleteRelaxation(lKnown);
+                if (bValue)
+                    cCountTrue++;
+                if (Operator == "and" && !bValue)
+                    return false;
+                else if (Operator == "or" && bValue)
+                    return true;
+                else if (Operator == "oneof")
+                {
+                    throw new NotImplementedException();
+                }
+            }
+            return Operator == "and";
+        }
+
         public override bool IsTrue(IEnumerable<Predicate> lKnown, bool bContainsNegations)
         {
             bool bValue = false;

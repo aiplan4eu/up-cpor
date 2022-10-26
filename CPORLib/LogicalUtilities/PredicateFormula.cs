@@ -16,6 +16,23 @@ namespace CPORLib.LogicalUtilities
             Predicate = p;
             Size = 1;
         }
+        public override bool IsTrueDeleteRelaxation(IEnumerable<Predicate> lKnown)
+        {
+            if (Predicate == Utilities.TRUE_PREDICATE)
+                return true;
+            if (Predicate == Utilities.FALSE_PREDICATE)
+                return false;
+            if (Predicate.Negation)
+                return true;
+
+            if (lKnown != null)
+            {
+                return lKnown.Contains(Predicate);
+                
+            }
+            return false;
+        }
+
         public override bool IsTrue(IEnumerable<Predicate> lKnown, bool bContainsNegations)
         {
             if (Predicate == Utilities.TRUE_PREDICATE)
