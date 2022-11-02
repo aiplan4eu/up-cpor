@@ -16,6 +16,7 @@ public class Program
     }
     public static void TestAll()
     {
+        RunTest("blocks3");
         RunTest("localize5");
         RunTest("colorballs2-2");
         RunTest("doors5");
@@ -25,8 +26,8 @@ public class Program
 
     private static void Main(string[] args)
     {
-        //TestAll();
-        //return;
+        TestAll();
+        return;
 
 
         if (args.Length < 2)

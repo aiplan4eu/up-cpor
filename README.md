@@ -1,5 +1,5 @@
 # up-cpor
 
-Requires: pythonnet
-Runs on python3.8 (due to pythonnet restrictions)
-C# code must be compiled using .Net core 2.0 (due to pythonnet restrictions)
+Requires: pythonnet 3.0.0
+Runs on python3.9 
+C# code must be compiled using .Net standard 2.0 (due to pythonnet restrictions)

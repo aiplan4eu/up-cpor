@@ -1,0 +1,46 @@
+
+Goals 
+#14 :  , (on b4 b7) , (not (on b7 b4)) , (not (on-table b4)) , (not (clear b7)) , (on-table b7) , (clear b4) , (on b2 b5) , (not (on b5 b2)) , (not (on-table b2)) , (not (clear b5)) , (on-table b5) , (clear b2) , (on b1 b3) , (not (on b6 b3)) , (not (on b1 b6)) , (on b6 b1) , (clear b6) , (not (clear b1))
+12 :  , (not (on b4 b7)) , (on-table b4) , (clear b7) , (not (on-table b7)) , (not (clear b4)) , (on b7 b4) , (on b2 b5) , (not (on b5 b2)) , (not (on-table b2)) , (not (clear b5)) , (on-table b5) , (clear b2) , (on b1 b3) , (not (on b6 b3)) , (not (on b1 b6)) , (on b6 b1) , (clear b6) , (not (clear b1))
+16 :  , (on b4 b7) , (not (on b7 b4)) , (not (on-table b4)) , (not (clear b7)) , (on-table b7) , (clear b4) , (not (on b2 b5)) , (on-table b2) , (clear b5) , (not (on-table b5)) , (not (clear b2)) , (on b5 b2) , (on b1 b3) , (not (on b6 b3)) , (not (on b1 b6)) , (on b6 b1) , (clear b6) , (not (clear b1))
+14 :  , (not (on b4 b7)) , (on-table b4) , (clear b7) , (not (on-table b7)) , (not (clear b4)) , (on b7 b4) , (not (on b2 b5)) , (on-table b2) , (clear b5) , (not (on-table b5)) , (not (clear b2)) , (on b5 b2) , (on b1 b3) , (not (on b6 b3)) , (not (on b1 b6)) , (on b6 b1) , (clear b6) , (not (clear b1))
+13 :  , (on b4 b7) , (not (on b7 b4)) , (not (on-table b4)) , (not (clear b7)) , (on-table b7) , (clear b4) , (on b2 b5) , (not (on b5 b2)) , (not (on-table b2)) , (not (clear b5)) , (on-table b5) , (clear b2) , (not (on b1 b3)) , (on b6 b3) , (on b1 b6) , (not (on b6 b1)) , (not (clear b6)) , (clear b1)
+10 :  , (not (on b4 b7)) , (on-table b4) , (clear b7) , (not (on-table b7)) , (not (clear b4)) , (on b7 b4) , (on b2 b5) , (not (on b5 b2)) , (not (on-table b2)) , (not (clear b5)) , (on-table b5) , (clear b2) , (not (on b1 b3)) , (on b6 b3) , (on b1 b6) , (not (on b6 b1)) , (not (clear b6)) , (clear b1)
+15 :  , (on b4 b7) , (not (on b7 b4)) , (not (on-table b4)) , (not (clear b7)) , (on-table b7) , (clear b4) , (not (on b2 b5)) , (on-table b2) , (clear b5) , (not (on-table b5)) , (not (clear b2)) , (on b5 b2) , (not (on b1 b3)) , (on b6 b3) , (on b1 b6) , (not (on b6 b1)) , (not (clear b6)) , (clear b1)
+13 :  , (not (on b4 b7)) , (on-table b4) , (clear b7) , (not (on-table b7)) , (not (clear b4)) , (on b7 b4) , (not (on b2 b5)) , (on-table b2) , (clear b5) , (not (on-table b5)) , (not (clear b2)) , (on b5 b2) , (not (on b1 b3)) , (on b6 b3) , (on b1 b6) , (not (on b6 b1)) , (not (clear b6)) , (clear b1)
+#
+Union Goals Budget
+#14 :  , (on b4 b7) , (not (on b7 b4)) , (not (on-table b4)) , (not (clear b7)) , (on-table b7) , (clear b4) , (on b2 b5) , (not (on b5 b2)) , (not (on-table b2)) , (not (clear b5)) , (on-table b5) , (clear b2) , (on b1 b3) , (not (on b6 b3)) , (not (on b1 b6)) , (on b6 b1) , (clear b6) , (not (clear b1))
+12 :  , (not (on b4 b7)) , (on-table b4) , (clear b7) , (not (on-table b7)) , (not (clear b4)) , (on b7 b4) , (on b2 b5) , (not (on b5 b2)) , (not (on-table b2)) , (not (clear b5)) , (on-table b5) , (clear b2) , (on b1 b3) , (not (on b6 b3)) , (not (on b1 b6)) , (on b6 b1) , (clear b6) , (not (clear b1))
+14 :  , (on b1 b3) , (not (on b6 b3)) , (not (on b1 b6)) , (on b6 b1) , (clear b6) , (not (clear b1))
+16 :  , (on b4 b7) , (not (on b7 b4)) , (not (on-table b4)) , (not (clear b7)) , (on-table b7) , (clear b4) , (not (on b2 b5)) , (on-table b2) , (clear b5) , (not (on-table b5)) , (not (clear b2)) , (on b5 b2) , (on b1 b3) , (not (on b6 b3)) , (not (on b1 b6)) , (on b6 b1) , (clear b6) , (not (clear b1))
+14 :  , (not (on b4 b7)) , (on-table b4) , (clear b7) , (not (on-table b7)) , (not (clear b4)) , (on b7 b4) , (not (on b2 b5)) , (on-table b2) , (clear b5) , (not (on-table b5)) , (not (clear b2)) , (on b5 b2) , (on b1 b3) , (not (on b6 b3)) , (not (on b1 b6)) , (on b6 b1) , (clear b6) , (not (clear b1))
+16 :  , (on b1 b3) , (not (on b6 b3)) , (not (on b1 b6)) , (on b6 b1) , (clear b6) , (not (clear b1))
+16 : 
+13 :  , (on b4 b7) , (not (on b7 b4)) , (not (on-table b4)) , (not (clear b7)) , (on-table b7) , (clear b4) , (on b2 b5) , (not (on b5 b2)) , (not (on-table b2)) , (not (clear b5)) , (on-table b5) , (clear b2) , (not (on b1 b3)) , (on b6 b3) , (on b1 b6) , (not (on b6 b1)) , (not (clear b6)) , (clear b1)
+10 :  , (not (on b4 b7)) , (on-table b4) , (clear b7) , (not (on-table b7)) , (not (clear b4)) , (on b7 b4) , (on b2 b5) , (not (on b5 b2)) , (not (on-table b2)) , (not (clear b5)) , (on-table b5) , (clear b2) , (not (on b1 b3)) , (on b6 b3) , (on b1 b6) , (not (on b6 b1)) , (not (clear b6)) , (clear b1)
+13 :  , (not (on b1 b3)) , (on b6 b3) , (on b1 b6) , (not (on b6 b1)) , (not (clear b6)) , (clear b1)
+15 :  , (on b4 b7) , (not (on b7 b4)) , (not (on-table b4)) , (not (clear b7)) , (on-table b7) , (clear b4) , (not (on b2 b5)) , (on-table b2) , (clear b5) , (not (on-table b5)) , (not (clear b2)) , (on b5 b2) , (not (on b1 b3)) , (on b6 b3) , (on b1 b6) , (not (on b6 b1)) , (not (clear b6)) , (clear b1)
+13 :  , (not (on b4 b7)) , (on-table b4) , (clear b7) , (not (on-table b7)) , (not (clear b4)) , (on b7 b4) , (not (on b2 b5)) , (on-table b2) , (clear b5) , (not (on-table b5)) , (not (clear b2)) , (on b5 b2) , (not (on b1 b3)) , (on b6 b3) , (on b1 b6) , (not (on b6 b1)) , (not (clear b6)) , (clear b1)
+15 :  , (not (on b1 b3)) , (on b6 b3) , (on b1 b6) , (not (on b6 b1)) , (not (clear b6)) , (clear b1)
+15 : 
+16 : 
+#
+
+
+
+Goals Fault Tolerance
+#3 : 3 :  , (on b4 b7) , (not (on b7 b4)) , (not (on-table b4)) , (not (clear b7)) , (on-table b7) , (clear b4) , (on b2 b5) , (not (on b5 b2)) , (not (on-table b2)) , (not (clear b5)) , (on-table b5) , (clear b2) , (on b1 b3) , (not (on b6 b3)) , (not (on b1 b6)) , (on b6 b1) , (clear b6) , (not (clear b1))
+3 : 2 :  , (not (on b4 b7)) , (on-table b4) , (clear b7) , (not (on-table b7)) , (not (clear b4)) , (on b7 b4) , (on b2 b5) , (not (on b5 b2)) , (not (on-table b2)) , (not (clear b5)) , (on-table b5) , (clear b2) , (on b1 b3) , (not (on b6 b3)) , (not (on b1 b6)) , (on b6 b1) , (clear b6) , (not (clear b1))
+3 : 2 :  , (on b4 b7) , (not (on b7 b4)) , (not (on-table b4)) , (not (clear b7)) , (on-table b7) , (clear b4) , (not (on b2 b5)) , (on-table b2) , (clear b5) , (not (on-table b5)) , (not (clear b2)) , (on b5 b2) , (on b1 b3) , (not (on b6 b3)) , (not (on b1 b6)) , (on b6 b1) , (clear b6) , (not (clear b1))
+3 : 1 :  , (not (on b4 b7)) , (on-table b4) , (clear b7) , (not (on-table b7)) , (not (clear b4)) , (on b7 b4) , (not (on b2 b5)) , (on-table b2) , (clear b5) , (not (on-table b5)) , (not (clear b2)) , (on b5 b2) , (on b1 b3) , (not (on b6 b3)) , (not (on b1 b6)) , (on b6 b1) , (clear b6) , (not (clear b1))
+3 : 2 :  , (on b4 b7) , (not (on b7 b4)) , (not (on-table b4)) , (not (clear b7)) , (on-table b7) , (clear b4) , (on b2 b5) , (not (on b5 b2)) , (not (on-table b2)) , (not (clear b5)) , (on-table b5) , (clear b2) , (not (on b1 b3)) , (on b6 b3) , (on b1 b6) , (not (on b6 b1)) , (not (clear b6)) , (clear b1)
+3 : 1 :  , (not (on b4 b7)) , (on-table b4) , (clear b7) , (not (on-table b7)) , (not (clear b4)) , (on b7 b4) , (on b2 b5) , (not (on b5 b2)) , (not (on-table b2)) , (not (clear b5)) , (on-table b5) , (clear b2) , (not (on b1 b3)) , (on b6 b3) , (on b1 b6) , (not (on b6 b1)) , (not (clear b6)) , (clear b1)
+3 : 1 :  , (on b4 b7) , (not (on b7 b4)) , (not (on-table b4)) , (not (clear b7)) , (on-table b7) , (clear b4) , (not (on b2 b5)) , (on-table b2) , (clear b5) , (not (on-table b5)) , (not (clear b2)) , (on b5 b2) , (not (on b1 b3)) , (on b6 b3) , (on b1 b6) , (not (on b6 b1)) , (not (clear b6)) , (clear b1)
+3 : 0 :  , (not (on b4 b7)) , (on-table b4) , (clear b7) , (not (on-table b7)) , (not (clear b4)) , (on b7 b4) , (not (on b2 b5)) , (on-table b2) , (clear b5) , (not (on-table b5)) , (not (clear b2)) , (on b5 b2) , (not (on b1 b3)) , (on b6 b3) , (on b1 b6) , (not (on b6 b1)) , (not (clear b6)) , (clear b1)
+#
+
+
+
+Goals Fault Tolerance
+#

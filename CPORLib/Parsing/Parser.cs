@@ -836,40 +836,6 @@ namespace CPORLib.Parsing
             return sReveresed;
         }
 
-        private Stack<string> ToStackII(StreamReader sr)
-        {
-            Stack<string> lStack = new Stack<string>();
-            string sAll = ReadToEnd(sr);
-            char[] aDelimiters = { ' ', '\n', '(', ')' };
-            Stack<string> sTokens = new Stack<string>();
-            string sToken = "";
-            foreach (char c in sAll)
-            {
-                if (aDelimiters.Contains(c))
-                {
-                    sToken = sToken.Trim();
-                    sTokens.Push(sToken);
-                    sTokens.Push(c + "");
-                    sToken = "";
-                }
-                else
-                {
-                    sToken += c;
-                }
-            }
-            sToken = sToken.Trim();
-            if (sToken.Length > 0)
-                sTokens.Push(sToken);
-            Stack<string> sReveresed = new Stack<string>();
-            while (sTokens.Count > 0)
-            {
-                sToken = sTokens.Pop().Trim();
-                if (sToken.Length > 0)
-                    sReveresed.Push(sToken);
-            }
-            return sReveresed;
-        }
-
         private string ReadToEnd(StreamReader sr)
         {
             string sAll = "";

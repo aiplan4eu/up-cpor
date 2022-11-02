@@ -1,0 +1,105 @@
+0) senseON_b1_b3
+branching...
+	3) senseON_b2_b5
+branching...
+		60) senseON_b4_b7
+branching...
+			78) move-b-to-b_b7_b4_b5
+			85) move-b-to-b_b1_b6_b4
+			86) move-b-to-b_b7_b5_b6
+			87) move-b-to-b_b5_b2_b7
+			88) move-t-to-b_b2_b1
+			89) move-b-to-b_b5_b7_b2
+			90) move-to-t_b7_b6
+			91) move-to-t_b6_b3
+			55) move-t-to-b_b3_b6
+			56) move-b-to-b_b5_b2_b7
+)goal
+			77) move-b-to-b_b1_b6_b4
+			81) move-b-to-b_b5_b2_b6
+			82) move-t-to-b_b2_b1
+			83) move-to-t_b5_b6
+			69) move-to-t_b6_b3
+			19) move-t-to-b_b3_b6
+			20) move-to-t_b2_b1
+			21) move-to-t_b1_b4
+			22) move-to-t_b4_b7
+			23) move-t-to-b_b5_b7
+			24) move-t-to-b_b1_b4
+			25) move-t-to-b_b2_b1
+)goal
+		59) senseON_b4_b7
+branching...
+			65) move-b-to-b_b7_b4_b2
+			71) move-b-to-b_b1_b6_b4
+			72) move-to-t_b7_b2
+			73) move-b-to-b_b2_b5_b1
+			74) move-b-to-b_b6_b3_b2
+			33) move-t-to-b_b3_b6
+			34) move-t-to-b_b5_b7
+)goal
+			64) move-b-to-b_b1_b6_b4
+			68) move-b-to-b_b2_b5_b1
+			69) move-to-t_b6_b3
+			19) move-t-to-b_b3_b6
+			20) move-to-t_b2_b1
+			21) move-to-t_b1_b4
+			22) move-to-t_b4_b7
+			23) move-t-to-b_b5_b7
+			24) move-t-to-b_b1_b4
+			25) move-t-to-b_b2_b1
+)goal
+	2) senseON_b2_b5
+branching...
+		8) senseON_b4_b7
+branching...
+			38) move-b-to-b_b6_b1_b5
+			47) move-b-to-b_b7_b4_b6
+			48) move-b-to-b_b1_b3_b4
+			49) move-to-t_b7_b6
+			50) move-b-to-b_b6_b5_b7
+			51) move-b-to-b_b5_b2_b6
+			52) move-t-to-b_b2_b1
+			53) move-b-to-b_b5_b6_b2
+			54) move-to-t_b6_b7
+			55) move-t-to-b_b3_b6
+			56) move-b-to-b_b5_b2_b7
+)goal
+			37) move-b-to-b_b6_b1_b5
+			41) move-b-to-b_b1_b3_b4
+			42) move-to-t_b6_b5
+			43) move-b-to-b_b5_b2_b6
+			44) move-t-to-b_b2_b1
+			45) move-to-t_b5_b6
+			19) move-t-to-b_b3_b6
+			20) move-to-t_b2_b1
+			21) move-to-t_b1_b4
+			22) move-to-t_b4_b7
+			23) move-t-to-b_b5_b7
+			24) move-t-to-b_b1_b4
+			25) move-t-to-b_b2_b1
+)goal
+		7) senseON_b4_b7
+branching...
+			13) move-b-to-b_b6_b1_b2
+			27) move-b-to-b_b7_b4_b6
+			28) move-b-to-b_b1_b3_b4
+			29) move-to-t_b7_b6
+			30) move-b-to-b_b6_b2_b7
+			31) move-b-to-b_b2_b5_b1
+			32) move-b-to-b_b6_b7_b2
+			33) move-t-to-b_b3_b6
+			34) move-t-to-b_b5_b7
+)goal
+			12) move-b-to-b_b6_b1_b2
+			16) move-b-to-b_b1_b3_b4
+			17) move-to-t_b6_b2
+			18) move-b-to-b_b2_b5_b1
+			19) move-t-to-b_b3_b6
+			20) move-to-t_b2_b1
+			21) move-to-t_b1_b4
+			22) move-to-t_b4_b7
+			23) move-t-to-b_b5_b7
+			24) move-t-to-b_b1_b4
+			25) move-t-to-b_b2_b1
+)goal

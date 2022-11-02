@@ -1,0 +1,8 @@
+Budget 9: Tree CFF is better than Tree CPOR
+Budget 10: Tree CFF is better than Tree CPOR
+Budget 11: Tree CFF is better than Tree CPOR
+Budget 12: Tree CFF is better than Tree CPOR
+Budget 13: Tree CFF is better than Tree CPOR
+Budget 14: Tree CFF is better than Tree CPOR
+Budget 15: Equal Trees
+Budget 16: Equal Trees
