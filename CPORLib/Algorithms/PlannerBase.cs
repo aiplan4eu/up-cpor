@@ -1,4 +1,5 @@
-﻿using CPORLib.LogicalUtilities;
+﻿using CPORLib.FFCS;
+using CPORLib.LogicalUtilities;
 using CPORLib.Parsing;
 using CPORLib.PlanningModel;
 using CPORLib.Tools;
@@ -19,7 +20,22 @@ namespace CPORLib.Algorithms
         protected Domain Domain;
         protected Problem Problem;
 
-        public bool Verbose { get; set; }
+        private int m_iInfoLevel = 1;
+        public int InfoLevel { 
+            get
+            {
+                return m_iInfoLevel;
+            }
+            set
+            {
+                m_iInfoLevel = value;
+                if(m_iInfoLevel > 1)
+                    FFUtilities.Verbose = true;
+                else
+                    FFUtilities.Verbose = false;
+            }
+            
+        }
 
         public ExecutionData ExecutionData { get; set; }
 
@@ -35,7 +51,8 @@ namespace CPORLib.Algorithms
 
         }
 
-        protected bool StuckInLoop(int cActions, PartiallySpecifiedState pssCurrent, List<List<string>> lExecutedPlans)
+
+        protected bool StuckInLoopStateBased(int cActions, PartiallySpecifiedState pssCurrent, List<List<string>> lExecutedPlans)
         {
             if (cActions >= 100000)
                 return true;
@@ -54,6 +71,41 @@ namespace CPORLib.Algorithms
                                 //Debug.WriteLine("Stuck in a loop");
                             }
                         }
+                    }
+                }
+                bool bAllEmpty = true;
+                for (int i = 1; i <= 4; i++)
+                    if (lExecutedPlans[lExecutedPlans.Count - i].Count != 0)
+                        bAllEmpty = false;
+                if (bAllEmpty)
+                    return true;
+            }
+            return false;
+        }
+
+        protected bool ComparePlans(List<string> l1, List<string> l2)
+        {
+            if (l1.Count != l2.Count)
+                return false;
+            for (int i = 0; i < l1.Count; i++)
+                if (l1[i] != l2[i])
+                    return false;
+            return true;
+        }
+
+        protected bool StuckInLoopPlanBased(int cActions, PartiallySpecifiedState pssCurrent, List<List<string>> lExecutedPlans)
+        {
+            if (cActions >= 100000)
+                return true;
+            //used only for finding loops
+            int cPlans = lExecutedPlans.Count;
+            if (cPlans > 5)
+            {
+                if (ComparePlans(lExecutedPlans[cPlans - 1], lExecutedPlans[cPlans - 3]))
+                {
+                    if (ComparePlans(lExecutedPlans[cPlans - 2], lExecutedPlans[cPlans - 4]))
+                    {
+                        return true;
                     }
                 }
                 bool bAllEmpty = true;
@@ -285,15 +337,19 @@ namespace CPORLib.Algorithms
             {
                 ForwardSearchPlanner fsp = new ForwardSearchPlanner(msModel);
                 Debug.WriteLine("Calling ForwardSearchPlanner");
-                List<Action> lActions = fsp.Plan();
+                List<string> lPlan = fsp.Plan();
                 Debug.WriteLine("ForwardSearchPlanner done. Plan:");
-                List<string> lActionNames = new List<string>();
-                foreach (Action a in lActions)
+                foreach (string s in lPlan)
                 {
-                    Debug.WriteLine(a.Name);
-                    lActionNames.Add(a.Name);
+                    Debug.WriteLine(s);
                 }
-                return lActionNames;
+                return lPlan;
+            }
+            else if(Options.Planner == Planners.FFCS)
+            {
+                FF ff = new FF(msModel);
+                List<string> lPlan = ff.Plan();
+                return lPlan;
             }
             else
             {

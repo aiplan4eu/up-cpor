@@ -988,9 +988,12 @@ namespace CPORLib.PlanningModel
                     ParametrizedPredicate pp = (ParametrizedPredicate)p;
                     if (!AlwaysKnown(pp))
                     {
-                        PlanningAction aMerge = GenerateMergeAction(pp, dTags);
-                        aMerge.AddPrecondition(Utilities.Observed);
-                        WriteAction(sw, aMerge, lDeadends);
+                        PlanningAction aMergeTrue = GenerateMergeAction(pp, dTags, true);
+                        aMergeTrue.AddPrecondition(Utilities.Observed);
+                        WriteAction(sw, aMergeTrue, lDeadends);
+                        PlanningAction aMergeFalse = GenerateMergeAction(pp, dTags, false);
+                        aMergeFalse.AddPrecondition(Utilities.Observed);
+                        WriteAction(sw, aMergeFalse, lDeadends);
                         PlanningAction aRefute = GenerateRefutationAction(pp, true);
                         aRefute.AddPrecondition(Utilities.Observed);
                         WriteAction(sw, aRefute, lDeadends);
@@ -1077,7 +1080,7 @@ namespace CPORLib.PlanningModel
             return pa;
         }
 
-        private PlanningAction GenerateMergeAction(ParametrizedPredicate pp, Dictionary<string, List<Predicate>> dTags)
+        private PlanningAction GenerateMergeActionBUGBUG(ParametrizedPredicate pp, Dictionary<string, List<Predicate>> dTags)
         {
             ParametrizedAction pa = new ParametrizedAction("Merge-" + pp.Name);
             foreach (Parameter param in pp.Parameters)
@@ -1107,11 +1110,62 @@ namespace CPORLib.PlanningModel
                 cfAnd.AddOperand(cfOr);
             }
             pa.Preconditions = cfAnd;
-            cfAnd = new CompoundFormula("and");
+
+            throw new Exception("BUGBUG: if value is false for both cases, we still get true - not good");
+
             cfAnd.AddOperand(ppK);
             pa.SetEffects(cfAnd);
             return pa;
         }
+        private PlanningAction GenerateMergeAction(ParametrizedPredicate pp, Dictionary<string, List<Predicate>> dTags, bool bTrue)
+        {
+            string sName = "Merge-" + pp.Name + "-";
+            if (bTrue)
+                sName += "T";
+            else
+                sName += "F";
+            ParametrizedAction pa = new ParametrizedAction(sName);
+            foreach (Parameter param in pp.Parameters)
+                pa.AddParameter(param);
+            CompoundFormula cfAnd = new CompoundFormula("and");
+
+            KnowPredicate ppK = new KnowPredicate(pp);
+            KnowPredicate ppNK = new KnowPredicate(pp.Negate());
+            
+            ppK.Parametrized = true;
+            cfAnd.AddOperand(ppK.Negate());//add ~know p to the preconditions - no point in activating merge when we know p
+            cfAnd.AddOperand(ppNK.Negate());//add ~know ~p to the preconditions - no point in activating merge when we know p
+
+            if (Options.SplitConditionalEffects)
+                cfAnd.AddOperand(new GroundedPredicate("NotInAction"));
+
+            foreach (string sTag in dTags.Keys)
+            {
+                CompoundFormula cfOr = new CompoundFormula("or");
+                ParametrizedPredicate ppKGivenT = new ParametrizedPredicate("KGiven" + pp.Name);
+                Predicate pKNotT = Predicate.GenerateKNot(new Constant(Utilities.TAG, sTag));
+                foreach (Parameter param in pp.Parameters)
+                    ppKGivenT.AddParameter(param);
+                ppKGivenT.AddParameter(new Constant(Utilities.TAG, sTag));
+                if(bTrue)
+                    ppKGivenT.AddParameter(new Constant(Utilities.VALUE_PARAMETER, Utilities.TRUE_VALUE) );
+                else
+                    ppKGivenT.AddParameter(new Constant(Utilities.VALUE_PARAMETER, Utilities.FALSE_VALUE));
+                cfOr.AddOperand(new PredicateFormula(ppKGivenT));
+                cfOr.AddOperand(new PredicateFormula(pKNotT));
+                cfAnd.AddOperand(cfOr);
+            }
+            pa.Preconditions = cfAnd;
+
+            cfAnd = new CompoundFormula("and");
+            if (bTrue)
+                cfAnd.AddOperand(ppK);
+            else
+                cfAnd.AddOperand(ppNK);
+            pa.SetEffects(cfAnd);
+            return pa;
+        }
+
 
         private PlanningAction GenerateKnowMergeAction(ParametrizedPredicate pp, Domain d, Dictionary<string, List<Predicate>> dTags, bool bValue, bool bKnowWhether)
         {

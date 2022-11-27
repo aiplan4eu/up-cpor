@@ -7,7 +7,6 @@ using CPORLib.LogicalUtilities;
 using CPORLib.PlanningModel;
 using System;
 
-
 namespace CPORLib.Parsing
 {
     public class Parser

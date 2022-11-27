@@ -243,6 +243,10 @@ namespace CPORLib.LogicalUtilities
                 iSum *= 1000;
             }
             iSum += m_iName;
+
+            //if (Name == "at" && Constants[0].Name == "p2-4")
+            //    Console.Write("*");
+
             return iSum;
         }
 

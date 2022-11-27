@@ -11,7 +11,7 @@ namespace CPORLib
 {
     public class Run
     {
-        public static void RunPlanner(string sDomainFile, string sProblemFile, bool bOnline)
+        public static void RunPlanner(string sDomainFile, string sProblemFile, string sOutputFile, bool bOnline)
         {
 
             Debug.WriteLine("Reading domain and problem");
@@ -21,6 +21,7 @@ namespace CPORLib
             Debug.WriteLine("Done reading domain and problem");
 
             Options.TagsCount = 2;
+            Options.SDR_OBS = true;
 
 
             if (bOnline)
@@ -31,9 +32,9 @@ namespace CPORLib
             else
             {
                 CPORPlanner cpor = new CPORPlanner(domain, problem);
-                cpor.Verbose = true;
+                cpor.InfoLevel = 1;
                 var n = cpor.OfflinePlanning();
-                cpor.WritePlan("test.dot", n);
+                cpor.WritePlan(sOutputFile, n);
             }
         }
         

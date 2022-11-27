@@ -80,7 +80,7 @@ namespace CPORLib.Algorithms
                     {
                         if (aCurrent.Name.ToLower().StartsWith("merge") || aCurrent.Name.ToLower().StartsWith("refute"))
                         {
-                            Debug.WriteLine("Applying reasoning action: " + aCurrent.Name);
+                            Console.WriteLine("Applying reasoning action: " + aCurrent.Name);
                             sCurrent = sCurrent.Apply(aCurrent);
 
                         }
@@ -89,19 +89,21 @@ namespace CPORLib.Algorithms
                     }
                     lActions = lActionsNoMerges;
                 }
-                Debug.WriteLine("\nAvailable actions:");
+                Console.WriteLine("\nAvailable actions:");
                 for (int i = 0; i < lActions.Count; i++)
                 {
-                    Debug.WriteLine(i + ") " + lActions[i].Name);
+                    Action ac = lActions[i];
+                    if (ac.Preconditions == null || ac.Preconditions.IsTrue(sCurrent.Predicates, sCurrent.MaintainNegations))
+                        Console.WriteLine(i + ") " + ac.Name);
                 }
-                Debug.Write("Choose action number: ");
+                Console.Write("Choose action number: ");
                 int iAction = int.Parse(Console.ReadLine());
                 Action a = lActions[iAction];
                 sNext = sCurrent.Apply(a);
 
                 foreach (Predicate pNew in sNext.Predicates)
                     if (!sCurrent.Predicates.Contains(pNew))
-                        Debug.WriteLine(pNew);
+                        Console.WriteLine(pNew);
 
                 if (!dParents.Keys.Contains(sNext))
                 {

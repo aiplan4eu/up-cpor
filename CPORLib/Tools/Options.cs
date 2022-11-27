@@ -26,8 +26,8 @@ namespace CPORLib.Tools
         public static bool SDR_OBS { set; get; }
 
         public enum Translations { SDR, MPSRTagPartitions, MPSRTags, BestCase, Conformant, SingleStateK }
-        public enum Planners { FF, FFsa, FFha, MIPS, MetricFF, LPG, FD, CPT, FFX, FF_WSL, TRAPPER_WSL, LocalFSP }
-        public static Planners Planner = Planners.LocalFSP;
+        public enum Planners { FFCS, LocalFSP }
+        public static Planners Planner = Planners.FFCS;
  
         public static bool AllowChoosingNonDeterministicOptions = true;
         private static Dictionary<Thread, Process> FFProcesses = new Dictionary<Thread, Process>();

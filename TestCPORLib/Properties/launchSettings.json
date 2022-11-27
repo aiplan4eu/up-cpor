@@ -2,7 +2,7 @@
   "profiles": {
     "TestCPORLib": {
       "commandName": "Project",
-      "commandLineArgs": "\"C:\\Users\\shanigu\\OneDrive - Ben Gurion University of the Negev\\Research\\projects\\AIPlan4EU\\up-cpor\\Tests\\medpks010\\d.pddl\"\r\n\"C:\\Users\\shanigu\\OneDrive - Ben Gurion University of the Negev\\Research\\projects\\AIPlan4EU\\up-cpor\\Tests\\medpks010\\p.pddl\""
+      "commandLineArgs": "\"C:\\Users\\shanigu\\OneDrive - Ben Gurion University of the Negev\\Research\\projects\\AIPlan4EU\\up-cpor\\Tests\\medpks010\\d.pddl\"\r\n\"C:\\Users\\shanigu\\OneDrive - Ben Gurion University of the Negev\\Research\\projects\\AIPlan4EU\\up-cpor\\Tests\\medpks010\\p.pddl\"\r\n\"C:\\Users\\shanigu\\OneDrive - Ben Gurion University of the Negev\\Research\\projects\\AIPlan4EU\\up-cpor\\Tests\\medpks010\\Output.txt\""
     }
   }
 }

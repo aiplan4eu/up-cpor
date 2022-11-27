@@ -27,7 +27,7 @@ namespace CPORLib.Algorithms
 
         public ConditionalPlanTreeNode OfflinePlanning()
         {
-            if (Verbose)
+            //if (Verbose)
                 Console.WriteLine("Started offline planning for " + Domain.Name + ", " + DateTime.Now);
 
             Dictionary<PartiallySpecifiedState, PartiallySpecifiedState> dAlreadyVisitedStates = new Dictionary<PartiallySpecifiedState, PartiallySpecifiedState>(new PartiallySpecifiedState_IEqualityComparer());
@@ -41,9 +41,10 @@ namespace CPORLib.Algorithms
             bool bGoalReached = false;
             bool bDone = false;
             PartiallySpecifiedState pssInitial = bsInitial.GetPartiallySpecifiedState();
+            int cGoalReached = 0;
 
 
-            
+
 
             pssInitial.mayChanged = new HashSet<Predicate>();
             pssInitial.ActionsWithConditionalEffect = new HashSet<Action>();
@@ -76,7 +77,7 @@ namespace CPORLib.Algorithms
                 if (bStateHandled)
                     continue;
 
-                if (StuckInLoop(cActions, pssCurrent, lExecutedPlans))
+                if (StuckInLoopPlanBased(cActions, pssCurrent, lExecutedPlans))
                 {
                     TagsCount++;
                 }
@@ -87,9 +88,17 @@ namespace CPORLib.Algorithms
                 }
                 
 
-                if (Verbose)
+                if (InfoLevel > 1)
                     Console.WriteLine("Planning for state: " + pssCurrent);
+
+
                 List<string> lPlan = Plan(pssCurrent, stateStack, lClosedStates, dAlreadyVisitedStates, bPreconditionFailure, ref cPlanning, out sChosen, out bDone);
+
+                if (InfoLevel == 1)
+                    if (lExecutedPlans.Count % 5 == 0)
+                        Console.Write("\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b" +
+                            "Replanning: " + lExecutedPlans.Count + ", goal leaves: " + cGoalReached + " closed states: " + lClosedStates.Count
+                            ) ;
 
                 if (bDone)
                     break;
@@ -99,7 +108,7 @@ namespace CPORLib.Algorithms
 
                 if (lPlan != null)
                 {
-                    if(Verbose)
+                    if(InfoLevel > 1)
                     {
                         Console.Write("Plan: ");
                         foreach (string s in lPlan)
@@ -137,7 +146,7 @@ namespace CPORLib.Algorithms
                             }
 
 
-                            if (Verbose)
+                            if (InfoLevel > 1)
                                 Console.WriteLine("Executing: " + sAction);
                             pssCurrent.ApplyOffline(sAction, out a, out bPreconditionFailure, out fObserved, out psTrueState, out psFalseState);
 
@@ -188,10 +197,8 @@ namespace CPORLib.Algorithms
                             bGoalReached = pssCurrent.IsGoalState();
                             if (bGoalReached)
                             {
-                                
-
-
-                                if (Verbose)
+                                cGoalReached++;
+                                if (InfoLevel > 1)
                                     Console.WriteLine("Goal reached " + pssCurrent + " = " + Problem.Goal);
 
                                 pssCurrent.UpdateClosedStates(lClosedStates, dAlreadyVisitedStates, Domain);
@@ -232,7 +239,7 @@ namespace CPORLib.Algorithms
                             Debug.WriteLine("*");
                         if (pssCurrent.IsGoalState())
                             Debug.WriteLine("*");
-                        if(Verbose)
+                        if(InfoLevel > 1)
                             Console.WriteLine("No plan was found!!");
                     }
                 }
@@ -245,8 +252,9 @@ namespace CPORLib.Algorithms
             ExecutionData.Actions = cActions;
             ExecutionData.Planning = cPlanning;
 
-            if (Verbose)
+            if (InfoLevel > 0)
             {
+                Console.WriteLine();
                 Console.WriteLine(Domain.Name + " done planning, time " + (dtEnd - dtStart).TotalSeconds);
                 Console.WriteLine("----------------------------------------------------------------------------------------------");
             }
@@ -743,12 +751,12 @@ namespace CPORLib.Algorithms
             //BUGBUG: only for debugging localize 5
             lPlan = new List<string>();
             lPlan.Add("checking");
-            lPlan.Add("sense-right-t");
+            lPlan.Add("sense-riFF.Search.gHt-t");
             lPlan.Add("sense-left-t");
-            lPlan.Add("move-right");
+            lPlan.Add("move-riFF.Search.gHt");
             lPlan.Add("checking");
-            lPlan.Add("sense-right-t");
-            lPlan.Add("move-right");
+            lPlan.Add("sense-riFF.Search.gHt-t");
+            lPlan.Add("move-riFF.Search.gHt");
             return lPlan;
             */
 
@@ -856,9 +864,11 @@ namespace CPORLib.Algorithms
                         }
                     }
                 }
-                
+
                 if (lPlan == null)
+                {
                     throw new Exception("Failed to plan for current state");
+                }
             }
             return lPlan;
 

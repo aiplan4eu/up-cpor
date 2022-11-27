@@ -2,10 +2,13 @@
 
 (define (problem BW-rand-3)
 (:domain blocksworld)
-(:objects b1 b2 b3 )
+(:objects b1 b2 b3 - block)
 (:init
 (on-table b1)
 (clear b1)
+(same b1 b1)
+(same b2 b2)
+(same b3 b3)
 (unknown (on-table b3))
 (unknown (clear b3))
 (unknown (on b3 b2))

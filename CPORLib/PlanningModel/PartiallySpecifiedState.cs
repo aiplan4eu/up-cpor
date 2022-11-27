@@ -573,10 +573,9 @@ namespace CPORLib.PlanningModel
 
         public override bool Equals(object obj)
         {
-            if (obj is PartiallySpecifiedState)
+            if (obj is PartiallySpecifiedState bs)
             {
 
-                PartiallySpecifiedState bs = (PartiallySpecifiedState)obj;
 
                 if (bs.ClosedState)//this should happen for closed states only
                     return false;
@@ -1517,7 +1516,7 @@ namespace CPORLib.PlanningModel
         }
 
 
-        //forget effects only if they currently have a known value and that value might change
+        //forget effects only if they currently have a known value and that value miFF.Search.gHt change
         private void ApplyKnowledgeLoss(List<CompoundFormula> lConditions)
         {
             HashSet<Predicate> lAllEffectPredicates = new HashSet<Predicate>();
@@ -2092,10 +2091,15 @@ namespace CPORLib.PlanningModel
             //2) Add all the relevant vars for reasoning over p in parent(n).observed to m_lOfflinePredicatesKnown - this is an over approximation, perhaps only some of them are needed
             //3) Stop using the m_dRequiredObservationsForReasoning
 
-
+            
 
             bool bChanged = false;
 
+            /*
+            int cLines = Environment.StackTrace.Split('\n').Length;
+            if (cLines > 100)
+                Console.Write("*");
+            */
             //if (psParent.m_nPlan.ID == 95)
             //    Debug.Write("*");
 

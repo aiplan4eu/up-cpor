@@ -4,7 +4,7 @@ using CPORLib.PlanningModel;
 
 namespace CPORLib.Algorithms
 {
-    abstract class Planner
+    public abstract class Planner
     {
         protected Domain m_dDomain;
         protected Problem m_pProblem;
@@ -14,6 +14,6 @@ namespace CPORLib.Algorithms
             m_pProblem = p;
         }
 
-        public abstract List<Action> Plan(State s);
+        public abstract List<string> Plan(State s);
     }
 }

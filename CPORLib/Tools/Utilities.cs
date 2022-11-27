@@ -28,7 +28,6 @@ namespace CPORLib.Tools
         public static readonly Predicate Observed = new GroundedPredicate("observed");
 
 
-
         public static bool SameList(List<string> l1, List<string> l2)
         {
             if (l1 == null && l2 == null)

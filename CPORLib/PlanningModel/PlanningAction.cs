@@ -508,19 +508,22 @@ namespace CPORLib.PlanningModel
             else
                 cfPreconditions.AddOperand(pObserve.Negate());
 
-            Predicate pKObserve = null;
-            if (bTrue)
-                pKObserve = new KnowPredicate(pObserve);
-            else
-                pKObserve = new KnowPredicate(pObserve.Negate());
+            Predicate pKObserve = new KnowPredicate(pObserve);
+            Predicate pKNObserve = new KnowPredicate(pObserve.Negate());
+
             cfPreconditions.AddOperand(pKObserve.Negate());
+            cfPreconditions.AddOperand(pKNObserve.Negate());
 
             if (Options.SplitConditionalEffects)
                 cfPreconditions.AddOperand(new GroundedPredicate("NotInAction"));
 
             aNew.Preconditions = cfPreconditions;
 
-            aNew.Effects = new PredicateFormula(pKObserve);
+            if(bTrue)
+                aNew.Effects = new PredicateFormula(pKObserve);
+            else
+                aNew.Effects = new PredicateFormula(pKNObserve);
+
 
             return aNew;
         }

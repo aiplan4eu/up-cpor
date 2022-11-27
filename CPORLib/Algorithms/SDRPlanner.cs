@@ -76,7 +76,7 @@ namespace CPORLib.Algorithms
             {
                 State sChosen = null;
 
-                if (StuckInLoop(cActions, pssCurrent, lExecutedPlans))
+                if (StuckInLoopPlanBased(cActions, pssCurrent, lExecutedPlans))
                     throw new Exception("SDR is stuck in a loop");
                 
 

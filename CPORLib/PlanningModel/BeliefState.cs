@@ -212,10 +212,41 @@ namespace CPORLib.PlanningModel
 
             }
 
+            //if we got a grounded predicate, whose value is not unknown, and its value is false, then it is inconsistent with the current state
+            if(lPredicates.Count > 0)
+            {
+                foreach (PredicateFormula pf in lPredicates)
+                {
+                    GroundedPredicate gp = (GroundedPredicate)pf.Predicate;
+                    bool bKnown = true;
+                    if (m_dMapPredicatesToFormulas.ContainsKey((GroundedPredicate)gp.Canonical()))
+                    {
+                        foreach (int idx in m_dMapPredicatesToFormulas[(GroundedPredicate)gp.Canonical()])
+                        {
+                            if (m_lHiddenFormulas[idx] != null)
+                            {
+                                bKnown = false;
+                                break;
+                            }
+                        }
+                    }
+                    if(bKnown)
+                    {
+                        if(!m_lObserved.Contains(gp) && !gp.Negation)
+                        {
+                            return false;
+                        }
+                    }
+                }
+            }
+
             if (lFormulas.Count == 0)
             {
                 HashSet<Predicate> lAssignment = new HashSet<Predicate>();
-                List<Formula> lHidden = new List<Formula>(m_lHiddenFormulas);
+                List<Formula> lHidden = new List<Formula>();
+                foreach(Formula fHidden in m_lHiddenFormulas)
+                    //if(fHidden != null)
+                        lHidden.Add(fHidden);
                 foreach (PredicateFormula pf in lPredicates)
                 {
                     lHidden.Add(pf);
@@ -249,7 +280,6 @@ namespace CPORLib.PlanningModel
                         if (m_lHiddenFormulas[idx] != null && m_lHiddenFormulas[idx].IsFalse(lKnown))
                             bValid = false;
                     }
-
                 }
                 else
                 {
@@ -1455,8 +1485,8 @@ namespace CPORLib.PlanningModel
             {
                 bAllTrue = false;//choosing true first is better in some domains
                 bAllFalse = false;//but not in others...
-                return lUnknown[0];//the order of the variables is already randomized - might as well return the first one. This is important because oneofs appear first.
-                //return lUnknown[RandomGenerator.Next(lUnknown.Count)]; the order of the variables is already randomized - might as well return the first one. This is important because oneofs appear first.
+                return lUnknown[0];//the order of the variables is already randomized - miFF.Search.gHt as well return the first one. This is important because oneofs appear first.
+                //return lUnknown[RandomGenerator.Next(lUnknown.Count)]; the order of the variables is already randomized - miFF.Search.gHt as well return the first one. This is important because oneofs appear first.
             }
             List<Predicate>[] alPredicates = new List<Predicate>[3];
             alPredicates[0] = new List<Predicate>();
@@ -1488,21 +1518,21 @@ namespace CPORLib.PlanningModel
             {
                 bAllTrue = true;
                 bAllFalse = false;
-                return alPredicates[0][0];//the order of the variables is already randomized - might as well return the first one. This is important because oneofs appear first.
+                return alPredicates[0][0];//the order of the variables is already randomized - miFF.Search.gHt as well return the first one. This is important because oneofs appear first.
                 //return alPredicates[0][RandomGenerator.Next(alPredicates[0].Count)];
             }
             if (alPredicates[1].Count > 0)
             {
                 bAllTrue = false;
                 bAllFalse = true;
-                return alPredicates[1][0];//the order of the variables is already randomized - might as well return the first one. This is important because oneofs appear first.
+                return alPredicates[1][0];//the order of the variables is already randomized - miFF.Search.gHt as well return the first one. This is important because oneofs appear first.
                 //return alPredicates[1][RandomGenerator.Next(alPredicates[1].Count)];
             }
             if (alPredicates[2].Count > 0)
             {
                 bAllTrue = false;
                 bAllFalse = false;
-                return alPredicates[2][0];//the order of the variables is already randomized - might as well return the first one. This is important because oneofs appear first.
+                return alPredicates[2][0];//the order of the variables is already randomized - miFF.Search.gHt as well return the first one. This is important because oneofs appear first.
                 //return alPredicates[2][RandomGenerator.Next(alPredicates[2].Count)];
             }
             return lUnknown.First();
@@ -1872,11 +1902,14 @@ namespace CPORLib.PlanningModel
             return WriteTaggedDomainAndProblem(cfGoal, lStates, DeadendStrategies.Lazy, out cTags, out msModels);
         }
 
+        public List<List<Predicate>> ChosenStates = null;
+
         public State WriteTaggedDomainAndProblem(PartiallySpecifiedState pssCurrent, List<Action> lAppliedActions, out int cTags, out MemoryStream msModels)
         {
             msModels = null;
             cTags = 0;
             List<List<Predicate>> lChosen = ChooseStateSet();
+            ChosenStates = lChosen;
 
             if (lChosen == null)
                 return null;
@@ -2571,7 +2604,7 @@ namespace CPORLib.PlanningModel
                     cChosenStates++;
                 }
                 else
-                    cFailedAttempts++; //here and not inside because there might be a case where we cannot reach cStates tags
+                    cFailedAttempts++; //here and not inside because there miFF.Search.gHt be a case where we cannot reach cStates tags
             }
             /*
             if (lNotAppearing.Count > 0)

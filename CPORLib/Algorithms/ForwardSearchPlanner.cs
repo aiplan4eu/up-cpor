@@ -95,13 +95,21 @@ namespace CPORLib.Algorithms
             }
             return null;
         }
-        public List<Action> Plan()
+        public List<string> Plan()
         {
             State sStartState = m_pProblem.GetInitialBelief().ChooseState(true);
-            List<Action> lActions = Plan(sStartState);
+            List<string> lActions = Plan(sStartState);
             return lActions;
         }
-        public override List<Action> Plan(State sStartState)
+
+        private List<string> ToActionNames(List<Action> lPlan)
+        {
+            List<string> lActionNames = new List<string>();
+            foreach (Action a in lPlan)
+                lActionNames.Add(a.Name);
+            return lActionNames;
+        }
+        public override List<string> Plan(State sStartState)
         {
             Formula fGoal = m_pProblem.Goal;
             //List<Predicate> lGoal = new List<Predicate>();
@@ -140,7 +148,7 @@ namespace CPORLib.Algorithms
                         {
                             List<Action> lPlan = CreatePlan(sNext, dParents, dGeneratingAction);
                             ValidatePlan(sStartState, lPlan);
-                            return lPlan;
+                            return ToActionNames(lPlan);
                         }
                         else
                         {
