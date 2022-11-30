@@ -30,7 +30,7 @@
    (:action trash
       :parameters (?o - obj ?c - col ?t - gar ?p - pos)
       :precondition (and (color ?o ?c) (holding ?o) (garbage-at ?t ?p) (at ?p)) 
-      :effect (and (garbage-color ?t ?c) (trashed ?o) )
+      :effect (when (garbage-color ?t ?c) (trashed ?o) )
       )
 )
 

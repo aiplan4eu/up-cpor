@@ -25,6 +25,8 @@ namespace CPORLib.Tools
 
         public static bool SDR_OBS { set; get; }
 
+        public static bool RecursiveClosedStates = false;
+
         public enum Translations { SDR, MPSRTagPartitions, MPSRTags, BestCase, Conformant, SingleStateK }
         public enum Planners { FFCS, LocalFSP }
         public static Planners Planner = Planners.FFCS;

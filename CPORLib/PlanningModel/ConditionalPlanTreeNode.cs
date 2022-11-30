@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System;
 
 namespace CPORLib.PlanningModel
 {
@@ -7,8 +8,33 @@ namespace CPORLib.PlanningModel
         public int ID { get; set; }
 
         public int IndexInPlanFile { get; set; }
-        public PlanningAction Action { get; set; }
-        public ConditionalPlanTreeNode SingleChild { get; set; }
+
+        private PlanningAction m_aAction;
+        public PlanningAction Action {
+            get
+            {
+                return m_aAction;
+            }
+            set
+            {
+                m_aAction = value;
+            }
+        }
+
+        private ConditionalPlanTreeNode m_nChild;
+
+        public ConditionalPlanTreeNode SingleChild {
+            get 
+            { 
+                return m_nChild; 
+            }
+            set
+            {
+                //if(ID == 10)
+                 //   Console.Write("*");
+                m_nChild = value;
+            }
+        }
         public ConditionalPlanTreeNode FalseObservationChild { get; set; }
         public ConditionalPlanTreeNode TrueObservationChild { get; set; }
         public bool DeadEnd { get; set; }
@@ -19,8 +45,6 @@ namespace CPORLib.PlanningModel
         public ConditionalPlanTreeNode()
         {
             ID = CountNodes++;
-            //if (ID == 51)
-            //    Debug.Write("*");
             //if (ID == 174)
             //    Debug.Write("*");
         }

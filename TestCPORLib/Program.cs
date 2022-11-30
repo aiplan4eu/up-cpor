@@ -13,15 +13,26 @@ public class Program
         Run.RunPlanner(sDomainFile
             , sProblemFile,
             sOutputFile,
-            false);
+            false, false);
     }
     public static void TestAll()
     {
-        
+
         //gcmd_line.display_info = 1;
         //gcmd_line.debug = 3;
-        RunTest("wumpus10");
+
+        RunTest("doors5");        
+        RunTest("medpks010");
+        RunTest("colorballs2-2");
+        RunTest("blocks2");
+        RunTest("wumpus05");
+        RunTest("unix1");
+        RunTest("localize5");
+
+
         RunTest("doors15");
+        RunTest("wumpus10");
+        
 
         RunTest("blocks3");
         RunTest("blocks2");
@@ -39,7 +50,7 @@ public class Program
         //return;
 
 
-        if (args.Length < 2)
+        if (args.Length < 3)
         {
             Console.WriteLine("Usage: RunPlanner domain_file problem_file output_file [online/offline]");
         }

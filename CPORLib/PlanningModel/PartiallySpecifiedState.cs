@@ -2039,48 +2039,91 @@ namespace CPORLib.PlanningModel
             //if (ClosedState)
             //    return;
 
-            //Debug.WriteLine("UpdateClosed " + ID + ", closed? " + ClosedState + ", " + ToString());
 
-            //maybe already intialized due to an identical closed state
-            if (m_lOfflinePredicatesKnown == null)
+
+
+            //the closed node mechanism is applicable only for simple domains
+            if (d.IsSimple)
             {
-                m_lOfflinePredicatesKnown = new HashSet<Predicate>();
-                m_lOfflinePredicatesUnknown = new HashSet<Predicate>();
-                //m_dRequiredObservationsForReasoning = new Dictionary<GroundedPredicate, List<HashSet<GroundedPredicate>>>();
-            }
+                //Debug.WriteLine("UpdateClosed " + ID + ", closed? " + ClosedState + ", " + ToString());
 
-            //if (bAlreadyClosed)
-            //    Debug.WriteLine("*");
-            if (hsDeadEndList != null)
-            {
-                m_lOfflinePredicatesKnown = hsDeadEndList;
-                Plan.DeadEnd = true;
+                //maybe already intialized due to an identical closed state
+                if (m_lOfflinePredicatesKnown == null)
+                {
+                    m_lOfflinePredicatesKnown = new HashSet<Predicate>();
+                    m_lOfflinePredicatesUnknown = new HashSet<Predicate>();
+                    //m_dRequiredObservationsForReasoning = new Dictionary<GroundedPredicate, List<HashSet<GroundedPredicate>>>();
+                }
 
+                //if (bAlreadyClosed)
+                //    Debug.WriteLine("*");
+                if (hsDeadEndList != null)
+                {
+                    m_lOfflinePredicatesKnown = hsDeadEndList;
+                    Plan.DeadEnd = true;
+
+                }
+                else
+                {
+                    if (IsGoalState())
+                    {
+                        Plan.Goal = true;
+                        m_lOfflinePredicatesKnown = Problem.Goal.GetAllPredicates();
+                    }
+                }
+
+                AddToClosedStates(lClosedStates, dVisited);
+
+                foreach (PartiallySpecifiedState psParent in Parents)
+                {
+                    if (RecursiveClosedStates)
+                        UpdateClosedStates(psParent, lClosedStates, dVisited, d);
+                    else
+                        PartiallySpecifiedState.UpdateClosedStatesIterative(this, psParent, lClosedStates, dVisited, d);
+
+                }
             }
             else
             {
-                if (IsGoalState())
+                PartiallySpecifiedState pssCurrent = this;
+                while(pssCurrent != null)
                 {
-                    Plan.Goal = true;
-                    m_lOfflinePredicatesKnown = Problem.Goal.GetAllPredicates();
+                    PartiallySpecifiedState psParent = null;
+                    if (pssCurrent.Parents.Count == 1)
+                    {
+                        psParent = pssCurrent.Parents[0];
+                        Action a = pssCurrent.GeneratingAction;
+                        if (a.Original != null)
+                            a = a.Original;
+
+                        psParent.m_nPlan.Action = a;
+
+                        if (a.Observe == null)
+                            psParent.m_nPlan.SingleChild = pssCurrent.m_nPlan;
+                        else
+                        {
+                            if (pssCurrent.GeneratingObservation.GetAllPredicates().First().Negation)
+                                psParent.m_nPlan.FalseObservationChild = pssCurrent.m_nPlan;
+                            else
+                                psParent.m_nPlan.TrueObservationChild = pssCurrent.m_nPlan;
+                        }
+                    }
+                    else if (pssCurrent.Parents.Count > 1)
+                        throw new NotImplementedException();
+                    pssCurrent = psParent;
                 }
             }
-
-            AddToClosedStates(lClosedStates, dVisited);
-
-            foreach (PartiallySpecifiedState psParent in Parents)
-            {
-                UpdateClosedStates(psParent, lClosedStates, dVisited, d);
-            }
-
 
         }
 
         static int c = 0;
 
-        public void UpdateClosedStates(PartiallySpecifiedState psParent, List<PartiallySpecifiedState> lClosedStates,
+        private void UpdateClosedStates(PartiallySpecifiedState psParent, List<PartiallySpecifiedState> lClosedStates,
                                         Dictionary<PartiallySpecifiedState, PartiallySpecifiedState> dVisited, Domain d)
         {
+
+            
+
 
             //New meachanism for closed node identification:
             //1) When p is reasoned about:
@@ -2091,7 +2134,6 @@ namespace CPORLib.PlanningModel
             //2) Add all the relevant vars for reasoning over p in parent(n).observed to m_lOfflinePredicatesKnown - this is an over approximation, perhaps only some of them are needed
             //3) Stop using the m_dRequiredObservationsForReasoning
 
-            
 
             bool bChanged = false;
 
@@ -2273,6 +2315,253 @@ namespace CPORLib.PlanningModel
         }
 
 
+
+        public static void UpdateClosedStatesIterative(PartiallySpecifiedState psCurrent, PartiallySpecifiedState psParent, List<PartiallySpecifiedState> lClosedStates,
+                                        Dictionary<PartiallySpecifiedState, PartiallySpecifiedState> dVisited, Domain d, HashSet<Predicate> hsDeadEndList = null)
+        {
+
+            //New meachanism for closed node identification:
+            //1) When p is reasoned about:
+            //1.a) in m_lOfflinePredicatesKnown and:
+            //1.b) p is known at n
+            //1.c) p is unknown at parent(n)
+            //1.d) The observation between parent(n) and n is not over p
+            //2) Add all the relevant vars for reasoning over p in parent(n).observed to m_lOfflinePredicatesKnown - this is an over approximation, perhaps only some of them are needed
+            //3) Stop using the m_dRequiredObservationsForReasoning
+
+
+
+            bool bChanged = false;
+
+            /*
+            int cLines = Environment.StackTrace.Split('\n').Length;
+            if (cLines > 100)
+                Console.Write("*");
+            */
+            //if (psParent.m_nPlan.ID == 95)
+            //    Debug.Write("*");
+
+            if (psCurrent.m_lOfflinePredicatesKnown == null)
+            {
+                bChanged = true;
+                psCurrent.m_lOfflinePredicatesKnown = new HashSet<Predicate>();
+                psCurrent.m_lOfflinePredicatesUnknown = new HashSet<Predicate>();
+            }
+
+            /*
+            if (hsDeadEndList != null)
+            {
+                psCurrent.m_lOfflinePredicatesKnown = hsDeadEndList;
+                psCurrent.Plan.DeadEnd = true;
+
+            }
+            else
+            {
+                if (psCurrent.IsGoalState())
+                {
+                    psCurrent.Plan.Goal = true;
+                    psCurrent.m_lOfflinePredicatesKnown = psCurrent.Problem.Goal.GetAllPredicates();
+                }
+            }
+
+            psCurrent.AddToClosedStates(lClosedStates, dVisited);
+
+            if(psParent == null)
+            {
+                foreach (PartiallySpecifiedState psParent2 in psCurrent.Parents)
+                {
+                    UpdateClosedStatesIterative(psCurrent, psParent2, lClosedStates, dVisited, d);
+                }
+                return;
+            }
+            */
+
+            List<PartiallySpecifiedState> lProcessed = new List<PartiallySpecifiedState>();
+            while (psCurrent != null)
+            {
+                Action a = null;
+                if (psParent.m_nPlan.Action == null)
+                {
+                    bChanged = true;
+                    a = psCurrent.GeneratingAction;
+                    if (a.Original != null)
+                        a = psCurrent.GeneratingAction.Original;
+
+                    psParent.m_nPlan.Action = a;
+                }
+                else
+                    a = psParent.m_nPlan.Action;
+
+                if (a.Observe == null)
+                    psParent.m_nPlan.SingleChild = psCurrent.m_nPlan;
+                else
+                {
+                    if (psCurrent.GeneratingObservation.GetAllPredicates().First().Negation)
+                        psParent.m_nPlan.FalseObservationChild = psCurrent.m_nPlan;
+                    else
+                        psParent.m_nPlan.TrueObservationChild = psCurrent.m_nPlan;
+                }
+
+                if (psParent.ChildCount == 1) //not the result of a sensing action
+                {
+                    if (psParent.m_lOfflinePredicatesUnknown == null)
+                    {
+                        bChanged = true;
+                        psParent.m_lOfflinePredicatesUnknown = new HashSet<Predicate>(psCurrent.m_lOfflinePredicatesUnknown);
+                        psParent.m_lOfflinePredicatesKnown = new HashSet<Predicate>();
+                    }
+                    HashSet<Predicate> lMandatoryEffects = a.GetMandatoryEffects();
+                    foreach (Predicate p in psCurrent.m_lOfflinePredicatesKnown)
+                    {
+                        //if a predicate is always known and constant no need to do anything
+                        if (!(d.AlwaysKnown(p) && d.AlwaysConstant(p)) && !lMandatoryEffects.Contains(p)/* && !(p.Name == "at")*/)
+                        {
+                            if (!psParent.m_lOfflinePredicatesKnown.Contains(p))
+                            {
+                                psParent.m_lOfflinePredicatesKnown.Add(p);
+                                bChanged = true;
+                            }
+                        }
+                    }
+                    HashSet<Predicate> hsPreconditions = new HashSet<Predicate>();
+                    if (a.Preconditions != null)
+                        hsPreconditions = a.Preconditions.GetAllPredicates();
+
+                    foreach (GroundedPredicate gp in hsPreconditions)
+                    {
+                        //if a predicate is always known and constant no need to do anything
+                        if (d.AlwaysKnown(gp) && d.AlwaysConstant(gp))
+                            continue;
+
+                        if (d.AlwaysConstant(gp) && !psCurrent.Problem.InitiallyUnknown(gp))
+                            continue;
+
+
+                        if (!psParent.m_lOfflinePredicatesKnown.Contains(gp))
+                        {
+                            psParent.m_lOfflinePredicatesKnown.Add(gp);
+                            bChanged = true;
+                        }
+                    }
+                }
+                else // sensing action - apply new algorithm
+                {
+                    HashSet<Predicate> hsRelevantForReasoning = new HashSet<Predicate>();
+                    foreach (GroundedPredicate p in psCurrent.m_lOfflinePredicatesKnown)
+                    {
+                        if (!p.Equals(psCurrent.GeneratingObservation))
+                        {
+                            if (psParent.Hidden.Contains(p.Canonical()))
+                            {
+                                //Debug.WriteLine("*");
+                                foreach (Predicate pRelevantFor in psCurrent.Problem.GetRelevantPredicates(p))
+                                {
+                                    if (psParent.Observed.Contains(pRelevantFor))
+                                        hsRelevantForReasoning.Add(pRelevantFor);
+                                    if (psParent.Observed.Contains(pRelevantFor.Negate()))
+                                        hsRelevantForReasoning.Add(pRelevantFor.Negate());
+                                }
+                            }
+                        }
+                    }
+                    //if (hsRelevantForReasoning.Count > 0)
+                    //    Debug.Write("*");
+                    psCurrent.m_lOfflinePredicatesKnown.UnionWith(hsRelevantForReasoning);
+
+                    if (psParent.m_pssFirstChild == null)
+                    {
+                        psParent.m_pssFirstChild = psCurrent;
+                        bChanged = true;
+
+                        return;
+                    }
+                    else
+                    {
+                        //if (psParent.ID == 23)
+                        //    Debug.Write("*");
+
+                        HashSet<Predicate> hsDisagree = new HashSet<Predicate>();
+                        foreach (Predicate p in psParent.m_pssFirstChild.Observed)
+                            if (psCurrent.Observed.Contains(p.Negate()))
+                                hsDisagree.Add(p);
+                        foreach (Predicate p in psCurrent.Observed)
+                            if (psParent.m_pssFirstChild.Observed.Contains(p.Negate()))
+                                hsDisagree.Add(p);
+
+                        if (psParent.m_lOfflinePredicatesUnknown == null)
+                        {
+                            psParent.m_lOfflinePredicatesUnknown = new HashSet<Predicate>(psParent.m_pssFirstChild.m_lOfflinePredicatesUnknown);
+                            bChanged = true;
+                        }
+                        psParent.m_lOfflinePredicatesUnknown.UnionWith(psCurrent.m_lOfflinePredicatesUnknown);
+                        if (!psParent.m_lOfflinePredicatesUnknown.Add(((PredicateFormula)psCurrent.GeneratingObservation).Predicate.Canonical()))
+                            bChanged = true;
+
+                        if (psParent.m_lOfflinePredicatesKnown == null)
+                            psParent.m_lOfflinePredicatesKnown = new HashSet<Predicate>();
+
+                        HashSet<Predicate> hsAllRelevantPredicates = new HashSet<Predicate>(psCurrent.m_lOfflinePredicatesKnown);
+                        hsAllRelevantPredicates.UnionWith(psParent.m_pssFirstChild.m_lOfflinePredicatesKnown);
+                        if (a.Preconditions != null)
+                        {
+                            foreach (Predicate gp in a.Preconditions.GetAllPredicates())
+                            {
+                                if (d.AlwaysKnown(gp) && d.AlwaysConstant(gp))
+                                    continue;
+
+                                if (d.AlwaysConstant(gp) && !psCurrent.Problem.InitiallyUnknown(gp))
+                                    continue;
+                                hsAllRelevantPredicates.Add(gp);
+                            }
+                        }
+                        //same action! only different observations!
+                        //if (psParent.m_pssFirstChild.GeneratingAction.Preconditions != null)
+                        //    hsAllRelevantPredicates.UnionWith(psParent.m_pssFirstChild.GeneratingAction.Preconditions.GetAllPredicates());
+
+                        foreach (Predicate p in hsAllRelevantPredicates)
+                        {
+                            if (hsDisagree.Contains(p))
+                                psParent.m_lOfflinePredicatesUnknown.Add(p.Canonical());
+                            else if (!psParent.m_lOfflinePredicatesUnknown.Contains(p.Canonical()))
+                            {
+                                psParent.m_lOfflinePredicatesKnown.Add(p);
+                                bChanged = true;
+                            }
+                        }
+
+
+                        psParent.m_pssFirstChild.AddToClosedStates(lClosedStates, dVisited);
+
+                        //Debug.WriteLine("Finished state:" + pssIter + "\n" + psParent.m_nPlan.ToString());
+                    }
+                }
+                if (bChanged)
+                {
+                    psParent.AddToClosedStates(lClosedStates, dVisited);
+                    if (psParent.Parents.Count > 2)
+                    {
+                        psCurrent.UpdateClosedStates(lClosedStates, dVisited, d, hsDeadEndList);
+                    }
+                    else if (psParent.Parents.Count == 1)
+                    {
+                        lProcessed.Add(psCurrent);
+                        psCurrent = psParent;
+                        psParent = psParent.Parents[0];
+
+                        //if (lProcessed.Count() > 20)
+                          //  Console.WriteLine("*");
+                    }
+                    else
+                        break;
+                }
+                else
+                    break;
+            }
+        }
+
+
+
+
         public void UpdateClosedStates_m_dRequiredObservationsForReasoning(PartiallySpecifiedState psParent, List<PartiallySpecifiedState> lClosedStates,
             Dictionary<PartiallySpecifiedState, PartiallySpecifiedState> dVisited, Domain d)
         {
@@ -2293,8 +2582,6 @@ namespace CPORLib.PlanningModel
             //maybe already intialized due to an identical closed state
 
 
-            if (psParent.m_nPlan.ID == 95)
-                Debug.Write("*");
 
             if (m_lOfflinePredicatesKnown == null)
             {
@@ -2400,9 +2687,6 @@ namespace CPORLib.PlanningModel
             }
             else
             {
-                if (psParent.ID == 23)
-                    Debug.Write("*");
-
                 HashSet<Predicate> hsDisagree = new HashSet<Predicate>();
                 foreach (Predicate p in psParent.m_pssFirstChild.Observed)
                     if (Observed.Contains(p.Negate()))
@@ -2529,6 +2813,8 @@ namespace CPORLib.PlanningModel
 
         private bool AddToClosedStates(List<PartiallySpecifiedState> lClosedStates, Dictionary<PartiallySpecifiedState, PartiallySpecifiedState> dVisited)
         {
+
+            //Console.WriteLine(ClosedStates + ") " + this);
 
             ClosedStates++;
             lClosedStates.Add(this);
@@ -2675,6 +2961,7 @@ namespace CPORLib.PlanningModel
         {
             if (!Problem.Domain.IsSimple)
                 return IsGoalState();
+
 
             DateTime dtStart = DateTime.Now;
 

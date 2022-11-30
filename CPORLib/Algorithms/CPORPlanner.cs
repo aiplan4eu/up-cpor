@@ -131,7 +131,9 @@ namespace CPORLib.Algorithms
 
                             if (pssCurrent.IsClosedState(lClosedStates))
                             {
+                                
                                 pssCurrent.UpdateClosedStates(lClosedStates, dAlreadyVisitedStates, Domain);
+                                
                                 pssCurrent = null;
                                 break;
                             }
@@ -140,7 +142,8 @@ namespace CPORLib.Algorithms
                             if (pssCurrent.AlreadyVisited(dAlreadyVisitedStates))
                             {
                                 PartiallySpecifiedState psIdentical = dAlreadyVisitedStates[pssCurrent];
-                                pssCurrent.UpdateClosedStates(pssCurrent.Predecessor, lClosedStates, dAlreadyVisitedStates, Domain);
+                                psIdentical.UpdateClosedStates(lClosedStates, dAlreadyVisitedStates, Domain);
+                                
                                 pssCurrent = null;
                                 break;
                             }
@@ -148,6 +151,7 @@ namespace CPORLib.Algorithms
 
                             if (InfoLevel > 1)
                                 Console.WriteLine("Executing: " + sAction);
+
                             pssCurrent.ApplyOffline(sAction, out a, out bPreconditionFailure, out fObserved, out psTrueState, out psFalseState);
 
 
@@ -202,6 +206,7 @@ namespace CPORLib.Algorithms
                                     Console.WriteLine("Goal reached " + pssCurrent + " = " + Problem.Goal);
 
                                 pssCurrent.UpdateClosedStates(lClosedStates, dAlreadyVisitedStates, Domain);
+                                
 
                                 lGoalStates.Add(pssCurrent);
                                 pssCurrent = null;
@@ -690,9 +695,9 @@ namespace CPORLib.Algorithms
             PartiallySpecifiedState pssCurrent = stateStack.Pop(); ;
             if (pssCurrent.IsClosedState(lClosedStates))
             {
-                Debug.WriteLine("Found closed state");
-
+                //Debug.WriteLine("Found closed state");
                 pssCurrent.UpdateClosedStates(lClosedStates, dAlreadyVisitedStates, Domain);
+                
                 if (stateStack.Count == 0)
                 {
                     bDone = true;
@@ -702,7 +707,8 @@ namespace CPORLib.Algorithms
             else if (pssCurrent.AlreadyVisited(dAlreadyVisitedStates))
             {
                 PartiallySpecifiedState psIdentical = dAlreadyVisitedStates[pssCurrent];
-                pssCurrent.UpdateClosedStates(pssCurrent.Predecessor, lClosedStates, dAlreadyVisitedStates, Domain);
+                pssCurrent.UpdateClosedStates(lClosedStates, dAlreadyVisitedStates, Domain);
+                
                 if (stateStack.Count == 0)
                 {
                     bDone = true;
@@ -711,8 +717,6 @@ namespace CPORLib.Algorithms
             }
             else
             {
-
-
                 if (SDR_OBS)
                 {
                     List<Action> lObservationActions =Domain.GroundAllObservationActions(pssCurrent.Observed, true);

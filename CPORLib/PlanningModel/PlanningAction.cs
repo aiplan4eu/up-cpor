@@ -27,8 +27,19 @@ namespace CPORLib.PlanningModel
 
         public bool HasConditionalEffects { get; protected set; }
 
-        public PlanningAction Original { get; private set; }
-
+        private PlanningAction m_aOriginal;
+        public PlanningAction Original
+        {
+            get
+            {
+                return m_aOriginal;
+            }
+            private set
+            {
+                
+                m_aOriginal = value;
+            }
+        }
         public PlanningAction(string sName)
         {
             Name = sName;
@@ -56,23 +67,30 @@ namespace CPORLib.PlanningModel
             //BUGBUG: sometimes we get in the effects (and p (not p)) (woodworking). In that case the formula will contain P_FALSE. Assuming for now that if this is the case, then nothing changes.
             //BUGBUG: for now implementing in a very shallow way
             CompoundFormula fRemovePFalse = new CompoundFormula("and");
-            if (f is CompoundFormula)
+            if (f is CompoundFormula cf)
             {
-                foreach (Formula fSub in ((CompoundFormula)f).Operands)
+                if (cf.Operator == "and")
                 {
-                    if (fSub is CompoundFormula)
+                    foreach (Formula fSub in cf.Operands)
                     {
-                        fRemovePFalse.AddOperand(fSub);
-                    }
-                    else
-                    {
-                        Predicate p = ((PredicateFormula)fSub).Predicate;
-                        if (p != Utilities.FALSE_PREDICATE)
+                        if (fSub is PredicateFormula pf)
                         {
-                            fRemovePFalse.AddOperand(p);
+                            Predicate p = pf.Predicate;
+                            if (p != Utilities.FALSE_PREDICATE)
+                            {
+                                fRemovePFalse.AddOperand(p);
+                            }
                         }
+                        else
+                        {
+                            fRemovePFalse.AddOperand(fSub);
+                        }
+
+
                     }
                 }
+                else
+                    fRemovePFalse = cf; // this is in case of when, or - if there is a P_FALSE in the effect, we will still have a problem, but this does not occur in current benchmarks
             }
             else
             {
