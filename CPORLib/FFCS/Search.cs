@@ -149,7 +149,7 @@ namespace CPORLib.FFCS
 
 
 
-        bool first_call = true;
+        bool first_call_do_enforced_hill_climbing = true;
 
         FFState S, S_;
 
@@ -157,7 +157,7 @@ namespace CPORLib.FFCS
         {
             int i, h, h_ = 0;
 
-            if (first_call)
+            if (first_call_do_enforced_hill_climbing)
             {
                 /* on first call, initialize plan hash table, search space, search hash table
                  */
@@ -189,7 +189,7 @@ namespace CPORLib.FFCS
                 lcurrent_goals = new FFState(FF.CF.gnum_ft_conn);
                 lcurrent_goals.max_F = FF.CF.gnum_ft_conn;
 
-                first_call = false;
+                first_call_do_enforced_hill_climbing = false;
             }
 
             /* start enforced Hill-climbing
@@ -262,7 +262,7 @@ namespace CPORLib.FFCS
 
 
 
-        bool first_call2 = true;
+        bool first_call_search_for_better_state = true;
         FFState S__;
 
 
@@ -271,11 +271,11 @@ namespace CPORLib.FFCS
             int i, h__, depth = 0, g;
             EhcNode tmp;
 
-            if (first_call2)
+            if (first_call_search_for_better_state)
             {
                 S__ = new FFState(FF.CF.gnum_ft_conn);
                 S__.max_F = FF.CF.gnum_ft_conn;
-                first_call2 = false;
+                first_call_search_for_better_state = false;
             }
 
             /* don't hash states, but search nodes.
@@ -382,18 +382,18 @@ namespace CPORLib.FFCS
         }
 
 
-        bool fc = true;
+        bool first_call_expand_first_node = true;
         FFState S_2;
 
         int expand_first_node(int h)
         {
             int h_, i, g;
 
-            if (fc)
+            if (first_call_expand_first_node)
             {
                 S_2 = new FFState(FF.CF.gnum_ft_conn);
                 S_2.max_F = FF.CF.gnum_ft_conn;
-                fc = false;
+                first_call_expand_first_node = false;
             }
 
             h_ = FF.RLX.get_1P_and_H((lehc_current_start.S), lcurrent_goals);
@@ -881,36 +881,40 @@ namespace CPORLib.FFCS
 
 
 
-         bool fc3 = true;
+        bool first_call_do_best_first_search = true;
          FFState S3;
 
         public bool do_best_first_search()
-
         {
-
             BfsNode first;
             int i, min = INFINITY;
             bool start = true;
 
-            if (fc3)
+            if (first_call_do_best_first_search)
             {
                 S3 = new FFState(FF.CF.gnum_ft_conn);
                 S3.max_F = FF.CF.gnum_ft_conn;
-                fc3 = false;
+                first_call_do_best_first_search = false;
             }
 
             lbfs_space_head = new BfsNode();
             lbfs_space_had = null;
 
+            /*
             for (i = 0; i < BFS_HASH_SIZE; i++)
             {
                 lbfs_hash_entry[i] = null;
             }
+            */
 
             add_to_bfs_space(FF.DP.ginitial_state, -1, null);
 
+            int cProcessed = 0;
+
             while (true)
             {
+                cProcessed++;
+
                 if ((first = lbfs_space_head.next) == null)
                 {
                     FFUtilities.Write("\n\nbest first search space empty! problem proven unsolvable.\n\n");
@@ -1302,11 +1306,16 @@ namespace CPORLib.FFCS
 
             if (gcmd_line.debug >= 2)
             {
-                FFUtilities.Write("\n\n----------------------------------------------result: ");
+                FFUtilities.Write("\n\n");
+                print_op_name(op);
+                FFUtilities.Write(" ----------------------------------------------result: ");
+                print_diff(source, dest);
+                /*
                 print_state(source);
                 FFUtilities.Write("\n---- ");
                 print_op_name(op);
                 print_state(dest);
+                */
             }
 
             return r;
@@ -1496,7 +1505,18 @@ namespace CPORLib.FFCS
 
         }
 
-
+        void print_diff(FFState s1, FFState s2)
+        {
+            HashSet<int> lFacts1 = new HashSet<int>(s1.F);
+            foreach (int f in s2.F)
+            {
+                if (!lFacts1.Contains(f))
+                {
+                    FFUtilities.Write("\n");
+                    print_ft_name(f);
+                }
+            }
+        }
 
         void print_state(FFState S)
 

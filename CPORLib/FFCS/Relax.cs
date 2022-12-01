@@ -387,20 +387,20 @@ namespace CPORLib.FFCS
         }
 
 
+        bool first_call_collect_naxA_info = true;
 
-         void collect_naxA_info()
+        void collect_naxA_info()
 
         {
 
-            bool first_call = true;
 
             int i;
 
-            if (first_call)
+            if (first_call_collect_naxA_info)
             {
                 FF.Search.gnaxA = new int[FF.CF.gnum_op_conn];// (int[])calloc(, sizeof(int));
                 FF.Search.gnum_naxA = 0;
-                first_call = false;
+                first_call_collect_naxA_info = false;
             }
 
             for (i = 0; i < FF.Search.gnum_naxA; i++)
@@ -469,20 +469,20 @@ namespace CPORLib.FFCS
         }
 
 
+            bool first_call_collect_axA_info = true;
 
          void collect_axA_info()
 
         {
 
-            bool first_call = true;
 
             int i;
 
-            if (first_call)
+            if (first_call_collect_axA_info)
             {
                 FF.Search.gaxA = new int[FF.CF.gnum_op_conn];// (int[])calloc(, sizeof(int));
                 FF.Search.gnum_axA = 0;
-                first_call = false;
+                first_call_collect_axA_info = false;
             }
 
             for (i = 0; i < FF.Search.gnum_axA; i++)
@@ -905,23 +905,23 @@ namespace CPORLib.FFCS
         }
 
 
+            bool first_call_initialize_goals = true;
+            int highest_seen = 0;
 
         int initialize_goals(int max)
 
         {
 
-            bool first_call = true;
-            int highest_seen = 0;
 
             int i, max_goal_level, ft;
 
-            if (first_call)
+            if (first_call_initialize_goals)
             {
                 lgoals_at = new int[RELAXED_STEPS_DEFAULT,FF.CF.gnum_ft_conn];// (int[]*)calloc(, sizeof(int[]));
                 lnum_goals_at = new int[RELAXED_STEPS_DEFAULT];// (int[])calloc(, sizeof(int));
                 
                 highest_seen = RELAXED_STEPS_DEFAULT;
-                first_call = false;
+                first_call_initialize_goals = false;
             }
 
             if (max + 1 > highest_seen)
@@ -1101,7 +1101,7 @@ namespace CPORLib.FFCS
         }
 
 
-         bool first_call = true;
+         bool first_call_collect_H_info = true;
          int[] H = null, D = null;
 
          void collect_H_info()
@@ -1112,14 +1112,14 @@ namespace CPORLib.FFCS
             int num_H;
             int i, j, k, ft, ef, op, d;
 
-            if (first_call)
+            if (first_call_collect_H_info)
             {
                 FF.Search.gH = new int[FF.CF.gnum_op_conn];// (int[])calloc(, sizeof(int));
                 H = new int[FF.CF.gnum_op_conn];// (int[])calloc(, sizeof(int));
                 D = new int[FF.CF.gnum_op_conn];// (int[])calloc(, sizeof(int));
                 FF.Search.gnum_H = 0;
                 num_H = 0;
-                first_call = false;
+                first_call_collect_H_info = false;
             }
 
             for (i = 0; i < FF.Search.gnum_H; i++)

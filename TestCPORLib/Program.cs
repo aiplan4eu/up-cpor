@@ -17,9 +17,11 @@ public class Program
     }
     public static void TestAll()
     {
+        FFUtilities.Verbose = true;
+        gcmd_line.display_info = 1;
+        gcmd_line.debug = 3;
 
-        //gcmd_line.display_info = 1;
-        //gcmd_line.debug = 3;
+        RunTest("blocks3");
 
         RunTest("doors5");        
         RunTest("medpks010");

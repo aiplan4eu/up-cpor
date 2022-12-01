@@ -683,7 +683,7 @@ namespace CPORLib.FFCS
                      */
                     for (k = 0; k < lnum_either_ty[i]; k++)
                     {
-                        if (null == m[leither_ty[i, k], j]) break;
+                        if (!m[leither_ty[i, k], j]) break;
                     }
                     if (k < lnum_either_ty[i]) continue;
                     m[i, j] = true;
@@ -1229,7 +1229,7 @@ namespace CPORLib.FFCS
                     {
                         for (k = j.sons; k != null; k = k.next)
                         {
-                            if( null == is_eff_literal(k))
+                            if(!is_eff_literal(k))
                             {
                                 return false;
                             }
@@ -1249,11 +1249,11 @@ namespace CPORLib.FFCS
                     {
                         j.sons = new PlNode(TRU);
                     }
-                    if( null == is_wff(j.sons))
+                    if(!is_wff(j.sons))
                     {
                         return false;
                     }
-                    if( null == make_conjunction_of_literals((j.sons.next)))
+                    if(!make_conjunction_of_literals((j.sons.next)))
                     {
                         return false;
                     }
@@ -1267,11 +1267,11 @@ namespace CPORLib.FFCS
                 {
                     i.sons = new PlNode(TRU);
                 }
-                if( null == is_wff(i.sons))
+                if(!is_wff(i.sons))
                 {
                     return false;
                 }
-                if( null == make_conjunction_of_literals((i.sons.next)))
+                if(!make_conjunction_of_literals((i.sons.next)))
                 {
                     return false;
                 }
@@ -1394,7 +1394,7 @@ namespace CPORLib.FFCS
 
             for (i = n.sons; i != null ; i = i.next)
             {
-                if( null == is_eff_literal(i))
+                if(!is_eff_literal(i))
                 {
                     return false;
                 }

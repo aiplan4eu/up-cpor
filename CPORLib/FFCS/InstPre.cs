@@ -2297,27 +2297,24 @@ namespace CPORLib.FFCS
         }
 
 
+        bool first_call_introduce_derived_translate_op = true;
+        bool[] had_introduce_derived_translate_op = new bool[Constants.MAX_PREDICATES];
 
         public  bool introduce_derived_translate_op(WffNode w)
-
         {
-
-            bool fc = true;
-            bool[] had = new bool[Constants.MAX_PREDICATES];
-
             WffNode i, tmpw;
             int p, j, k;
             Effect tmpe;
             Literal tmp;
             Operator tmpo;
 
-            if (fc)
+            if (first_call_introduce_derived_translate_op)
             {
                 for (j = 0; j < Constants.MAX_PREDICATES; j++)
                 {
-                    had[j] = false;
+                    had_introduce_derived_translate_op[j] = false;
                 }
-                fc = false;
+                first_call_introduce_derived_translate_op = false;
             }
 
             switch (w.connective)
@@ -2355,11 +2352,11 @@ namespace CPORLib.FFCS
             }
 
             p = w.son.fact.predicate;
-            if (!FF.DP.gderived[p] || had[p])
+            if (!FF.DP.gderived[p] || had_introduce_derived_translate_op[p])
             {
                 return false;
             }
-            had[p] = true;
+            had_introduce_derived_translate_op[p] = true;
 
             /* if it is a derived predicate then, additionally
              * (we keep the not-fts in ini in order to apublic  void
@@ -3428,20 +3425,17 @@ namespace CPORLib.FFCS
 
 
 
+            bool first_call_dnf = true;
 
 
         public  void dnf(WffNode w)
-
         {
-
-            bool first_call = true;
-
-            if (first_call)
+            if (first_call_dnf)
             {
                 //lset = (WffNode_pointer*)calloc(Constants.MAX_HITTING_SET_DEFAULT, sizeof(WffNode_pointer));
                 lset = new WffNode[Constants.MAX_HITTING_SET_DEFAULT];
                 lmax_set = Constants.MAX_HITTING_SET_DEFAULT;
-                first_call = false;
+                first_call_dnf = false;
             }
 
             ANDs_below_ORs_in_wff(w);
