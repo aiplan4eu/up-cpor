@@ -643,7 +643,7 @@ namespace CPORLib.PlanningModel
 
         public bool IsApplicable(string sActionName)
         {
-            Action a = Problem.Domain.GroundActionByName(sActionName.Split(' '));
+            Action a = Problem.Domain.GroundActionByName(Utilities.SplitString(sActionName,' '));
             if (a == null)
                 return false;
             return IsApplicable(a);
@@ -973,7 +973,7 @@ namespace CPORLib.PlanningModel
         {
             fObserve = null;
             string sRevisedActionName = sActionName.Replace(Utilities.DELIMITER_CHAR, " ");
-            string[] aName = sRevisedActionName.Split(' ');
+            string[] aName = Utilities.SplitString(sRevisedActionName, ' ');
             Action a = Problem.Domain.GroundActionByName(aName);
             if (a == null)
             {
@@ -1201,7 +1201,7 @@ namespace CPORLib.PlanningModel
             fObserve = null;
             bPreconditionFailure = false;
             string sRevisedActionName = sActionName.Replace(Utilities.DELIMITER_CHAR, " ");
-            string[] aName = sRevisedActionName.Split(' ');
+            string[] aName = Utilities.SplitString(sRevisedActionName, ' ');
             a = Problem.Domain.GroundActionByName(aName);
             if (a == null || a is ParametrizedAction)
                 return;
@@ -2137,13 +2137,7 @@ namespace CPORLib.PlanningModel
 
             bool bChanged = false;
 
-            /*
-            int cLines = Environment.StackTrace.Split('\n').Length;
-            if (cLines > 100)
-                Console.Write("*");
-            */
-            //if (psParent.m_nPlan.ID == 95)
-            //    Debug.Write("*");
+           
 
             if (m_lOfflinePredicatesKnown == null)
             {
@@ -2333,13 +2327,7 @@ namespace CPORLib.PlanningModel
 
             bool bChanged = false;
 
-            /*
-            int cLines = Environment.StackTrace.Split('\n').Length;
-            if (cLines > 100)
-                Console.Write("*");
-            */
-            //if (psParent.m_nPlan.ID == 95)
-            //    Debug.Write("*");
+            
 
             if (psCurrent.m_lOfflinePredicatesKnown == null)
             {

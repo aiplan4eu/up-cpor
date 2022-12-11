@@ -1,14 +1,15 @@
 ﻿using CPORLib.LogicalUtilities;
+using CPORLib.Parsing;
 using CPORLib.PlanningModel;
 using CPORLib.Tools;
-using Microsoft.SolverFoundation.Services;
+using Python.Runtime;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
+
 using static CPORLib.Tools.Options;
 using Action = CPORLib.PlanningModel.PlanningAction;
 using Domain = CPORLib.PlanningModel.Domain;
@@ -17,255 +18,277 @@ namespace CPORLib.Algorithms
 {
     public class CPORPlanner : PlannerBase
     {
-        
-
 
         public CPORPlanner(Domain domain, Problem problem) : base(domain, problem)  
         {
             Options.ComputeCompletePlanTree = true;
         }
 
+
+        //public static TextWriterTraceListener TraceListener = new TextWriterTraceListener("debug2.log");
+        public static TextWriterTraceListener TraceListener = new TextWriterTraceListener();
+
         public ConditionalPlanTreeNode OfflinePlanning()
         {
-            //if (Verbose)
+            try
+            {
+
+                //if (Verbose)
                 Console.WriteLine("Started offline planning for " + Domain.Name + ", " + DateTime.Now);
 
-            Dictionary<PartiallySpecifiedState, PartiallySpecifiedState> dAlreadyVisitedStates = new Dictionary<PartiallySpecifiedState, PartiallySpecifiedState>(new PartiallySpecifiedState_IEqualityComparer());
-            DateTime dtStart = DateTime.Now;
-            BeliefState bsInitial = Problem.GetInitialBelief();
-            Stack<PartiallySpecifiedState> stateStack = new Stack<PartiallySpecifiedState>();
-            int cActions = 0;
-            int cPlanning = 0;
-            List<PartiallySpecifiedState> lClosedStates = new List<PartiallySpecifiedState>();
-            State sChosen = null;
-            bool bGoalReached = false;
-            bool bDone = false;
-            PartiallySpecifiedState pssInitial = bsInitial.GetPartiallySpecifiedState();
-            int cGoalReached = 0;
+                Dictionary<PartiallySpecifiedState, PartiallySpecifiedState> dAlreadyVisitedStates = new Dictionary<PartiallySpecifiedState, PartiallySpecifiedState>(new PartiallySpecifiedState_IEqualityComparer());
+                DateTime dtStart = DateTime.Now;
+                BeliefState bsInitial = Problem.GetInitialBelief();
+                CPORStack<PartiallySpecifiedState> stateStack = new CPORStack<PartiallySpecifiedState>();
+                int cActions = 0;
+                int cPlanning = 0;
+                List<PartiallySpecifiedState> lClosedStates = new List<PartiallySpecifiedState>();
+                State sChosen = null;
+                bool bGoalReached = false;
+                bool bDone = false;
+                PartiallySpecifiedState pssInitial = bsInitial.GetPartiallySpecifiedState();
+                int cGoalReached = 0;
 
 
 
 
-            pssInitial.mayChanged = new HashSet<Predicate>();
-            pssInitial.ActionsWithConditionalEffect = new HashSet<Action>();
+                pssInitial.mayChanged = new HashSet<Predicate>();
+                pssInitial.ActionsWithConditionalEffect = new HashSet<Action>();
 
-            stateStack.Push(pssInitial);
-            PartiallySpecifiedState pssCurrent = null;
-            List<List<string>> lExecutedPlans = new List<List<string>>();
-            List<PartiallySpecifiedState> lGoalStates = new List<PartiallySpecifiedState>();
+                stateStack.Push(pssInitial);
+                PartiallySpecifiedState pssCurrent = null;
+                List<List<string>> lExecutedPlans = new List<List<string>>();
+                List<PartiallySpecifiedState> lGoalStates = new List<PartiallySpecifiedState>();
 
-            Formula fObserved = null;
+                Formula fObserved = null;
 
-            bool bPreconditionFailure = false;
-
-
-
-            while (!bDone)
-            {
-                //if (cPlanning == 3)
-                 //   return null;
+                bool bPreconditionFailure = false;
 
 
 
-
-                bool bStateHandled = false;
-                pssCurrent = GetNextState(stateStack, lClosedStates, dAlreadyVisitedStates, out bDone, out bStateHandled);
-
-                if (bDone)
-                    break;
-
-                if (bStateHandled)
-                    continue;
-
-                if (StuckInLoopPlanBased(cActions, pssCurrent, lExecutedPlans))
+                while (!bDone)
                 {
-                    TagsCount++;
-                }
-                else
-                {
-                    if (TagsCount > 2)
-                        TagsCount--;
-                }
-                
-
-                if (InfoLevel > 1)
-                    Console.WriteLine("Planning for state: " + pssCurrent);
+                    //if (cPlanning == 3)
+                    //   return null;
 
 
-                List<string> lPlan = Plan(pssCurrent, stateStack, lClosedStates, dAlreadyVisitedStates, bPreconditionFailure, ref cPlanning, out sChosen, out bDone);
-
-                if (InfoLevel == 1)
-                    if (lExecutedPlans.Count % 5 == 0)
-                        Console.Write("\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b" +
-                            "Replanning: " + lExecutedPlans.Count + ", goal leaves: " + cGoalReached + " closed states: " + lClosedStates.Count
-                            ) ;
-
-                if (bDone)
-                    break;
-
-                PartiallySpecifiedState pssPlanState = pssCurrent;
 
 
-                if (lPlan != null)
-                {
-                    if(InfoLevel > 1)
+                    bool bStateHandled = false;
+                    pssCurrent = GetNextState(stateStack, lClosedStates, dAlreadyVisitedStates, out bDone, out bStateHandled);
+
+                    if (bDone)
+                        break;
+
+                    if (bStateHandled)
+                        continue;
+
+                    if (StuckInLoopPlanBased(cActions, pssCurrent, lExecutedPlans))
                     {
-                        Console.Write("Plan: ");
-                        foreach (string s in lPlan)
-                            Console.Write(s + ",");
-                        Console.WriteLine();
+                        TagsCount++;
+                    }
+                    else
+                    {
+                        if (TagsCount > 2)
+                            TagsCount--;
                     }
 
-                    lExecutedPlans.Add(new List<string>());
-                    int actionIndex = -1;
-                    foreach (string sAction in lPlan)
+
+                    if (InfoLevel > 1)
+                        Console.WriteLine("Planning for state: " + pssCurrent);
+
+
+                    List<string> lPlan = Plan(pssCurrent, stateStack, lClosedStates, dAlreadyVisitedStates, bPreconditionFailure, ref cPlanning, out sChosen, out bDone);
+
+                    if (InfoLevel == 1)
+                        if (lExecutedPlans.Count % 5 == 0)
+                            Console.Write("\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b" +
+                                "Replanning: " + lExecutedPlans.Count + ", goal leaves: " + cGoalReached + " closed states: " + lClosedStates.Count
+                                );
+
+                    if (bDone)
+                        break;
+
+                    PartiallySpecifiedState pssPlanState = pssCurrent;
+
+
+                    if (lPlan != null)
                     {
-                        actionIndex++;
-                        if (!IsReasoningAction(sAction.ToLower()))
+                        if (InfoLevel > 1)
                         {
-                            PartiallySpecifiedState psTrueState, psFalseState;
-                            lExecutedPlans.Last().Add(sAction);
-                            Action a = null;
+                            Console.Write("Plan: ");
+                            foreach (string s in lPlan)
+                                Console.Write(s + ",");
+                            Console.WriteLine();
+                        }
 
-
-
-                            if (pssCurrent.IsClosedState(lClosedStates))
+                        lExecutedPlans.Add(new List<string>());
+                        int actionIndex = -1;
+                        foreach (string sAction in lPlan)
+                        {
+                            actionIndex++;
+                            if (!IsReasoningAction(sAction.ToLower()))
                             {
-                                
-                                pssCurrent.UpdateClosedStates(lClosedStates, dAlreadyVisitedStates, Domain);
-                                
-                                pssCurrent = null;
-                                break;
-                            }
+                                PartiallySpecifiedState psTrueState, psFalseState;
+                                lExecutedPlans.Last().Add(sAction);
+                                Action a = null;
 
 
-                            if (pssCurrent.AlreadyVisited(dAlreadyVisitedStates))
-                            {
-                                PartiallySpecifiedState psIdentical = dAlreadyVisitedStates[pssCurrent];
-                                psIdentical.UpdateClosedStates(lClosedStates, dAlreadyVisitedStates, Domain);
-                                
-                                pssCurrent = null;
-                                break;
-                            }
 
-
-                            if (InfoLevel > 1)
-                                Console.WriteLine("Executing: " + sAction);
-
-                            pssCurrent.ApplyOffline(sAction, out a, out bPreconditionFailure, out fObserved, out psTrueState, out psFalseState);
-
-
-                            if (psTrueState == null && psFalseState == null)
-                            {
-                                if (bPreconditionFailure)
+                                if (pssCurrent.IsClosedState(lClosedStates))
                                 {
-                                    Debug.WriteLine("Precondition failure");
-                                    stateStack.Push(pssCurrent);
+
+                                    pssCurrent.UpdateClosedStates(lClosedStates, dAlreadyVisitedStates, Domain);
+
                                     pssCurrent = null;
                                     break;
                                 }
-                                //else - observation action for something that is already known - continue with the same state
-                            }
-                            else
-                            {
-                                pssCurrent.MarkVisited(dAlreadyVisitedStates);
 
-                                if (psFalseState != null && psTrueState != null)
+
+                                if (pssCurrent.AlreadyVisited(dAlreadyVisitedStates))
                                 {
-                                    //set the next state to be the one that the plan preferred
-                                    int spaceIndex = sAction.IndexOf(' ');
-                                    if (spaceIndex == -1)
-                                        spaceIndex = sAction.IndexOf(Utilities.DELIMITER_CHAR);
-                                    if (spaceIndex == -1)
-                                        spaceIndex = sAction.Length;
-                                    char lastWord = sAction[spaceIndex - 1];
-                                    if (lastWord == 'f')
+                                    PartiallySpecifiedState psIdentical = dAlreadyVisitedStates[pssCurrent];
+                                    psIdentical.UpdateClosedStates(lClosedStates, dAlreadyVisitedStates, Domain);
+
+                                    pssCurrent = null;
+                                    break;
+                                }
+
+
+                                if (InfoLevel > 1)
+                                    Console.WriteLine("Executing: " + sAction);
+
+                                pssCurrent.ApplyOffline(sAction, out a, out bPreconditionFailure, out fObserved, out psTrueState, out psFalseState);
+
+
+                                if (psTrueState == null && psFalseState == null)
+                                {
+                                    if (bPreconditionFailure)
                                     {
-                                        stateStack.Push(psTrueState);
-                                        pssCurrent = psFalseState;
+                                        Debug.WriteLine("Precondition failure");
+                                        stateStack.Push(pssCurrent);
+                                        pssCurrent = null;
+                                        break;
                                     }
-                                    else
-                                    {
-                                        stateStack.Push(psFalseState);
-                                        pssCurrent = psTrueState;
-                                    }
+                                    //else - observation action for something that is already known - continue with the same state
                                 }
                                 else
                                 {
-                                    pssCurrent = psTrueState;
-                                }
-                            }
+                                    pssCurrent.MarkVisited(dAlreadyVisitedStates);
 
-                            cActions++;
-
-                            bGoalReached = pssCurrent.IsGoalState();
-                            if (bGoalReached)
-                            {
-                                cGoalReached++;
-                                if (InfoLevel > 1)
-                                    Console.WriteLine("Goal reached " + pssCurrent + " = " + Problem.Goal);
-
-                                pssCurrent.UpdateClosedStates(lClosedStates, dAlreadyVisitedStates, Domain);
-                                
-
-                                lGoalStates.Add(pssCurrent);
-                                pssCurrent = null;
-                                break;
-                            }
-
-                            if (SDR_OBS)
-                            {
-                                List<Action> lObservationActions = bsInitial.Problem.Domain.GroundAllObservationActions(pssCurrent.Observed, true);
-                                foreach (Action aObserve in lObservationActions)
-                                {
-                                    Predicate pObserve = ((PredicateFormula)aObserve.Observe).Predicate;
-                                    if (!pssCurrent.Observed.Contains(pObserve) && !pssCurrent.Observed.Contains(pObserve.Negate()))
+                                    if (psFalseState != null && psTrueState != null)
                                     {
-                                        pssCurrent.ApplyOffline(aObserve, out bool bObservationPreconditionFailed, out fObserved, out psTrueState, out psFalseState);
-                                        if (psTrueState != null && psFalseState != null)
+                                        //set the next state to be the one that the plan preferred
+                                        int spaceIndex = sAction.IndexOf(' ');
+                                        if (spaceIndex == -1)
+                                            spaceIndex = sAction.IndexOf(Utilities.DELIMITER_CHAR);
+                                        if (spaceIndex == -1)
+                                            spaceIndex = sAction.Length;
+                                        char lastWord = sAction[spaceIndex - 1];
+                                        if (lastWord == 'f')
                                         {
                                             stateStack.Push(psTrueState);
                                             pssCurrent = psFalseState;
                                         }
+                                        else
+                                        {
+                                            stateStack.Push(psFalseState);
+                                            pssCurrent = psTrueState;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        pssCurrent = psTrueState;
                                     }
                                 }
-                            }
 
+                                cActions++;
+
+                                bGoalReached = pssCurrent.IsGoalState();
+                                if (bGoalReached)
+                                {
+                                    cGoalReached++;
+                                    if (InfoLevel > 1)
+                                        Console.WriteLine("Goal reached " + pssCurrent + " = " + Problem.Goal);
+
+                                    pssCurrent.UpdateClosedStates(lClosedStates, dAlreadyVisitedStates, Domain);
+
+
+                                    lGoalStates.Add(pssCurrent);
+                                    pssCurrent = null;
+                                    break;
+                                }
+
+                                if (SDR_OBS)
+                                {
+                                    List<Action> lObservationActions = bsInitial.Problem.Domain.GroundAllObservationActions(pssCurrent.Observed, true);
+                                    foreach (Action aObserve in lObservationActions)
+                                    {
+                                        Predicate pObserve = ((PredicateFormula)aObserve.Observe).Predicate;
+                                        if (!pssCurrent.Observed.Contains(pObserve) && !pssCurrent.Observed.Contains(pObserve.Negate()))
+                                        {
+                                            pssCurrent.ApplyOffline(aObserve, out bool bObservationPreconditionFailed, out fObserved, out psTrueState, out psFalseState);
+                                            if (psTrueState != null && psFalseState != null)
+                                            {
+                                                stateStack.Push(psTrueState);
+                                                pssCurrent = psFalseState;
+                                            }
+                                        }
+                                    }
+                                }
+
+                            }
+                        }
+                        if (pssCurrent != null)
+                            stateStack.Push(pssCurrent);
+                    }
+                    else
+                    {
+                        if (!bDone)
+                        {
+                            if (pssCurrent.IsDeadEndState() == Options.DeadEndExistence.DeadEndTrue)
+                                Debug.WriteLine("*");
+                            if (pssCurrent.IsGoalState())
+                                Debug.WriteLine("*");
+                            if (InfoLevel > 1)
+                                Console.WriteLine("No plan was found!!");
                         }
                     }
-                    if (pssCurrent != null)
-                        stateStack.Push(pssCurrent);
+
                 }
-                else
+
+
+                DateTime dtEnd = DateTime.Now;
+                ExecutionData.Time = dtEnd - dtStart;
+                ExecutionData.Actions = cActions;
+                ExecutionData.Planning = cPlanning;
+
+                if (InfoLevel > 0)
                 {
-                    if (!bDone)
-                    {
-                        if (pssCurrent.IsDeadEndState() == Options.DeadEndExistence.DeadEndTrue)
-                            Debug.WriteLine("*");
-                        if (pssCurrent.IsGoalState())
-                            Debug.WriteLine("*");
-                        if(InfoLevel > 1)
-                            Console.WriteLine("No plan was found!!");
-                    }
+                    Console.WriteLine();
+                    Console.WriteLine(Domain.Name + " done planning, time " + (dtEnd - dtStart).TotalSeconds);
+                    Console.WriteLine("----------------------------------------------------------------------------------------------");
                 }
 
+                CPORPlanner.TraceListener.Write("Success " + pssInitial.Plan);
+                //WritePlan("plan.txt", pssInitial.Plan);
+                TraceListener.Flush();
+                TraceListener.Close();
+
+                return pssInitial.Plan;
             }
-
-
-            DateTime dtEnd = DateTime.Now;
-            ExecutionData.Time = dtEnd - dtStart;
-            ExecutionData.Actions = cActions;
-            ExecutionData.Planning = cPlanning;
-
-            if (InfoLevel > 0)
+            catch(Exception e)
             {
-                Console.WriteLine();
-                Console.WriteLine(Domain.Name + " done planning, time " + (dtEnd - dtStart).TotalSeconds);
-                Console.WriteLine("----------------------------------------------------------------------------------------------");
+                Console.WriteLine("Caught an exception: " + e.Message);
+                Console.WriteLine(e.StackTrace);
+
+
+                CPORPlanner.TraceListener.Write(e.StackTrace);
+                TraceListener.Flush();
+                TraceListener.Close();
+                return null;
             }
 
-            
-            return pssInitial.Plan;
         }
 
 
@@ -427,7 +450,7 @@ namespace CPORLib.Algorithms
                 if (sLine.Contains("->")) //edge
                 {
                     sLine = sLine.Replace("->", " ");
-                    string[] aLine = sLine.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                    string[] aLine = Utilities.SplitString(sLine, ' ' , StringSplitOptions.RemoveEmptyEntries);
                     int idx1 = int.Parse(aLine[0]);
                     int idx2 = int.Parse(aLine[1]);
                     if (!dEdges.ContainsKey(idx1))
@@ -436,7 +459,7 @@ namespace CPORLib.Algorithms
                 }
                 else //node
                 {
-                    string[] aLine = sLine.Split(new char[] { '[', '\"' });
+                    string[] aLine = Utilities.SplitString(sLine, new char[] { '[', '\"' });
                     int idx = int.Parse(aLine[0]);
                     string sAction = aLine[2].ToLower();
                     if (sLine.Contains("\"box\""))
@@ -464,8 +487,7 @@ namespace CPORLib.Algorithms
                                 sAction = sAction.Replace("sensor-", "");
                                 sAction = sAction.Replace("__sensor__-obs0", "");
                             }
-                            //Action a = d.GroundActionByName(sAction.Split(new char[] { '_', ' ' }));
-                            Action a = d.GroundActionByName(sAction.Split(new char[] { ' ' }));
+                            Action a = d.GroundActionByName(Utilities.SplitString(sAction,' ' ));
                             if (a == null)
                                 throw new Exception("Unknown action: " + sLine);
                             n.Action = a;
@@ -518,6 +540,7 @@ namespace CPORLib.Algorithms
             Dictionary<ConditionalPlanTreeNode, int> dNodes = new Dictionary<ConditionalPlanTreeNode, int>();
             Dictionary<int, bool> dObservationNodes = new Dictionary<int, bool>();
             List<string> lEdges = new List<string>();
+
             dNodes[nInitial] = 0;
             CollectGraph(pssInitial, nInitial, dNodes, dObservationNodes, lEdges);
 
@@ -682,7 +705,7 @@ namespace CPORLib.Algorithms
             return 1;
         }
 
-        public PartiallySpecifiedState GetNextState(Stack<PartiallySpecifiedState> stateStack, List<PartiallySpecifiedState> lClosedStates, 
+        public PartiallySpecifiedState GetNextState(CPORStack<PartiallySpecifiedState> stateStack, List<PartiallySpecifiedState> lClosedStates, 
             Dictionary<PartiallySpecifiedState, PartiallySpecifiedState> dAlreadyVisitedStates, out bool bDone, out bool bStateHandled)
         {
             bDone = false;
@@ -742,7 +765,7 @@ namespace CPORLib.Algorithms
         }
 
 
-        public List<string> Plan(PartiallySpecifiedState pssCurrent, Stack<PartiallySpecifiedState> stateStack, List<PartiallySpecifiedState> lClosedStates,
+        public List<string> Plan(PartiallySpecifiedState pssCurrent, CPORStack<PartiallySpecifiedState> stateStack, List<PartiallySpecifiedState> lClosedStates,
             Dictionary<PartiallySpecifiedState, PartiallySpecifiedState> dAlreadyVisitedStates, bool bPreconditionFailure, ref int cPlanning, out State sChosen, out bool bDone)
         {
             List<string> lPlan = null;

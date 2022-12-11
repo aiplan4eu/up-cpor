@@ -6,6 +6,7 @@ using System.Linq;
 using CPORLib.LogicalUtilities;
 using CPORLib.PlanningModel;
 using System;
+using CPORLib.Tools;
 
 namespace CPORLib.Parsing
 {
@@ -22,15 +23,8 @@ namespace CPORLib.Parsing
             string sPath = sFileName.Substring(0, sFileName.LastIndexOf(@"\") + 1);
             StreamReader sr = new StreamReader(sFileName);
 
-            /*
-            Stack<string> s = ToStack(new StreamReader(sDomainFile));
-            Stack<string> s2 = ToStackII(new StreamReader(sDomainFile));
 
-            for (int i = 0; i < s.Count; i++)
-                if (s.ElementAt(i) != s2.ElementAt(i))
-                    Debug.WriteLine(s.ElementAt(i) + " =/= " + s2.ElementAt(i));
-*/
-            Stack<string> s = ToStack(sr);
+            CPORStack<string> s = ToStack(sr);
             CompoundExpression eDomain = (CompoundExpression)ToExpression(s);
             CompoundExpression eProblem = (CompoundExpression)ToExpression(s);
             sr.Close();
@@ -44,7 +38,7 @@ namespace CPORLib.Parsing
         {
             StreamReader sr = new StreamReader(msModels);
 
-            Stack<string> s = ToStack(sr);
+            CPORStack<string> s = ToStack(sr);
             CompoundExpression eDomain = (CompoundExpression)ToExpression(s);
             CompoundExpression eProblem = (CompoundExpression)ToExpression(s);
             sr.Close();
@@ -428,7 +422,7 @@ namespace CPORLib.Parsing
                     double dProb = 0.0;
                     if (sProb.Contains("/"))
                     {
-                        string[] a = sProb.Split('/');
+                        string[] a = Utilities.SplitString(sProb,'/');
                         dProb = double.Parse(a[0]) / double.Parse(a[1]);
                     }
                     else
@@ -784,11 +778,11 @@ namespace CPORLib.Parsing
             p.AddConstant(c);
             return p;
         }
-        public Stack<string> ToStack(StreamReader sr)
+        public CPORStack<string> ToStack(StreamReader sr)
         {
-            Stack<string> lStack = new Stack<string>();
+            CPORStack<string> lStack = new CPORStack<string>();
             char[] aDelimiters = { ' ', '\n', '(', ')' };
-            Stack<string> sTokens = new Stack<string>();
+            CPORStack<string> sTokens = new CPORStack<string>();
             string sToken = "";
             while (!sr.EndOfStream)
             {
@@ -820,7 +814,7 @@ namespace CPORLib.Parsing
             sToken = sToken.Trim();
             if (sToken.Length > 0)
                 sTokens.Push(sToken);
-            Stack<string> sReveresed = new Stack<string>();
+            CPORStack<string> sReveresed = new CPORStack<string>();
             while (sTokens.Count > 0)
             {
                 sToken = sTokens.Pop();
@@ -851,14 +845,14 @@ namespace CPORLib.Parsing
 
         private Expression ToExpression(StreamReader sr)
         {
-            Stack<string> s = ToStack(sr);
+            CPORStack<string> s = ToStack(sr);
             while (s.Count > 0 && s.Peek() == "\n")
                 s.Pop();
             Expression e = ToExpression(s);
             return e;
         }
 
-        private Expression ToExpression(Stack<string> sStack)
+        private Expression ToExpression(CPORStack<string> sStack)
         {
             string sToken = sStack.Pop();
             while (sToken.Trim() == "" || sToken == "\0")

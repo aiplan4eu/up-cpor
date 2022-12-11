@@ -269,7 +269,7 @@ namespace CPORLib.FFCS
 
 
 
-        public  int position_in_types_table(string str)
+        public int position_in_types_table(string str)
 
         {
 

@@ -180,7 +180,7 @@ namespace CPORLib.PlanningModel
         public State Apply(string sActionName)
         {
             string sRevisedActionName = sActionName.Replace(Utilities.DELIMITER_CHAR, " ");
-            string[] aName = sRevisedActionName.Split(' ');
+            string[] aName = Utilities.SplitString(sRevisedActionName, ' ');
             Action a = Problem.Domain.GroundActionByName(aName);
             if (a == null)
                 return null;

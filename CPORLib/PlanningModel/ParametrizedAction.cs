@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using CPORLib.LogicalUtilities;
 
 namespace CPORLib.PlanningModel
@@ -57,5 +58,41 @@ namespace CPORLib.PlanningModel
             return s;
         }
 
+        private void FixParametersNames(ParametrizedPredicate pp)
+        {
+            foreach (Argument a in pp.Parameters)
+            {
+                if (a is Parameter param)
+                {
+                    if (!param.Name.StartsWith("?"))
+                        param.Name = "?" + param.Name;
+                }
+            }
+        }
+        private void FixParametersNames(Formula f)
+        {
+            if (f == null)
+                return;
+            foreach (Predicate p in f.GetAllPredicates())
+            {
+                if (p is ParametrizedPredicate pp)
+                {
+                    FixParametersNames(pp);
+                }
+            }
+        }
+
+        public void FixParametersNames()
+        {
+            foreach(Parameter p in Parameters)
+            {
+                if(!p.Name.StartsWith("?"))
+                    p.Name = "?" + p.Name;
+            }
+            FixParametersNames(Preconditions);
+            FixParametersNames(Effects);
+            FixParametersNames(Observe);
+
+        }
     }
 }

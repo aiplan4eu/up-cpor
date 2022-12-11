@@ -20,7 +20,17 @@ public class Program
         FFUtilities.Verbose = true;
         gcmd_line.display_info = 1;
         gcmd_line.debug = 3;
-
+        
+        try
+        {
+            string sPath = @"C:\temp\MonoTest\";
+            Run.RunPlanner(sPath + "d.pddl", sPath + "p.pddl", sPath + "out.text", false, false);
+        }
+        catch(Exception e)
+        {
+            return;
+        }
+        
         RunTest("blocks3");
 
         RunTest("doors5");        
@@ -46,7 +56,7 @@ public class Program
         RunTest("colorballs2-2");   
     }
 
-    private static void Main(string[] args)
+    public static void Main(string[] args)
     {
         //TestAll();
         //return;

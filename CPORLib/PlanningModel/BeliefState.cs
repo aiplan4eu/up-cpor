@@ -3205,8 +3205,8 @@ namespace CPORLib.PlanningModel
         {
             
             DateTime dtBefore = DateTime.Now;
-            Stack<PartiallySpecifiedState> sTrace = new Stack<PartiallySpecifiedState>();
-            Stack<List<Formula>> sForumalsTrace = new Stack<List<Formula>>();
+            CPORStack<PartiallySpecifiedState> sTrace = new CPORStack<PartiallySpecifiedState>();
+            CPORStack<List<Formula>> sForumalsTrace = new CPORStack<List<Formula>>();
             PartiallySpecifiedState pssCurrent = pssLast, pssSuccessor = null;
             HashSet<int> hsModifiedClauses = new HashSet<int>();
             //Formula fToRegress = fObserve, fRegressed = null;

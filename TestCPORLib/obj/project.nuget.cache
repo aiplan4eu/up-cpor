@@ -1,10 +1,22 @@
 {
   "version": 2,
-  "dgSpecHash": "HDMaFdJaYqhDKr8fzoQiMq7VLlbbny7eYF6t85Qoqawhzox2GQG2B7ftOXommTJS4Gc2o/Dy3dQmYrUbYLI4kg==",
+  "dgSpecHash": "F5TVBsOa9TJxctuxGfxZhQjjgaKvBwH19mZEdINnfuwhFnaLAq717GY30FlIG4FQTfLlraNi7gyD8nItDaRBhw==",
   "success": true,
   "projectFilePath": "C:\\Users\\shanigu\\OneDrive - Ben Gurion University of the Negev\\Research\\projects\\AIPlan4EU\\up-cpor\\TestCPORLib\\RunCPOR.csproj",
   "expectedPackageFiles": [
-    "C:\\Users\\shanigu\\.nuget\\packages\\microsoft.solver.foundation\\3.1.0\\microsoft.solver.foundation.3.1.0.nupkg.sha512"
+    "C:\\Users\\shanigu\\.nuget\\packages\\microsoft.csharp\\4.7.0\\microsoft.csharp.4.7.0.nupkg.sha512",
+    "C:\\Users\\shanigu\\.nuget\\packages\\microsoft.netcore.platforms\\1.1.0\\microsoft.netcore.platforms.1.1.0.nupkg.sha512",
+    "C:\\Users\\shanigu\\.nuget\\packages\\microsoft.netcore.targets\\1.1.0\\microsoft.netcore.targets.1.1.0.nupkg.sha512",
+    "C:\\Users\\shanigu\\.nuget\\packages\\microsoft.solver.foundation\\3.1.0\\microsoft.solver.foundation.3.1.0.nupkg.sha512",
+    "C:\\Users\\shanigu\\.nuget\\packages\\pythonnet\\3.0.1\\pythonnet.3.0.1.nupkg.sha512",
+    "C:\\Users\\shanigu\\.nuget\\packages\\system.io\\4.3.0\\system.io.4.3.0.nupkg.sha512",
+    "C:\\Users\\shanigu\\.nuget\\packages\\system.reflection\\4.3.0\\system.reflection.4.3.0.nupkg.sha512",
+    "C:\\Users\\shanigu\\.nuget\\packages\\system.reflection.emit\\4.3.0\\system.reflection.emit.4.3.0.nupkg.sha512",
+    "C:\\Users\\shanigu\\.nuget\\packages\\system.reflection.emit.ilgeneration\\4.3.0\\system.reflection.emit.ilgeneration.4.3.0.nupkg.sha512",
+    "C:\\Users\\shanigu\\.nuget\\packages\\system.reflection.primitives\\4.3.0\\system.reflection.primitives.4.3.0.nupkg.sha512",
+    "C:\\Users\\shanigu\\.nuget\\packages\\system.runtime\\4.3.0\\system.runtime.4.3.0.nupkg.sha512",
+    "C:\\Users\\shanigu\\.nuget\\packages\\system.text.encoding\\4.3.0\\system.text.encoding.4.3.0.nupkg.sha512",
+    "C:\\Users\\shanigu\\.nuget\\packages\\system.threading.tasks\\4.3.0\\system.threading.tasks.4.3.0.nupkg.sha512"
   ],
   "logs": [
     {

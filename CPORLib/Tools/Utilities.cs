@@ -1,7 +1,9 @@
 ﻿
 using CPORLib.LogicalUtilities;
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace CPORLib.Tools
@@ -76,6 +78,54 @@ namespace CPORLib.Tools
             return s;
         }
 
+        public static string[] SplitString(string sOrg, char[] ac, StringSplitOptions options = StringSplitOptions.None)
+        {
+            List<string> lStrings = new List<string>();
+            string sCurrent = "";
+            for(int i = 0; i < sOrg.Length; i++)
+            {
+                if (ac.Contains(sOrg[i]))
+                {
+                    if (sCurrent != "" || options != StringSplitOptions.RemoveEmptyEntries)
+                    {
+                        lStrings.Add(sCurrent);
+                    }
+                    sCurrent = "";
+                }
+                else
+                    sCurrent += sOrg[i];
+            }
+            if (sCurrent != "")
+                lStrings.Add(sCurrent);
+
+            return lStrings.ToArray();
+        }
+
+        public static string[] SplitString(string sOrg, char c, StringSplitOptions options = StringSplitOptions.None)
+        {
+
+            List<string> lStrings = new List<string>();
+            string sCurrent = "";
+            for (int i = 0; i < sOrg.Length; i++)
+            {
+                if (sOrg[i] == c)
+                {
+                    if (sCurrent != "" || options != StringSplitOptions.RemoveEmptyEntries)
+                    {
+                        lStrings.Add(sCurrent);
+                    }
+                    sCurrent = "";
+                }
+                else
+                    sCurrent += sOrg[i];
+            }
+            if (sCurrent != "")
+                lStrings.Add(sCurrent);
+
+            
+
+            return lStrings.ToArray();
+        }
 
     }
 }

@@ -81,6 +81,8 @@ namespace CPORLib.PlanningModel
 
         public void AddAction(PlanningAction a)
         {
+            if(a is ParametrizedAction pa)
+                pa.FixParametersNames();
             Actions.Add(a);
             if (a.Effects != null)
             {

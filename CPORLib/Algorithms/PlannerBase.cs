@@ -3,6 +3,7 @@ using CPORLib.LogicalUtilities;
 using CPORLib.Parsing;
 using CPORLib.PlanningModel;
 using CPORLib.Tools;
+using Python.Runtime;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -16,6 +17,9 @@ namespace CPORLib.Algorithms
 {
     public class PlannerBase
     {
+        public PyObject UPClassicalPlanner { set; get; }
+        public PyObject UPParser { set; get; }
+
 
         protected Domain Domain;
         protected Problem Problem;
@@ -331,22 +335,97 @@ namespace CPORLib.Algorithms
 
         public List<string> RunPlanner(MemoryStream msModel, int iIndex)
         {
-            Debug.WriteLine("Calling underlying classical planner");
+            if(InfoLevel > 1)
+                Console.WriteLine("Calling underlying classical planner");
 
-            if (Options.Planner == Planners.LocalFSP)
+
+
+            if(UPParser != null && UPClassicalPlanner != null)
+            {
+                using (Py.GIL())
+                {
+
+                    CPORPlanner.TraceListener.WriteLine("Starting python");
+
+                    msModel.Position = 0;
+
+                    StreamReader sr = new StreamReader(msModel);
+                    CPORPlanner.TraceListener.WriteLine("Read string from stream");
+                    string s = sr.ReadToEnd();
+                   
+                    int idx = s.LastIndexOf("(define");
+                    
+
+                    
+                    CPORPlanner.TraceListener.WriteLine("index found " + idx);
+
+
+                    string sModel = s.Substring(0, idx);
+                    CPORPlanner.TraceListener.WriteLine("got model string, starts with " + sModel.Substring(0,10));
+
+                    CPORPlanner.TraceListener.WriteLine("get problem string");
+
+                    string sProblem = s.Substring(idx);
+                    CPORPlanner.TraceListener.WriteLine("got problem string, starts with " + sProblem.Substring(0, 10));
+                    sr.Close();
+
+                    
+                    StreamWriter swDomain = new StreamWriter("Kd.pddl");
+                    swDomain.Write(sModel);
+                    swDomain.Close();
+
+                    StreamWriter swProblem = new StreamWriter("Kp.pddl");
+                    swProblem.Write(sProblem);
+                    swProblem.Close();
+
+
+
+
+
+
+                    sModel = "Kd.pddl";
+                    sProblem = "Kp.pddl";
+                    
+
+                    CPORPlanner.TraceListener.WriteLine("Converting string to pyobject");
+                    PyObject pysDomain = sModel.ToPython();
+                    PyObject pysProblem = sProblem.ToPython();
+
+                    CPORPlanner.TraceListener.WriteLine("Calling parser");
+
+
+                    //PyObject oProblem = UPParser.InvokeMethod("parse_problem_string", pysDomain, pysProblem);
+                    PyObject oProblem = UPParser.InvokeMethod("parse_problem", pysDomain, pysProblem);
+
+                    CPORPlanner.TraceListener.WriteLine("Parser done");
+
+                    PyObject oResult = UPClassicalPlanner.InvokeMethod("solve", oProblem);
+
+                    CPORPlanner.TraceListener.WriteLine("Planner done");
+
+                    return null;
+                }
+            }
+            else if (Options.Planner == Planners.LocalFSP)
             {
                 ForwardSearchPlanner fsp = new ForwardSearchPlanner(msModel);
-                Debug.WriteLine("Calling ForwardSearchPlanner");
+                if (InfoLevel > 1)
+                    Console.WriteLine("Calling ForwardSearchPlanner");
                 List<string> lPlan = fsp.Plan();
-                Debug.WriteLine("ForwardSearchPlanner done. Plan:");
-                foreach (string s in lPlan)
+                if (InfoLevel > 1)
                 {
-                    Debug.WriteLine(s);
+                    Console.WriteLine("ForwardSearchPlanner done. Plan:");
+                    foreach (string s in lPlan)
+                    {
+                        Console.WriteLine(s);
+                    }
                 }
                 return lPlan;
             }
             else if(Options.Planner == Planners.FFCS)
             {
+                if (InfoLevel > 1)
+                    Console.WriteLine("Calling FFCS");
                 FF ff = new FF(msModel);
                 List<string> lPlan = ff.Plan();
                 return lPlan;
@@ -476,7 +555,42 @@ namespace CPORLib.Algorithms
 
         }
 
+        public void SetClassicalPlanner(object planner)
+        {
+            CPORPlanner.TraceListener.WriteLine("SetClassicalPlanner");
 
+            PythonEngine.Initialize();
+            if (planner is PyObject pyplanner)
+            {
+                CPORPlanner.TraceListener.WriteLine("SetClassicalPlanner: planner not null");
+
+
+                UPClassicalPlanner = pyplanner;
+            }
+            else
+            {
+                UPClassicalPlanner = null;
+            }
+        }
+
+        public void SetParser(object parser)
+        {
+            CPORPlanner.TraceListener.WriteLine("SetParser");
+
+
+            PythonEngine.Initialize();
+            if(parser is PyObject pyparser)
+            {
+                CPORPlanner.TraceListener.WriteLine("SetParser: parser not null");
+
+
+                UPParser = pyparser;
+            }
+            else
+            {
+                UPParser = null;
+            }
+        }
 
     }
 }

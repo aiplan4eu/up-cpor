@@ -635,7 +635,7 @@ namespace CPORLib.FFCS
             std = -1;
             for (i = 0; i < lnum_types; i++)
             {
-                if (ltype_names[i] == STANDARD_TYPE)
+                if (ltype_names[i].ToUpper() == STANDARD_TYPE)
                 {
                     std = i;
                     break;

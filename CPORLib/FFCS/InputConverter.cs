@@ -2,9 +2,7 @@
 using CPORLib.PlanningModel;
 using System;
 using System.Collections.Generic;
-using System.Data;
-using System.Text;
-using System.Xml;
+
 
 namespace CPORLib.FFCS
 {

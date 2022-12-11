@@ -1,27 +1,16 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-using static CPORLib.FFCS.Search;
+
 using static CPORLib.FFCS.Output;
-using static CPORLib.FFCS.Planning;
 using static CPORLib.FFCS.Constants;
-using static CPORLib.FFCS.Relax;
-using static CPORLib.FFCS.ConnectivityGraph;
-using static CPORLib.FFCS.InstPre;
-using static CPORLib.FFCS.InstEasy;
 using static CPORLib.FFCS.InstFinal;
-using static CPORLib.FFCS.InstHard;
-using static CPORLib.FFCS.Parse;
 using static CPORLib.FFCS.FFUtilities;
 using CPORLib.PlanningModel;
-using System.Reflection;
 using CPORLib.Algorithms;
 using System.IO;
 using CPORLib.Parsing;
+using Microsoft.SolverFoundation.Services;
 
 namespace CPORLib.FFCS
 {
@@ -281,8 +270,10 @@ namespace CPORLib.FFCS
         }
 
 
-        public FF(Domain d, Problem p) : base(d, p)
+        public FF(PlanningModel.Domain d, Problem p) : base(d, p)
         {
+
+
             Init();
         }
 
@@ -301,7 +292,14 @@ namespace CPORLib.FFCS
             msModel.Position = 0;
             p.ParseDomainAndProblem(msModel, out m_dDomain, out m_pProblem);
 
- 
+
+            StreamWriter swOut = new StreamWriter("debug1.log");
+            swOut.WriteLine(m_dDomain);
+            swOut.WriteLine();
+            swOut.WriteLine(m_pProblem);
+            swOut.Close();
+
+
             Init();
         }
 

@@ -1,8 +1,10 @@
-﻿using Microsoft.VisualBasic;
+﻿using CPORLib.Algorithms;
+using Microsoft.VisualBasic;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -167,20 +169,30 @@ namespace CPORLib.FFCS
 
         public static void Write(string s)
         {
+            CPORPlanner.TraceListener.Write(s);
+
+
             if (Verbose)
                 Console.Write(s);
         }
         public static void Write(string s, params object[] list)
         {
+            string sRevised = Format(s, list);
+
+            CPORPlanner.TraceListener.Write(sRevised);
+
+
             if (Verbose)
             {
-                string sRevised = Format(s, list);
                 Console.Write(sRevised);
             }
         }
 
         public static void WriteLine(string s = "")
         {
+            CPORPlanner.TraceListener.WriteLine(s);
+
+
             if (Verbose)
                 Console.WriteLine(s);
         }

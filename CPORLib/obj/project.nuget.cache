@@ -1,12 +1,23 @@
 {
   "version": 2,
-  "dgSpecHash": "Q+Lb8bnni1GDZIMikhJwhZ6M6jNVCk4zRPacKsNHQG7sPTIWZXEAS6u3o9aQU3FetOW2nPP7L91M6VgdD7Fwyg==",
+  "dgSpecHash": "BlIxUtVVKJ28oHkl9iUaq81owCUEMVDOCzlFODzzc2SCfmkiYMhC8lz5+jBzMUNXejYCgrp2oxzfz2KFUE9ltg==",
   "success": true,
   "projectFilePath": "C:\\Users\\shanigu\\OneDrive - Ben Gurion University of the Negev\\Research\\projects\\AIPlan4EU\\up-cpor\\CPORLib\\CPORLib.csproj",
   "expectedPackageFiles": [
+    "C:\\Users\\shanigu\\.nuget\\packages\\microsoft.csharp\\4.7.0\\microsoft.csharp.4.7.0.nupkg.sha512",
     "C:\\Users\\shanigu\\.nuget\\packages\\microsoft.netcore.platforms\\1.1.0\\microsoft.netcore.platforms.1.1.0.nupkg.sha512",
+    "C:\\Users\\shanigu\\.nuget\\packages\\microsoft.netcore.targets\\1.1.0\\microsoft.netcore.targets.1.1.0.nupkg.sha512",
     "C:\\Users\\shanigu\\.nuget\\packages\\microsoft.solver.foundation\\3.1.0\\microsoft.solver.foundation.3.1.0.nupkg.sha512",
-    "C:\\Users\\shanigu\\.nuget\\packages\\netstandard.library\\2.0.3\\netstandard.library.2.0.3.nupkg.sha512"
+    "C:\\Users\\shanigu\\.nuget\\packages\\netstandard.library\\2.0.3\\netstandard.library.2.0.3.nupkg.sha512",
+    "C:\\Users\\shanigu\\.nuget\\packages\\pythonnet\\3.0.1\\pythonnet.3.0.1.nupkg.sha512",
+    "C:\\Users\\shanigu\\.nuget\\packages\\system.io\\4.3.0\\system.io.4.3.0.nupkg.sha512",
+    "C:\\Users\\shanigu\\.nuget\\packages\\system.reflection\\4.3.0\\system.reflection.4.3.0.nupkg.sha512",
+    "C:\\Users\\shanigu\\.nuget\\packages\\system.reflection.emit\\4.3.0\\system.reflection.emit.4.3.0.nupkg.sha512",
+    "C:\\Users\\shanigu\\.nuget\\packages\\system.reflection.emit.ilgeneration\\4.3.0\\system.reflection.emit.ilgeneration.4.3.0.nupkg.sha512",
+    "C:\\Users\\shanigu\\.nuget\\packages\\system.reflection.primitives\\4.3.0\\system.reflection.primitives.4.3.0.nupkg.sha512",
+    "C:\\Users\\shanigu\\.nuget\\packages\\system.runtime\\4.3.0\\system.runtime.4.3.0.nupkg.sha512",
+    "C:\\Users\\shanigu\\.nuget\\packages\\system.text.encoding\\4.3.0\\system.text.encoding.4.3.0.nupkg.sha512",
+    "C:\\Users\\shanigu\\.nuget\\packages\\system.threading.tasks\\4.3.0\\system.threading.tasks.4.3.0.nupkg.sha512"
   ],
   "logs": [
     {

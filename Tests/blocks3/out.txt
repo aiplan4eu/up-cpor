@@ -1,11 +1,11 @@
 digraph contingent_plan {
 	_nil [style="invis"];
-	0 [label="0)senseontable~b2"];
-	3 [label="1)move-to-t~b3~b2"];
-	4 [label="2)move-b-to-b~b2~b3~b1"];
-	5 [label="5)move-t-to-b~b2~b1"];
-	6 [label="6)move-t-to-b~b3~b2"];
-	7 [label="7) Goal"];
+	0 [label="110)senseontable~b2"];
+	3 [label="111)move-to-t~b3~b2"];
+	4 [label="112)move-b-to-b~b2~b3~b1"];
+	5 [label="115)move-t-to-b~b2~b1"];
+	6 [label="116)move-t-to-b~b3~b2"];
+	7 [label="117) Goal"];
 	1 [label="False" ,shape="box"];
 	2 [label="True" ,shape="box"];
 	0 -> 1;
