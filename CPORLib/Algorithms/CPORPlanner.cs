@@ -2,7 +2,6 @@
 using CPORLib.Parsing;
 using CPORLib.PlanningModel;
 using CPORLib.Tools;
-using Python.Runtime;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;

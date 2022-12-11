@@ -292,13 +292,13 @@ namespace CPORLib.FFCS
             msModel.Position = 0;
             p.ParseDomainAndProblem(msModel, out m_dDomain, out m_pProblem);
 
-
+            /*
             StreamWriter swOut = new StreamWriter("debug1.log");
             swOut.WriteLine(m_dDomain);
             swOut.WriteLine();
             swOut.WriteLine(m_pProblem);
             swOut.Close();
-
+            */
 
             Init();
         }
