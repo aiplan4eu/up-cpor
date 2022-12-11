@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "F5TVBsOa9TJxctuxGfxZhQjjgaKvBwH19mZEdINnfuwhFnaLAq717GY30FlIG4FQTfLlraNi7gyD8nItDaRBhw==",
+  "dgSpecHash": "hUHRzM9np2dAkq/9DD+gPYN9QBJOSiyDZqX7RXVXXKXEOlgkKvqvvMfPba78XwMg8PNUP9eYXV29zql01/tXRA==",
   "success": true,
   "projectFilePath": "C:\\Users\\shanigu\\OneDrive - Ben Gurion University of the Negev\\Research\\projects\\AIPlan4EU\\up-cpor\\TestCPORLib\\RunCPOR.csproj",
   "expectedPackageFiles": [
@@ -8,6 +8,7 @@
     "C:\\Users\\shanigu\\.nuget\\packages\\microsoft.netcore.platforms\\1.1.0\\microsoft.netcore.platforms.1.1.0.nupkg.sha512",
     "C:\\Users\\shanigu\\.nuget\\packages\\microsoft.netcore.targets\\1.1.0\\microsoft.netcore.targets.1.1.0.nupkg.sha512",
     "C:\\Users\\shanigu\\.nuget\\packages\\microsoft.solver.foundation\\3.1.0\\microsoft.solver.foundation.3.1.0.nupkg.sha512",
+    "C:\\Users\\shanigu\\.nuget\\packages\\netstandard.library\\2.0.3\\netstandard.library.2.0.3.nupkg.sha512",
     "C:\\Users\\shanigu\\.nuget\\packages\\pythonnet\\3.0.1\\pythonnet.3.0.1.nupkg.sha512",
     "C:\\Users\\shanigu\\.nuget\\packages\\system.io\\4.3.0\\system.io.4.3.0.nupkg.sha512",
     "C:\\Users\\shanigu\\.nuget\\packages\\system.reflection\\4.3.0\\system.reflection.4.3.0.nupkg.sha512",

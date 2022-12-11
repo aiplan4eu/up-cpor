@@ -9,6 +9,7 @@
       "RunCPOR/1.0.0": {
         "dependencies": {
           "CPORLib": "1.0.0",
+          "NETStandard.Library": "2.0.3",
           "pythonnet": "3.0.1"
         },
         "runtime": {
@@ -24,6 +25,11 @@
             "assemblyVersion": "3.0.2.10889",
             "fileVersion": "3.0.2.10889"
           }
+        }
+      },
+      "NETStandard.Library/2.0.3": {
+        "dependencies": {
+          "Microsoft.NETCore.Platforms": "1.1.0"
         }
       },
       "pythonnet/3.0.1": {
@@ -143,6 +149,13 @@
       "sha512": "sha512-02dYXlaV3Px4zIX7v+K5e7aPsdUqQm/IQ6ZvmcCBH/+FkSciHAdKQoLqEP1zLyWCWBy1Q90j9uIRzXNDEKe9Gg==",
       "path": "microsoft.solver.foundation/3.1.0",
       "hashPath": "microsoft.solver.foundation.3.1.0.nupkg.sha512"
+    },
+    "NETStandard.Library/2.0.3": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-st47PosZSHrjECdjeIzZQbzivYBJFv6P2nv4cj2ypdI204DO+vZ7l5raGMiX4eXMJ53RfOIg+/s4DHVZ54Nu2A==",
+      "path": "netstandard.library/2.0.3",
+      "hashPath": "netstandard.library.2.0.3.nupkg.sha512"
     },
     "pythonnet/3.0.1": {
       "type": "package",
