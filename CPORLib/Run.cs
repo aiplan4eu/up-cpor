@@ -11,6 +11,33 @@ namespace CPORLib
 {
     public class Run
     {
+
+        public static void Main(string[] args)
+        {
+            //TestAll();
+            //return;
+
+
+            if (args.Length < 3)
+            {
+                Console.WriteLine("Usage: RunPlanner domain_file problem_file output_file [online/offline]");
+            }
+            else
+            {
+                string sDomainFile = args[0];
+                string sProblemFile = args[1];
+                string sOutputFile = args[2];
+                bool bOnline = false;
+                if (args.Length > 3)
+                    bOnline = args[2] == "online";
+                RunPlanner(sDomainFile
+                    , sProblemFile,
+                    sOutputFile,
+                    bOnline);
+            }
+        }
+
+
         public static void RunPlanner(string sDomainFile, string sProblemFile, string sOutputFile, bool bOnline, bool bValidate = false)
         {
 
