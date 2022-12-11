@@ -3,7 +3,7 @@ using CPORLib.LogicalUtilities;
 using CPORLib.Parsing;
 using CPORLib.PlanningModel;
 using CPORLib.Tools;
-using Python.Runtime;
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -13,13 +13,18 @@ using System.Text;
 using static CPORLib.Tools.Options;
 using Action = CPORLib.PlanningModel.PlanningAction;
 
+#if PYTHONNET
+using Python.Runtime;
+#endif
+
 namespace CPORLib.Algorithms
 {
     public class PlannerBase
     {
+#if PYTHONNET
         public PyObject UPClassicalPlanner { set; get; }
         public PyObject UPParser { set; get; }
-
+#endif
 
         protected Domain Domain;
         protected Problem Problem;
@@ -339,7 +344,7 @@ namespace CPORLib.Algorithms
                 Console.WriteLine("Calling underlying classical planner");
 
 
-
+#if PYTHONNET
             if(UPParser != null && UPClassicalPlanner != null)
             {
                 using (Py.GIL())
@@ -406,7 +411,9 @@ namespace CPORLib.Algorithms
                     return null;
                 }
             }
-            else if (Options.Planner == Planners.LocalFSP)
+            else 
+#endif
+            if (Options.Planner == Planners.LocalFSP)
             {
                 ForwardSearchPlanner fsp = new ForwardSearchPlanner(msModel);
                 if (InfoLevel > 1)
@@ -557,6 +564,7 @@ namespace CPORLib.Algorithms
 
         public void SetClassicalPlanner(object planner)
         {
+#if PYTHONNET
             CPORPlanner.TraceListener.WriteLine("SetClassicalPlanner");
 
             PythonEngine.Initialize();
@@ -571,10 +579,12 @@ namespace CPORLib.Algorithms
             {
                 UPClassicalPlanner = null;
             }
+#endif
         }
 
         public void SetParser(object parser)
         {
+#if PYTHONNET
             CPORPlanner.TraceListener.WriteLine("SetParser");
 
 
@@ -590,6 +600,7 @@ namespace CPORLib.Algorithms
             {
                 UPParser = null;
             }
+#endif
         }
 
     }
