@@ -345,7 +345,7 @@ namespace CPORLib.Algorithms
 
 
 #if PYTHONNET
-            if(UPParser != null && UPClassicalPlanner != null)
+            if( UPParser != null && UPClassicalPlanner != null)
             {
                 using (Py.GIL())
                 {
@@ -365,12 +365,12 @@ namespace CPORLib.Algorithms
                     CPORPlanner.TraceListener.WriteLine("index found " + idx);
 
 
-                    string sModel = s.Substring(0, idx);
-                    CPORPlanner.TraceListener.WriteLine("got model string, starts with " + sModel.Substring(0,10));
+                    string sModel = s.Substring(0, idx - 1).Replace('\0', ' ').Trim();
+                    CPORPlanner.TraceListener.WriteLine("got model string, starts with " + sModel.Substring(0, 10));
 
                     CPORPlanner.TraceListener.WriteLine("get problem string");
 
-                    string sProblem = s.Substring(idx);
+                    string sProblem = s.Substring(idx).Replace('\0', ' ').Trim();
                     CPORPlanner.TraceListener.WriteLine("got problem string, starts with " + sProblem.Substring(0, 10));
                     sr.Close();
 

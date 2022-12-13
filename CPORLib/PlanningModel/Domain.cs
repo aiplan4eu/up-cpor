@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using CPORLib.Algorithms;
 using CPORLib.LogicalUtilities;
 using CPORLib.Parsing;
 using CPORLib.Tools;
@@ -137,6 +138,19 @@ namespace CPORLib.PlanningModel
         }
         public void AddPredicate(Predicate p)
         {
+            if(p is ParametrizedPredicate pp)
+            {
+                ParametrizedPredicate ppNew = new ParametrizedPredicate(pp.Name);
+                foreach(Parameter param in pp.Parameters)
+                {
+                    string sName = param.Name;
+                    if (!sName.StartsWith("?"))
+                        sName = "?" + sName;
+                    Parameter paramNew = new Parameter(param.Type, sName);
+                    ppNew.AddParameter(paramNew);
+                }
+                p = ppNew; 
+            }
             Predicates.Add(p);
             m_lAlwaysKnown.Add(p.Name);
             m_lAlwaysConstant.Add(p.Name);
@@ -796,26 +810,7 @@ namespace CPORLib.PlanningModel
             }
             return lActions;
         }
-        /*
-        public List<Action> GetAllReasoningActions(Dictionary<string, List<Predicate>> dTags)
-        {
-            List<Action> lActions = new List<Action>();
-            //get merges andUtilities.TAG refutation
-            foreach (ParametrizedPredicate pp in Predicates)
-            {
-                if (!AlwaysKnown(pp))
-                {
-                    Action aMerge = GenerateMergeAction(pp, dTags);
-                    lActions.Add(aMerge);
-                    Action aRefute = GenerateRefutationAction(pp, true);
-                    lActions.Add(aRefute);
-                    aRefute = GenerateRefutationAction(pp, false);
-                    lActions.Add(aRefute);
-                }
-            }
-            return lActions;
-        }
-        */
+
         private List<PlanningAction> GetKnowledgeActionsNoState(StreamWriter sw, Dictionary<string, List<Predicate>> dTags, List<Predicate> lAdditionalPredicates)
         {
             List<PlanningAction> lAllActions = new List<PlanningAction>();
@@ -1121,6 +1116,7 @@ namespace CPORLib.PlanningModel
         }
         private PlanningAction GenerateMergeAction(ParametrizedPredicate pp, Dictionary<string, List<Predicate>> dTags, bool bTrue)
         {
+            BUGBUG;//move from (not (Kp)) (not (KNp)) to Up (for unknown p) - also in sensing actions
             string sName = "Merge-" + pp.Name + "-";
             if (bTrue)
                 sName += "T";
@@ -1128,7 +1124,10 @@ namespace CPORLib.PlanningModel
                 sName += "F";
             ParametrizedAction pa = new ParametrizedAction(sName);
             foreach (Parameter param in pp.Parameters)
+            {
+                CPORPlanner.TraceListener.WriteLine(sName + ":" + param.Name);
                 pa.AddParameter(param);
+            }
             CompoundFormula cfAnd = new CompoundFormula("and");
 
             KnowPredicate ppK = new KnowPredicate(pp);
@@ -1313,7 +1312,10 @@ namespace CPORLib.PlanningModel
             ParametrizedAction pa = new ParametrizedAction(sName);
             Parameter pTag = new Parameter(Utilities.TAG, Utilities.TAG_PARAMETER);
             foreach (Parameter param in pp.Parameters)
+            {
+                CPORPlanner.TraceListener.WriteLine(sName + ":" + param.Name);
                 pa.AddParameter(param);
+            }
             pa.AddParameter(pTag);
             CompoundFormula cfAnd = new CompoundFormula("and");
             ParametrizedPredicate ppKGivenT = new ParametrizedPredicate("KGiven" + pp.Name);

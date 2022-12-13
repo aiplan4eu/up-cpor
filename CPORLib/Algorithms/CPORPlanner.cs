@@ -24,8 +24,8 @@ namespace CPORLib.Algorithms
         }
 
 
-        //public static TextWriterTraceListener TraceListener = new TextWriterTraceListener("debug2.log");
-        public static TextWriterTraceListener TraceListener = new TextWriterTraceListener();
+        public static TextWriterTraceListener TraceListener = new TextWriterTraceListener("debug2.log");
+        //public static TextWriterTraceListener TraceListener = new TextWriterTraceListener();
 
         public ConditionalPlanTreeNode OfflinePlanning()
         {

@@ -23,19 +23,11 @@ public class Program
         gcmd_line.display_info = 1;
         gcmd_line.debug = 3;
         
-        try
-        {
-            string sPath = @"C:\temp\MonoTest\";
-            Run.RunPlanner(sPath + "d.pddl", sPath + "p.pddl", sPath + "out.text", false, false);
-        }
-        catch(Exception e)
-        {
-            return;
-        }
         
+        RunTest("doors5"); 
         RunTest("blocks3");
 
-        RunTest("doors5");        
+              
         RunTest("medpks010");
         RunTest("colorballs2-2");
         RunTest("blocks2");
@@ -60,8 +52,8 @@ public class Program
 
     public static void Main(string[] args)
     {
-        //TestAll();
-        //return;
+        TestAll();
+        return;
 
 
         if (args.Length < 3)
