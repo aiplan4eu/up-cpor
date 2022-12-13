@@ -1116,7 +1116,7 @@ namespace CPORLib.PlanningModel
         }
         private PlanningAction GenerateMergeAction(ParametrizedPredicate pp, Dictionary<string, List<Predicate>> dTags, bool bTrue)
         {
-            BUGBUG;//move from (not (Kp)) (not (KNp)) to Up (for unknown p) - also in sensing actions
+            //BUGBUG;//move from (not (Kp)) (not (KNp)) to Up (for unknown p) - also in sensing actions
             string sName = "Merge-" + pp.Name + "-";
             if (bTrue)
                 sName += "T";
