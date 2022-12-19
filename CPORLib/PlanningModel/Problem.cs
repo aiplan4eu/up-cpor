@@ -657,6 +657,9 @@ namespace CPORLib.PlanningModel
 
         private string GenerateKnowGivenLine(GroundedPredicate gp, string sTag, bool bKnowWhether)
         {
+            if (gp.Name.ToLower() == "adj")
+                Console.Write("*");
+
             string sKP = "";
             if (bKnowWhether)
                 sKP = "(KWGiven" + gp.Name;

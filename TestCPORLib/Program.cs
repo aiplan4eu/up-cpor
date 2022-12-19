@@ -52,8 +52,8 @@ public class Program
 
     public static void Main(string[] args)
     {
-        TestAll();
-        return;
+        //TestAll();
+        //return;
 
 
         if (args.Length < 3)

@@ -355,26 +355,16 @@ namespace CPORLib.Algorithms
                     msModel.Position = 0;
 
                     StreamReader sr = new StreamReader(msModel);
+
                     CPORPlanner.TraceListener.WriteLine("Read string from stream");
                     string s = sr.ReadToEnd();
                    
                     int idx = s.LastIndexOf("(define");
-                    
-
-                    
-                    CPORPlanner.TraceListener.WriteLine("index found " + idx);
-
-
                     string sModel = s.Substring(0, idx - 1).Replace('\0', ' ').Trim();
-                    CPORPlanner.TraceListener.WriteLine("got model string, starts with " + sModel.Substring(0, 10));
-
-                    CPORPlanner.TraceListener.WriteLine("get problem string");
-
                     string sProblem = s.Substring(idx).Replace('\0', ' ').Trim();
-                    CPORPlanner.TraceListener.WriteLine("got problem string, starts with " + sProblem.Substring(0, 10));
                     sr.Close();
 
-                    
+                    /*
                     StreamWriter swDomain = new StreamWriter("Kd.pddl");
                     swDomain.Write(sModel);
                     swDomain.Close();
@@ -383,14 +373,9 @@ namespace CPORLib.Algorithms
                     swProblem.Write(sProblem);
                     swProblem.Close();
 
-
-
-
-
-
                     sModel = "Kd.pddl";
                     sProblem = "Kp.pddl";
-                    
+                    */
 
                     CPORPlanner.TraceListener.WriteLine("Converting string to pyobject");
                     PyObject pysDomain = sModel.ToPython();
@@ -399,14 +384,38 @@ namespace CPORLib.Algorithms
                     CPORPlanner.TraceListener.WriteLine("Calling parser");
 
 
-                    //PyObject oProblem = UPParser.InvokeMethod("parse_problem_string", pysDomain, pysProblem);
-                    PyObject oProblem = UPParser.InvokeMethod("parse_problem", pysDomain, pysProblem);
+                    PyObject oProblem = UPParser.InvokeMethod("parse_problem_string", pysDomain, pysProblem);
+                    //PyObject oProblem = UPParser.InvokeMethod("parse_problem", pysDomain, pysProblem);
 
                     CPORPlanner.TraceListener.WriteLine("Parser done");
 
-                    PyObject oResult = UPClassicalPlanner.InvokeMethod("solve", oProblem);
+                    dynamic oResult = UPClassicalPlanner.InvokeMethod("solve", oProblem);
 
                     CPORPlanner.TraceListener.WriteLine("Planner done");
+
+                    if (oResult != null)
+                    {
+                        dynamic oPlan = oResult.plan;
+                        if (oPlan != null)
+                        {
+                            dynamic oActions = oPlan.actions;
+                            if (oActions != null)
+                            {
+                                List<string> lPlan = new List<string>();
+
+                                CPORPlanner.TraceListener.WriteLine("Plan: ");
+                                foreach (PyObject oAction in oActions)
+                                {
+                                    string sAction = Utilities.Replace(oAction.ToString(), new char[] {  '(', ')', ',' }, ' ');
+                                    lPlan.Add(sAction.Trim());
+                                    CPORPlanner.TraceListener.WriteLine(sAction);
+                                }
+                                return lPlan;
+                            }
+                        }
+                    }
+
+
 
                     return null;
                 }

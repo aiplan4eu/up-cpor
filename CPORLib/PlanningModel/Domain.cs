@@ -1125,7 +1125,6 @@ namespace CPORLib.PlanningModel
             ParametrizedAction pa = new ParametrizedAction(sName);
             foreach (Parameter param in pp.Parameters)
             {
-                CPORPlanner.TraceListener.WriteLine(sName + ":" + param.Name);
                 pa.AddParameter(param);
             }
             CompoundFormula cfAnd = new CompoundFormula("and");
@@ -1313,7 +1312,6 @@ namespace CPORLib.PlanningModel
             Parameter pTag = new Parameter(Utilities.TAG, Utilities.TAG_PARAMETER);
             foreach (Parameter param in pp.Parameters)
             {
-                CPORPlanner.TraceListener.WriteLine(sName + ":" + param.Name);
                 pa.AddParameter(param);
             }
             pa.AddParameter(pTag);
@@ -1979,7 +1977,10 @@ namespace CPORLib.PlanningModel
             Dictionary<Parameter, Constant> dBindings = new Dictionary<Parameter, Constant>();
             for (int iParameter = 0; iParameter < pa.Parameters.Count; iParameter++)
             {
-                dBindings[pa.Parameters[iParameter]] = new Constant(pa.Parameters[iParameter].Type, asAction[iParameter + 1]);
+                Constant c = new Constant(pa.Parameters[iParameter].Type, asAction[iParameter + 1]);
+                if (!Constants.Contains(c))
+                    return null;
+                dBindings[pa.Parameters[iParameter]] = c;
             }
             return dBindings;
         }

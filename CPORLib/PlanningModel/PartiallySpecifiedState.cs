@@ -1201,7 +1201,7 @@ namespace CPORLib.PlanningModel
             fObserve = null;
             bPreconditionFailure = false;
             string sRevisedActionName = sActionName.Replace(Utilities.DELIMITER_CHAR, " ");
-            string[] aName = Utilities.SplitString(sRevisedActionName, ' ');
+            string[] aName = Utilities.SplitString(sRevisedActionName, ' ', StringSplitOptions.RemoveEmptyEntries);
             a = Problem.Domain.GroundActionByName(aName);
             if (a == null || a is ParametrizedAction)
                 return;

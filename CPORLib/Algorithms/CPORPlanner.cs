@@ -24,8 +24,8 @@ namespace CPORLib.Algorithms
         }
 
 
-        public static TextWriterTraceListener TraceListener = new TextWriterTraceListener("debug2.log");
-        //public static TextWriterTraceListener TraceListener = new TextWriterTraceListener();
+        //public static TextWriterTraceListener TraceListener = new TextWriterTraceListener("debug2.log");
+        public static TextWriterTraceListener TraceListener = new TextWriterTraceListener();
 
         public ConditionalPlanTreeNode OfflinePlanning()
         {
@@ -157,8 +157,12 @@ namespace CPORLib.Algorithms
                                 if (InfoLevel > 1)
                                     Console.WriteLine("Executing: " + sAction);
 
+
+                                CPORPlanner.TraceListener.WriteLine("ApplyOffline: " + sAction);
+
                                 pssCurrent.ApplyOffline(sAction, out a, out bPreconditionFailure, out fObserved, out psTrueState, out psFalseState);
 
+                                CPORPlanner.TraceListener.WriteLine("ApplyOffline result: " + a +", " + bPreconditionFailure + ", " + psTrueState + ", " + psFalseState);
 
                                 if (psTrueState == null && psFalseState == null)
                                 {

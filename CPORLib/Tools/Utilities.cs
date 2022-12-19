@@ -101,9 +101,21 @@ namespace CPORLib.Tools
             return lStrings.ToArray();
         }
 
+        public static string Replace(string sOrg, char[] aToReplace, char cReplacement)
+        {
+            string sResult = "";
+            foreach(char c in sOrg)
+            {
+                if (aToReplace.Contains(c))
+                    sResult += cReplacement;
+                else
+                    sResult += c;
+            }
+            return sResult;
+        }
+
         public static string[] SplitString(string sOrg, char c, StringSplitOptions options = StringSplitOptions.None)
         {
-
             List<string> lStrings = new List<string>();
             string sCurrent = "";
             for (int i = 0; i < sOrg.Length; i++)
