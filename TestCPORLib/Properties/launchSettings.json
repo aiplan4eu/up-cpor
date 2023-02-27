@@ -2,7 +2,7 @@
   "profiles": {
     "TestCPORLib": {
       "commandName": "Project",
-      "commandLineArgs": "\"C:\\Users\\shanigu\\OneDrive - Ben Gurion University of the Negev\\Research\\projects\\AIPlan4EU\\hila\\unified_planning_cpor\\unified_planning\\test\\pddl\\doors\\domain.pddl\"\r\n\"C:\\Users\\shanigu\\OneDrive - Ben Gurion University of the Negev\\Research\\projects\\AIPlan4EU\\hila\\unified_planning_cpor\\unified_planning\\test\\pddl\\doors\\problem.pddl\"\r\n\"C:\\Users\\shanigu\\OneDrive - Ben Gurion University of the Negev\\Research\\projects\\AIPlan4EU\\hila\\unified_planning_cpor\\unified_planning\\test\\pddl\\doors\\Output.txt\""
+      "commandLineArgs": "\"..\\..\\..\\..\\Tests\\doors5\\d.pddl\"\r\n\"..\\..\\..\\..\\Tests\\doors5\\p.pddl\"\r\n\"..\\..\\..\\..\\Tests\\doors5\\out.txt\""
     }
   }
 }
