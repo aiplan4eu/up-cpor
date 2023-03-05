@@ -1,10 +1,10 @@
 
 (define (domain doors) 
 
-   (:requirements :strips :typing)
+   (:requirements :strips :typing :contingent)
    (:types pos )
-   (:predicates (adj ?i ?j) (at ?i)  (opened ?i) )
-                
+   (:predicates (adj ?i ?j) (at ?i)  (opened ?i)  )
+
    (:action sense-door
       :parameters (?i - pos ?j - pos )
       :precondition   (and (at ?i) (adj ?i ?j))
@@ -13,9 +13,7 @@
    (:action move
       :parameters (?i - pos ?j - pos )
       :precondition (and (adj ?i ?j) (at ?i) (opened ?j))
-      :effect  (and (not (at ?i)) (at ?j)) 
+      :effect  (and (not (at ?i)) (at ?j))
       )
-	  
-	  
 )
 

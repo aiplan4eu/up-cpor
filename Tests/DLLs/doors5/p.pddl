@@ -27,13 +27,11 @@
     p5-3
     p5-4
     p5-5
-	
 
-
- - pos 
+ - pos
     )
    (:init
- 
+    (and
  (at p1-3)
      (adj p1-1 p2-1)
      (adj p2-1 p1-1)
@@ -157,7 +155,6 @@
      (adj p5-5 p5-4)
 
 
-
         (opened p1-1)
         (opened p1-2)
         (opened p1-3)
@@ -176,7 +173,6 @@
         (opened p3-4)
         (opened p3-5)
      (oneof
-		
         (opened p4-1)
         (opened p4-2)
         (opened p4-3)
@@ -189,7 +185,7 @@
         (opened p5-4)
         (opened p5-5)
 
-    
+    )
     )
     (:goal (and (at p5-3))
 ))
