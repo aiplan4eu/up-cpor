@@ -1,4 +1,5 @@
 (define (domain medicalPKS10)
+(:requirements :contingent)
 (:constants i0 i1 i2 i3 i4 i5 i6 i7 i8 i9 i10  - ILLNESS
 s0 s1 s2 s3 s4 s5 s6 s7 s8 s9 s10 - STAIN)
 

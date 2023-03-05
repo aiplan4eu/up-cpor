@@ -1,16 +1,31 @@
 from unified_planning.io import PDDLReader
 from up_cpor.engine import CPORImpl
+from unified_planning.engines.results import PlanGenerationResultStatus
+
 
 if __name__ == "__main__":
 
     # Creating a PDDL reader
     reader = PDDLReader()
 
-    # Parsing a PDDL problem from file
-    problem1 = reader.parse_problem(
-        "../Tests/DLLs/doors5/d.pddl",
-        "../Tests/DLLs/doors5/p.pddl"
-    )
+    prob_arr = ['blocks2', 'blocks3', 'doors5', 'wumpus05', ]
+    prob_fails_arr = ['blocks7', 'medpks010', 'colorballs2-2', 'unix1', 'wumpus10']
+    large_prob_arr = ['doors15', ]
+    no_sol_pro = ['localize5', ]
 
-    solver = CPORImpl()
-    result = solver.solve(problem1)
+    for prob in prob_arr:
+        print(f"###########################Problem: {prob} start###########################")
+        # Parsing a PDDL problem from file
+        problem = reader.parse_problem(
+            f"../Tests/DLLs/{prob}/d.pddl",
+            f"../Tests/DLLs/{prob}/p.pddl"
+        )
+
+        solver = CPORImpl()
+        result = solver.solve(problem)
+
+        if result.status == PlanGenerationResultStatus.SOLVED_SATISFICING:
+            print(f'{solver.name} found a valid plan!')
+            print(f'Success')
+        else:
+            print('No plan found!')
