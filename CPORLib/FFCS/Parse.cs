@@ -113,15 +113,14 @@ namespace CPORLib.FFCS
 
 
 
-         int get_type(string str)
-
+        int get_type(string str)
         {
 
             int i;
 
             for (i = 0; i < lnum_types; i++)
             {
-                if (str == ltype_names[i]) 
+                if (str == ltype_names[i])
                     return i;
             }
 
@@ -131,6 +130,8 @@ namespace CPORLib.FFCS
 
         int add_type(string str)
         {
+            if (str.ToUpper() == Constants.STANDARD_TYPE)
+                str = Constants.STANDARD_TYPE;
             int iType = get_type(str);
             if (iType == -1)
             {
@@ -395,6 +396,183 @@ namespace CPORLib.FFCS
 
         }
 
+
+        //this is the original implementation of Joerg, extracted from the function.
+        //it does not seem to fit what we need, so I am reimplementing
+        public bool[,] CreateTypeMatrixOriginal()
+        {
+            bool[,] m = new bool[lnum_types, lnum_types];
+            int i, j, k, std;
+            TypedList tyl;
+            /* now, compute the transitive closure of all type inclusions.
+             * first initialize the matrix.
+             */
+            for (i = 0; i < lnum_types; i++)
+            {
+                for (j = 0; j < lnum_types; j++)
+                {
+                    m[i, j] = (i == j ? true : false);
+                }
+            }
+            std = -1;
+            for (i = 0; i < lnum_types; i++)
+            {
+                if (ltype_names[i].ToUpper() == STANDARD_TYPE)
+                {
+                    std = i;
+                    break;
+                }
+            }
+            for (i = 0; i < lnum_types; i++)
+            {
+                m[i, std] = true;/* all types are subtypes of OBJECT */
+            }
+            for (tyl = FF.Parsing.gparse_types; tyl != null; tyl = tyl.next)
+            {
+                /* all inclusions as are defined in domain file
+                 */
+                int iType = get_type(tyl.name);
+                m[iType, tyl.n] = true;
+            }
+            /* compute transitive closure on inclusions matrix
+             */
+            for (j = 0; j < lnum_types; j++)
+            {
+                for (i = 0; i < lnum_types; i++)
+                {
+                    if (i != j)
+                    {
+                        if (m[i, j])
+                        {
+                            for (k = 0; k < lnum_types; k++)
+                            {
+                                if (j != k && i != k)
+                                {
+                                    if (m[j, k])
+                                    {
+                                        m[i, k] = true;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            /* union types are subsets of all those types that contain all
+             * their components, and 
+             * all component types are subsets of the either type !
+             */
+            for (i = 0; i < lnum_types; i++)
+            {
+                if (lnum_either_ty[i] < 2) continue;
+                for (j = 0; j < lnum_types; j++)
+                {
+                    if (j == i) continue;
+                    /* get supertypes of all component types
+                     */
+                    for (k = 0; k < lnum_either_ty[i]; k++)
+                    {
+                        if (!m[leither_ty[i, k], j]) break;
+                    }
+                    if (k < lnum_either_ty[i]) continue;
+                    m[i, j] = true;
+                    /* make components subtypes of either type
+                     */
+                    for (k = 0; k < lnum_either_ty[i]; k++)
+                    {
+                        int iSub = leither_ty[i, k];
+                        if (iSub != std)
+                            m[iSub, i] = true;
+                    }
+                }
+            }
+            /* and again, compute transitive closure on inclusions matrix.
+             * I guess, this won't change anything (?), but it also won't need
+             * any remarkable computation time, so why should one think about it ?
+             */
+            //GUY: this seems incorrect. Example: let us assume two eithers:
+            //EITHER t3 t2 t1
+            //EITHER t4 t2 t1
+            //from the above t2 is the child of the two eithers
+            //but t4 is the child of t2, hence, t4 is the child of the first either
+
+            for (j = 0; j < lnum_types; j++)
+            {
+                for (i = 0; i < lnum_types; i++)
+                {
+                    if (m[i, j])
+                    {
+                        for (k = 0; k < lnum_types; k++)
+                        {
+                            if (m[j, k])
+                            {
+                                if (!m[i, k])
+                                    m[i, k] = true;
+                            }
+                        }
+                    }
+                }
+            }
+            return m;
+        }
+
+
+        //this implementation relies ONLY on the either's
+        //EITHER t1 t2 t3 => m[t1,t2], m[t1,t3], m[t2,t3]
+        public bool[,] CreateTypeMatrix()
+        {
+            bool[,] m = new bool[lnum_types, lnum_types];
+            int i, j, k, std;
+            TypedList tyl;
+            /* now, compute the transitive closure of all type inclusions.
+             * first initialize the matrix.
+             */
+            for (i = 0; i < lnum_types; i++)
+            {
+                for (j = 0; j < lnum_types; j++)
+                {
+                    m[i, j] = (i == j ? true : false);
+                }
+            }
+            std = -1;
+            for (i = 0; i < lnum_types; i++)
+            {
+                if (ltype_names[i].ToUpper() == STANDARD_TYPE)
+                {
+                    std = i;
+                    break;
+                }
+            }
+            for (i = 0; i < lnum_types; i++)
+            {
+                m[i, std] = true;/* all types are subtypes of OBJECT */
+            }
+
+            /* union types are subsets of all those types that contain all
+             * their components, and 
+             * all component types are subsets of the either type !
+             */
+            for (i = 0; i < lnum_types; i++)
+            {
+                for (k = 0; k < lnum_either_ty[i] - 1; k++)
+                {
+                    int iSubType = leither_ty[i,k];
+                    for (j = k + 1; j < lnum_either_ty[i]; j++)
+                    {
+                        int iSuperType = leither_ty[i,j];
+                        //EITHER t1 t2 => m[t1,t2] = true
+                        m[iSubType,iSuperType] = true;
+                    }
+                    //all component types are subsets of the either type
+                    m[iSubType, i] = true;
+                }
+
+            }
+            
+            return m;
+        }
+
+
         public  void build_orig_constant_list()
 
         {
@@ -407,11 +585,13 @@ namespace CPORLib.FFCS
 
             int i, j, k, n, std;
 
-            bool[,] m = new bool[MAX_TYPES, MAX_TYPES];
 
             FactList fl, p_fl;
 
             lnum_types = 0;
+
+            add_type(STANDARD_TYPE);
+
             for (tyl = FF.Parsing.gparse_types; tyl != null; tyl = tyl.next)
             {
                 add_type(tyl.name);
@@ -621,109 +801,15 @@ namespace CPORLib.FFCS
                 }
             }
 
-
-            /* now, compute the transitive closure of all type inclusions.
-             * first initialize the matrix.
-             */
-            for (i = 0; i < lnum_types; i++)
-            {
-                for (j = 0; j < lnum_types; j++)
-                {
-                    m[i, j] = (i == j ? true : false);
-                }
-            }
-            std = -1;
-            for (i = 0; i < lnum_types; i++)
-            {
-                if (ltype_names[i].ToUpper() == STANDARD_TYPE)
-                {
-                    std = i;
-                    break;
-                }
-            }
-            for (i = 0; i < lnum_types; i++)
-            {
-                m[i, std] = true;/* all types are subtypes of OBJECT */
-            }
-            for (tyl = FF.Parsing.gparse_types; tyl != null; tyl = tyl.next)
-            {
-                /* all inclusions as are defined in domain file
-                 */
-                m[get_type(tyl.name), tyl.n] = true;
-            }
-            /* compute transitive closure on inclusions matrix
-             */
-            for (j = 0; j < lnum_types; j++)
-            {
-                for (i = 0; i < lnum_types; i++)
-                {
-                    if (m[i, j])
-                    {
-                        for (k = 0; k < lnum_types; k++)
-                        {
-                            if (m[j, k])
-                            {
-                                m[i, k] = true;
-                            }
-                        }
-                    }
-                }
-            }
-            /* union types are subsets of all those types that contain all
-             * their components, and 
-             * all component types are subsets of the either type !
-             */
-            for (i = 0; i < lnum_types; i++)
-            {
-                if (lnum_either_ty[i] < 2) continue;
-                for (j = 0; j < lnum_types; j++)
-                {
-                    if (j == i) continue;
-                    /* get supertypes of all component types
-                     */
-                    for (k = 0; k < lnum_either_ty[i]; k++)
-                    {
-                        if (!m[leither_ty[i, k], j]) break;
-                    }
-                    if (k < lnum_either_ty[i]) continue;
-                    m[i, j] = true;
-                    /* make components subtypes of either type
-                     */
-                    for (k = 0; k < lnum_either_ty[i]; k++)
-                    {
-                        m[leither_ty[i, k], i] = true;
-                    }
-                }
-            }
-            /* and again, compute transitive closure on inclusions matrix.
-             * I guess, this won't change anything (?), but it also won't need
-             * any remarkable computation time, so why should one think about it ?
-             */
-            for (j = 0; j < lnum_types; j++)
-            {
-                for (i = 0; i < lnum_types; i++)
-                {
-                    if (m[i, j])
-                    {
-                        for (k = 0; k < lnum_types; k++)
-                        {
-                            if (m[j, k])
-                            {
-                                m[i, k] = true;
-                            }
-                        }
-                    }
-                }
-            }
-
+            bool[,] m = CreateTypeMatrix();
 
             /* now build FactList of ALL  constant . type   pairs.
              * for each constant / object, let it appear separately
              * for each type it is a member of; compute type
              * membership based on propagating constants / objects
-             * throuFF.Search.gH inclusions matrix.
+             * through inclusions matrix.
              *
-             * this miFF.Search.gHt make the same pair appear doubly, if an object
+             * this might make the same pair appear doubly, if an object
              * is declared in type T as well as in some supertype T'.
              * such cases will be filtered out in string collection.
              */
@@ -754,8 +840,8 @@ namespace CPORLib.FFCS
                 n = get_type(fl.item.next.item);
                 for (i = 0; i < lnum_types; i++)
                 {
-                    if (i == n ||
-                     !m[n, i]) continue;
+                    if (i == n || !m[n, i]) 
+                        continue;
                     fl = new FactList();
                     fl.item = new TokenList();
                     fl.item.next = new TokenList();

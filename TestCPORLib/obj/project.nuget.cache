@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "hUHRzM9np2dAkq/9DD+gPYN9QBJOSiyDZqX7RXVXXKXEOlgkKvqvvMfPba78XwMg8PNUP9eYXV29zql01/tXRA==",
+  "dgSpecHash": "sRoQ3aCrBhdMqP50ID1zj9ZRwJ1mLXj/35PjDMebRo9nYtXGG0bNXLgeCT2qLCQ+SK8tLBUeRKaoKAnTOvi49g==",
   "success": true,
-  "projectFilePath": "C:\\Users\\shanigu\\OneDrive - Ben Gurion University of the Negev\\Research\\projects\\AIPlan4EU\\up-cpor\\TestCPORLib\\RunCPOR.csproj",
+  "projectFilePath": "D:\\OneDrive\\OneDrive - BGU\\Research\\projects\\AIPlan4EU\\up-cpor\\TestCPORLib\\RunCPOR.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\shanigu\\.nuget\\packages\\microsoft.csharp\\4.7.0\\microsoft.csharp.4.7.0.nupkg.sha512",
     "C:\\Users\\shanigu\\.nuget\\packages\\microsoft.netcore.platforms\\1.1.0\\microsoft.netcore.platforms.1.1.0.nupkg.sha512",

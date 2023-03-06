@@ -208,6 +208,7 @@ namespace CPORLib.FFCS
         {
             string sCurrent = sType;
             List<string> hierarchy = new List<string>();
+            hierarchy.Add(sType);
             while (d.TypeHierarchy.ContainsKey(sCurrent))
             {
                 sCurrent = d.TypeHierarchy[sCurrent];
@@ -220,10 +221,19 @@ namespace CPORLib.FFCS
         {
             //types: gparse_types
             List<TypedList> lTypes = new List<TypedList>();
-            foreach(string sType in d.Types)
+            for(int iType = 0; iType < d.Types.Count; iType++)
             {
+                string sType = d.Types[iType];
+                if (sType.ToUpper() == Constants.STANDARD_TYPE)
+                    sType = Constants.STANDARD_TYPE;
                 TypedList tl = new TypedList(sType);
                 List<string> lHierarchy = GetTypeHierarchy(sType, d);
+                if(lHierarchy.Count > 0)
+                {
+                    string sLast = lHierarchy[lHierarchy.Count - 1];
+                    if (sLast.ToUpper() == Constants.STANDARD_TYPE)
+                        lHierarchy.Remove(sLast);
+                }
                 TokenList tlHierarchy = new TokenList();
                 tl.type = tlHierarchy;
                 foreach(string sHierarchy in lHierarchy)

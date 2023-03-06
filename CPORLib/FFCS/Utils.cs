@@ -90,8 +90,9 @@ namespace CPORLib.FFCS
         public static string AXIOM_STR = "AXIOM";
         public static string NAME_STR = "name";
         public static string VARIABLE_STR = "variable";
-        public static string STANDARD_TYPE = "OBJECT";
+        public static string STANDARD_TYPE = "STD_TYPE";
         public static string EITHER_STR = "EITHER";
+        public static string ARTIFICIAL_ALL_OBJCETS = "ARTFICIAL-ALL-OBJECTS";
 
         /* not a real 'code' define; used in relax and search to encode
  * infinite level number / plan length

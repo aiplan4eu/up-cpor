@@ -55,6 +55,7 @@ public class Program
         //TestAll();
         //return;
 
+        //TestClassicalFFCS();
 
         if (args.Length < 3)
         {
@@ -73,5 +74,29 @@ public class Program
                 sOutputFile,
                 bOnline);
         }
+    }
+
+    private static void TestClassicalFFCS()
+    {
+        string sDomainFile = @"C:\Users\shanigu\Downloads\domain-driver1.pddl";
+        string sProblemFile = @"C:\Users\shanigu\Downloads\problem-driver1.pddl";
+        MemoryStream ms = new MemoryStream();
+        StreamWriter sw = new StreamWriter(ms);
+        using (StreamReader sr = new StreamReader(sDomainFile))
+        {
+            string sDomain = sr.ReadToEnd();
+            sw.Write(sDomain);
+            sr.Close();
+        }
+        using (StreamReader sr = new StreamReader(sProblemFile))
+        {
+            string sProblem = sr.ReadToEnd();
+            sw.Write(sProblem);
+            sr.Close();
+        }
+        sw.Flush();
+        ms.Position = 0;
+        FF ff = new FF(ms);
+        List<string> lPlan = ff.Plan();
     }
 }

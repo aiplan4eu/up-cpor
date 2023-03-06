@@ -10,6 +10,8 @@ using static CPORLib.FFCS.DomainProperties;
 using static CPORLib.FFCS.Output;
 using static CPORLib.FFCS.Planning;
 using static CPORLib.FFCS.FFUtilities;
+using static CPORLib.FFCS.Constants;
+
 
 namespace CPORLib.FFCS
 {
@@ -140,9 +142,7 @@ namespace CPORLib.FFCS
 
 
         public  void collect_all_strings()
-
         {
-
             FactList f;
             TokenList t;
             int p_num, type_num, c_num, ar;
@@ -152,7 +152,7 @@ namespace CPORLib.FFCS
              * is one type that contains all objects.
              */
             //Main.DP.gtype_names[0] = new_Token(50);
-            FF.DP.gtype_names[0] = "ARTFICIAL-ALL-OBJECTS";
+            FF.DP.gtype_names[0] = ARTIFICIAL_ALL_OBJCETS;
             FF.DP.gtype_size[0] = 0;
             for (i = 0; i < Constants.MAX_CONSTANTS; i++)
             {
@@ -170,7 +170,7 @@ namespace CPORLib.FFCS
                                Constants.MAX_TYPES);
                         Exit(1);
                     }
-                    //Main.DP.gtype_names[Main.DP.gnum_types] = new_Token(strlen(f.item.next.item) + 1);
+                    //FF.DP.gtype_names[FF.DP.gnum_types] = new_Token(strlen(f.item.next.item) + 1);
                     FF.DP.gtype_names[FF.DP.gnum_types] = f.item.next.item;
                     FF.DP.gtype_size[FF.DP.gnum_types] = 0;
                     for (i = 0; i < Constants.MAX_CONSTANTS; i++)
@@ -252,7 +252,7 @@ namespace CPORLib.FFCS
                     }
                     if (ar == Constants.MAX_ARITY)
                     {
-                        FFUtilities.Write("\narity of %s to hiFF.Search.gH! increase Constants.MAX_ARITY (currently %d)\n\n",
+                        FFUtilities.Write("\narity of %s too high, increase Constants.MAX_ARITY (currently %d)\n\n",
                                FF.DP.gpredicates[FF.DP.gnum_predicates], Constants.MAX_ARITY);
                         Exit(1);
                     }
@@ -279,8 +279,7 @@ namespace CPORLib.FFCS
              */
             for (i = 1; i < FF.DP.gnum_types; i++)
             {
-                if (str == FF.DP.gtype_names[i] ||
-                 (str == FF.DP.gtype_names[i]))
+                if (str == FF.DP.gtype_names[i])
                 {
                     break;
                 }

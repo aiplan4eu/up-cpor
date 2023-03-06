@@ -272,8 +272,6 @@ namespace CPORLib.FFCS
 
         public FF(PlanningModel.Domain d, Problem p) : base(d, p)
         {
-
-
             Init();
         }
 
@@ -288,7 +286,7 @@ namespace CPORLib.FFCS
             swProblem.Write(m_pProblem.ToString());
             swProblem.Close();
             */
-           Parser p = new Parser();
+            Parser p = new Parser();
             msModel.Position = 0;
             p.ParseDomainAndProblem(msModel, out m_dDomain, out m_pProblem);
 

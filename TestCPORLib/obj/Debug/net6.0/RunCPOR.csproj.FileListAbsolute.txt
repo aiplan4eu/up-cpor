@@ -37,3 +37,23 @@ C:\Users\Guy\OneDrive - Ben Gurion University of the Negev\Research\projects\AIP
 C:\Users\Guy\OneDrive - Ben Gurion University of the Negev\Research\projects\AIPlan4EU\up-cpor\TestCPORLib\obj\Debug\net6.0\RunCPOR.genruntimeconfig.cache
 C:\Users\Guy\OneDrive - Ben Gurion University of the Negev\Research\projects\AIPlan4EU\up-cpor\TestCPORLib\obj\Debug\net6.0\ref\RunCPOR.dll
 C:\Users\shanigu\OneDrive - Ben Gurion University of the Negev\Research\projects\AIPlan4EU\up-cpor\TestCPORLib\bin\Debug\net6.0\Python.Runtime.dll
+D:\OneDrive\OneDrive - BGU\Research\projects\AIPlan4EU\up-cpor\TestCPORLib\bin\Debug\net6.0\RunCPOR.exe
+D:\OneDrive\OneDrive - BGU\Research\projects\AIPlan4EU\up-cpor\TestCPORLib\bin\Debug\net6.0\RunCPOR.deps.json
+D:\OneDrive\OneDrive - BGU\Research\projects\AIPlan4EU\up-cpor\TestCPORLib\bin\Debug\net6.0\RunCPOR.runtimeconfig.json
+D:\OneDrive\OneDrive - BGU\Research\projects\AIPlan4EU\up-cpor\TestCPORLib\bin\Debug\net6.0\RunCPOR.dll
+D:\OneDrive\OneDrive - BGU\Research\projects\AIPlan4EU\up-cpor\TestCPORLib\bin\Debug\net6.0\RunCPOR.pdb
+D:\OneDrive\OneDrive - BGU\Research\projects\AIPlan4EU\up-cpor\TestCPORLib\bin\Debug\net6.0\Microsoft.Solver.Foundation.dll
+D:\OneDrive\OneDrive - BGU\Research\projects\AIPlan4EU\up-cpor\TestCPORLib\bin\Debug\net6.0\Python.Runtime.dll
+D:\OneDrive\OneDrive - BGU\Research\projects\AIPlan4EU\up-cpor\TestCPORLib\bin\Debug\net6.0\CPORLib.dll
+D:\OneDrive\OneDrive - BGU\Research\projects\AIPlan4EU\up-cpor\TestCPORLib\bin\Debug\net6.0\CPORLib.pdb
+D:\OneDrive\OneDrive - BGU\Research\projects\AIPlan4EU\up-cpor\TestCPORLib\obj\Debug\net6.0\RunCPOR.csproj.AssemblyReference.cache
+D:\OneDrive\OneDrive - BGU\Research\projects\AIPlan4EU\up-cpor\TestCPORLib\obj\Debug\net6.0\RunCPOR.GeneratedMSBuildEditorConfig.editorconfig
+D:\OneDrive\OneDrive - BGU\Research\projects\AIPlan4EU\up-cpor\TestCPORLib\obj\Debug\net6.0\RunCPOR.AssemblyInfoInputs.cache
+D:\OneDrive\OneDrive - BGU\Research\projects\AIPlan4EU\up-cpor\TestCPORLib\obj\Debug\net6.0\RunCPOR.AssemblyInfo.cs
+D:\OneDrive\OneDrive - BGU\Research\projects\AIPlan4EU\up-cpor\TestCPORLib\obj\Debug\net6.0\RunCPOR.csproj.CoreCompileInputs.cache
+D:\OneDrive\OneDrive - BGU\Research\projects\AIPlan4EU\up-cpor\TestCPORLib\obj\Debug\net6.0\RunCPOR.csproj.CopyComplete
+D:\OneDrive\OneDrive - BGU\Research\projects\AIPlan4EU\up-cpor\TestCPORLib\obj\Debug\net6.0\RunCPOR.dll
+D:\OneDrive\OneDrive - BGU\Research\projects\AIPlan4EU\up-cpor\TestCPORLib\obj\Debug\net6.0\refint\RunCPOR.dll
+D:\OneDrive\OneDrive - BGU\Research\projects\AIPlan4EU\up-cpor\TestCPORLib\obj\Debug\net6.0\RunCPOR.pdb
+D:\OneDrive\OneDrive - BGU\Research\projects\AIPlan4EU\up-cpor\TestCPORLib\obj\Debug\net6.0\RunCPOR.genruntimeconfig.cache
+D:\OneDrive\OneDrive - BGU\Research\projects\AIPlan4EU\up-cpor\TestCPORLib\obj\Debug\net6.0\ref\RunCPOR.dll

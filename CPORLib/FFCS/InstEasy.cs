@@ -14,15 +14,6 @@ namespace CPORLib.FFCS
     public class InstEasy
     {
 
-
-        
-
-
-
-
-
-
-
         public  void build_easy_action_templates()
         {
 
