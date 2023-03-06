@@ -11,7 +11,7 @@ After cloning the project open cmd from the project dir in you PC and create new
 
 ```bash
 conda create -n up_cpor_env python=3.8.0
-conda active up_cpor_env
+conda activate up_cpor_env
 ```
 
 Use the package manager [pip](https://pip.pypa.io/en/stable/) to install up-cpor.
