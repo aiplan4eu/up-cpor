@@ -1,28 +1,31 @@
 
 (define (domain sliding-doors) 
 
-   (:requirements :strips :typing)
+   (:requirements :strips :typing :contingent)
    (:types pos )
+   (:constants p1-1 p1-2 p1-3 p1-4 p1-5 p2-1 p2-2 p2-3 p2-4 p2-5 p3-1 p3-2 p3-3 p3-4 p3-5 p4-1 p4-2 p4-3 p4-4 p4-5 p5-1 p5-2 p5-3 p5-4 p5-5 - pos )
    (:predicates (ok) ( at ?i ) (free-up) (free-down) (free-left) (free-right) )
-   (:constants p1-1 p1-2 p1-3 p1-4 p1-5 p2-1 p2-2 p2-3 p2-4 p2-5 p3-1 p3-2 p3-3 p3-4 p3-5 p4-1 p4-2 p4-3 p4-4 p4-5 p5-1 p5-2 p5-3 p5-4 p5-5 - pos
 
- )
- 
     (:action sense-up
+      :parameters ()
       :observe (free-up) )
 
    (:action sense-down
+     :parameters ()
      :observe (free-down) )
 
    (:action sense-left
+     :parameters ()
      :observe (free-left) )
 
    (:action sense-right
+     :parameters ()
      :observe (free-right) )
 
    (:action move-up
+     :parameters ()
      :precondition (and (ok) (free-up))
-     :effect (and (not (ok)) 
+     :effect (and (not (ok))
        (when (and  (at p1-1)) (and (at p1-2) (not (at  p1-1))))
        (when (and  (at p5-1)) (and (at p5-2) (not (at  p5-1))))
        (when (and  (at p1-2)) (and (at p1-3) (not (at  p1-2))))
@@ -33,8 +36,9 @@
        (when (and  (at p5-4)) (and (at p5-5) (not (at  p5-4))))
    ))
   (:action move-down
+     :parameters ()
      :precondition (and (ok) (free-down))
-     :effect (and (not (ok)) 
+     :effect (and (not (ok))
        (when (and  (at p1-2)) (and (at p1-1) (not (at  p1-2))))
        (when (and  (at p5-2)) (and (at p5-1) (not (at  p5-2))))
        (when (and  (at p1-3)) (and (at p1-2) (not (at  p1-3))))
@@ -45,8 +49,9 @@
        (when (and  (at p5-5)) (and (at p5-4) (not (at  p5-5))))
    ))
  (:action move-left
+     :parameters ()
      :precondition (and (ok) (free-left))
-     :effect (and (not (ok)) 
+     :effect (and (not (ok))
        (when (and  (at p2-1)) (and  (at p1-1) (not (at  p2-1))))
        (when (and  (at p3-1)) (and  (at p2-1) (not (at  p3-1))))
        (when (and  (at p4-1)) (and  (at p3-1) (not (at  p4-1))))
@@ -61,6 +66,7 @@
        (when (and  (at p5-5)) (and  (at p4-5) (not (at  p5-5))))
    ))
 (:action move-right
+     :parameters ()
      :precondition (and (ok) (free-right))
      :effect (and (not (ok)) 
        (when (and  (at p1-1)) (and (at p2-1) (not (at  p1-1))))

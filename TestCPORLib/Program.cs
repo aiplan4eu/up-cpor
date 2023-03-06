@@ -7,7 +7,7 @@ public class Program
 {
     public static void RunTest(string sName)
     {
-        string sPath = @"C:\Users\shanigu\OneDrive - Ben Gurion University of the Negev\Research\projects\AIPlan4EU\up-cpor\Tests\" + sName;
+        string sPath = @"..\..\..\..\Tests\" + sName;
         //string sPath = @"C:\Users\Guy\OneDrive - Ben Gurion University of the Negev\Research\projects\AIPlan4EU\up-cpor\Tests\" + sName;
         string sDomainFile = Path.Combine(sPath, "d.pddl");
         string sProblemFile = Path.Combine(sPath, "p.pddl");

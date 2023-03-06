@@ -1,7 +1,7 @@
 
 (define (domain doors) 
 
-   (:requirements :strips :typing)
+   (:requirements :strips :typing :contingent)
    (:types pos )
    (:predicates (adj ?i ?j) (at ?i)  (opened ?i) )
                 

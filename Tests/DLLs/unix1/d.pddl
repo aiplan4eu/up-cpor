@@ -1,7 +1,7 @@
 ;unix domain 
 
 (define (domain unix)
-
+(:requirements :contingent)
 (:types FILE DIR)
 (:predicates (file-in-dir ?file - FILE ?dir - DIR)
     (sub-dir ?par-dir - DIR ?child-dir - DIR)

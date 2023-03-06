@@ -1,7 +1,7 @@
 
 (define (domain colorballs) 
 
-   (:requirements :strips :typing)
+   (:requirements :strips :typing :contingent)
    (:types pos obj col)
    (:predicates (color ?o ?c) (trashed ?o) (garbage-color ?t ?c) (garbage-at ?t ?p)
                 (adj ?i ?j)  (at ?i) (holding ?o) (obj-at ?o ?i) )
