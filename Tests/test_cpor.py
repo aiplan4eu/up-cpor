@@ -1,7 +1,7 @@
 from unified_planning.io import PDDLReader
-from up_cpor.engine import CPORImpl
 from unified_planning.engines.results import PlanGenerationResultStatus
 
+from up_cpor.engine import CPORImpl
 
 if __name__ == "__main__":
 
