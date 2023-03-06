@@ -1,5 +1,5 @@
 # up-cpor
 
-Requires: pythonnet 3.0.0
-Runs on python3.9 
-C# code must be compiled using .Net standard 2.0 (due to pythonnet restrictions)
+After cloning the project, you can use the code in two ways:
+1. Directly from Test/CPOR_engine_demo.ipynb.
+2. Install the packages in requirements.txt and see a running example under Tests/test_cpor.py or Tests/test_cpor_replaner.py
