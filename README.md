@@ -37,7 +37,6 @@ result = solver.solve(problem)
 ### Meta Engine
 
 ```python
-from up_cpor.engine import CPORImpl  ## will be from pypi in future 
 
 # use of the method with different classical planner (in this example-tamer) on a known problem
 with OneshotPlanner(name='MetaCPORPlanning[tamer]') as planner:
