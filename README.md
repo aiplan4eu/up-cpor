@@ -23,6 +23,8 @@ It will install the unified_planning package and all the essential to run the al
 
 ## Usage
 
+### Engine
+
 ```python
 from up_cpor.engine import CPORImpl  ## will be from pypi in future 
 
@@ -30,10 +32,16 @@ from up_cpor.engine import CPORImpl  ## will be from pypi in future
 solver = CPORImpl()
 result = solver.solve(problem)
 
-# use of the method with different classical planner (planner) on a known problem
-solver = CPORImpl()
-solver.SetClassicalPlanner(planner)
-result = solver.solve(problem)
+```
+
+### Meta Engine
+
+```python
+from up_cpor.engine import CPORImpl  ## will be from pypi in future 
+
+# use of the method with different classical planner (in this example-tamer) on a known problem
+with OneshotPlanner(name='MetaCPORPlanning[tamer]') as planner:
+    result = planner.solve(problem)
 
 
 ```

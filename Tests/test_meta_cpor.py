@@ -1,9 +1,6 @@
 from unified_planning.io import PDDLReader
 import unified_planning.environment as environment
-from unified_planning.engines.results import PlanGenerationResultStatus
 from unified_planning.shortcuts import *
-
-from up_cpor.engine import CPORMetaEngineImpl
 
 
 if __name__ == "__main__":
