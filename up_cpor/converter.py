@@ -15,7 +15,8 @@ sys.path.append(PROJECT_PATH)
 
 from unified_planning.io import PDDLReader
 from unified_planning.model import FNode, OperatorKind, Fluent, Effect, SensingAction
-from unified_planning.plans import ActionInstance, ContingentPlanNode
+from unified_planning.plans import ActionInstance
+from unified_planning.plans.contingent_plan import ContingentPlanNode
 import unified_planning as up
 
 
