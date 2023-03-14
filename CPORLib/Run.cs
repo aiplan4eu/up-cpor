@@ -53,8 +53,36 @@ namespace CPORLib
 
             if (bOnline)
             {
-                SDRPlanner sdr = new SDRPlanner(domain, problem);
-                sdr.OnlineReplanning();
+                Random rnd = new Random(0);
+                //sdr.OnlineReplanning();
+                int cIterations = 50, cSuccess = 0;
+                    int idx = 0;
+                for (int i = 0; i < cIterations; i++)
+                {
+                    SDRPlanner sdr = new SDRPlanner(domain, problem);
+                    Console.WriteLine("Starting " + domain.Name);
+                    while (!sdr.GoalReached)
+                    {
+                        //if (idx == 19)
+                        //    Console.Write("*");
+                        string sAction = sdr.GetAction();
+                        if (sAction == null)
+                            Console.Write("*");
+                        string sObservation = null;
+                        bool bResult = sdr.SetObservation(sObservation);
+                        if (!bResult)
+                        {
+                            sObservation = "true";
+                            if (rnd.NextDouble() < 0.5)
+                                sObservation = "false";
+                            bResult = sdr.SetObservation(sObservation);
+                        }
+                        Console.WriteLine(idx + ") Executed " + sAction + ", received " + sObservation);
+                        idx++;
+                        
+                    }
+                    cSuccess++;
+                }
             }
             else
             {

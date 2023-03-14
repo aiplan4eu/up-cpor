@@ -281,7 +281,8 @@ namespace CPORLib.PlanningModel
                             bValid = false;
                     }
                 }
-                else
+
+                if(bValid)
                 {
                     if (lFormulas.Count > 0)
                     {

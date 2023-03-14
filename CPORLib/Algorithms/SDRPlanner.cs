@@ -1,4 +1,5 @@
-﻿using CPORLib.LogicalUtilities;
+﻿using CPORLib.FFCS;
+using CPORLib.LogicalUtilities;
 using CPORLib.Parsing;
 using CPORLib.PlanningModel;
 using CPORLib.Tools;
@@ -16,16 +17,134 @@ namespace CPORLib.Algorithms
 
     public class SDRPlanner : PlannerBase
     {
+        private PartiallySpecifiedState CurrentState;
+        private List<string> FutureActions;
+        private int NextActionIndex;
+        private bool ExpectingObservation;
+        public string Error { get; private set; }
+        public bool GoalReached { get { return CurrentState.IsGoalState(); } }
 
 
         public SDRPlanner(Domain domain, Problem problem): base(domain, problem)    
         {
             Options.ComputeCompletePlanTree = false;
-
+            Options.AddAllKnownToGiven = true; //this is needed in, e.g., medpks010
+            //Debug.WriteLine("Started online replanning for " + Domain.Name + ", " + DateTime.Now);
+            //no deadend support for now
+            BeliefState bsInitial = problem.GetInitialBelief();
+            CurrentState = bsInitial.GetPartiallySpecifiedState();
+            FutureActions = null;
+            NextActionIndex= 0;
+            ExpectingObservation = false;
         }
 
+        
+        public string GetAction()
+        {
+            Error = "";
+            if (ExpectingObservation)
+            {
+                Error = "Expecting the observation received from the last action before computing a new action.";
+                return null;
+            }
+            if (GoalReached)
+            {
+                Error = "Goal already reached, no additional actions should be executed.";
+                return null;
+            }
+            bool bPreconditionFailure = false;
+            if (FutureActions != null && NextActionIndex < FutureActions.Count)
+            {
+                string sAction = FutureActions[NextActionIndex];
+                bool bPreconditionsHold = CurrentState.IsApplicable(sAction);
+                if (bPreconditionsHold)
+                    return sAction;
+                else
+                    bPreconditionFailure = true;
+            }
 
+            List<string> lPlan = Plan(CurrentState, bPreconditionFailure, out bool bDeadEndReached, out State sChosen);
+            if (lPlan == null || lPlan.Count ==0)
+            {
+                Error = "Could not plan for the current state";
+                return null;
+            }
+            FutureActions = lPlan;
+            NextActionIndex = 0;
+            return GetAction();
+        }
 
+        public bool SetObservation(string sObservation)
+        {
+            Error = "";
+            if (GoalReached)
+            {
+                Error = "Goal already reached, no additional actions should be executed.";
+                return false;
+            }
+            string sAction = FutureActions[NextActionIndex];
+            string sRevisedActionName = sAction.Replace(Utilities.DELIMITER_CHAR, " ");
+            string[] aName = Utilities.SplitString(sRevisedActionName, ' ');
+            Action a = Problem.Domain.GroundActionByName(aName);
+            if(a.Observe == null && sObservation != null)
+            {
+                Error = "Action was not a sensing action, null observation expected.";
+                return false;
+            }
+            if (a.Observe != null && sObservation == null)
+            {
+                Error = "Sensing action executed, expecting an observation.";
+                return false;
+            }
+            PartiallySpecifiedState psNext = CurrentState.Apply(a, sObservation);
+                /*
+            CurrentState.ApplyOffline(a, out bool bPreconditionFailure, out PartiallySpecifiedState psTrue
+                , out PartiallySpecifiedState psFalse, true);
+            if(bPreconditionFailure)
+            {
+                Error = "Could not execute the next action, preconditions do not hold.";
+                return false;
+            }
+            bool bObservation = true;
+            if (sObservation != null)
+            {
+                sObservation = sObservation.ToLower().Trim();
+                bObservation = (sObservation == "true");
+            }
+            if(bObservation)
+            {
+                if(psTrue == null)
+                {
+                    Error = "The recevied observation is not consistent with the current state.";
+                    return false;
+                }
+                CurrentState = psTrue;
+            }
+            else
+            {
+                if (psFalse == null)
+                {
+                    Error = "The recevied observation is not consistent with the current state.";
+                    return false;
+                }
+                CurrentState = psFalse;
+            }
+                */
+            if(psNext == null)
+            {
+                Error = "Failed to apply the action at the current state.";
+                return false;
+            }
+            CurrentState = psNext;
+            NextActionIndex++;
+            if(NextActionIndex == FutureActions.Count || sObservation != null)
+            {
+                FutureActions = null;
+                NextActionIndex = -1;
+            }
+            ExpectingObservation = false;
+            return true;
+        }
 
         public bool OnlineReplanning()
         {

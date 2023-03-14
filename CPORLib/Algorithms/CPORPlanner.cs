@@ -59,7 +59,6 @@ namespace CPORLib.Algorithms
                 List<List<string>> lExecutedPlans = new List<List<string>>();
                 List<PartiallySpecifiedState> lGoalStates = new List<PartiallySpecifiedState>();
 
-                Formula fObserved = null;
 
                 bool bPreconditionFailure = false;
 
@@ -160,7 +159,7 @@ namespace CPORLib.Algorithms
 
                                 CPORPlanner.TraceListener.WriteLine("ApplyOffline: " + sAction);
 
-                                pssCurrent.ApplyOffline(sAction, out a, out bPreconditionFailure, out fObserved, out psTrueState, out psFalseState);
+                                pssCurrent.ApplyOffline(sAction, out a, out bPreconditionFailure, out psTrueState, out psFalseState);
 
                                 CPORPlanner.TraceListener.WriteLine("ApplyOffline result: " + a +", " + bPreconditionFailure + ", " + psTrueState + ", " + psFalseState);
 
@@ -230,7 +229,7 @@ namespace CPORLib.Algorithms
                                         Predicate pObserve = ((PredicateFormula)aObserve.Observe).Predicate;
                                         if (!pssCurrent.Observed.Contains(pObserve) && !pssCurrent.Observed.Contains(pObserve.Negate()))
                                         {
-                                            pssCurrent.ApplyOffline(aObserve, out bool bObservationPreconditionFailed, out fObserved, out psTrueState, out psFalseState);
+                                            pssCurrent.ApplyOffline(aObserve, out bool bObservationPreconditionFailed, out psTrueState, out psFalseState);
                                             if (psTrueState != null && psFalseState != null)
                                             {
                                                 stateStack.Push(psTrueState);
@@ -369,10 +368,9 @@ namespace CPORLib.Algorithms
                 cCheckedLeaves++;
                 return false;
             }
-            Formula fObserved = null;
             PartiallySpecifiedState psTrueState, psFalseState;
 
-            pssCurrent.ApplyOffline(nCurrent.Action, out bool bPreconditionFailed, out fObserved, out psTrueState, out psFalseState, true);
+            pssCurrent.ApplyOffline(nCurrent.Action, out bool bPreconditionFailed, out psTrueState, out psFalseState, true);
             if (bPreconditionFailed || (psTrueState == null && psFalseState == null))
             {
                 //Debug.WriteLine("BUGBUG");
@@ -589,13 +587,12 @@ namespace CPORLib.Algorithms
                 return;
             if (nCurrent.Action == null)
                 return;
-            Formula fObserved = null;
             PartiallySpecifiedState psTrueState, psFalseState;
 
 
             int cNodes = dNodes.Count + dObservationNodes.Count;
 
-            pssCurrent.ApplyOffline(nCurrent.Action, out bool bPreconditionFailed, out fObserved, out psTrueState, out psFalseState);
+            pssCurrent.ApplyOffline(nCurrent.Action, out bool bPreconditionFailed, out psTrueState, out psFalseState);
             if (bPreconditionFailed || psTrueState == null)
             {
                 Debug.WriteLine("BUG");
@@ -752,7 +749,7 @@ namespace CPORLib.Algorithms
                         if (!pssCurrent.Observed.Contains(pObserve) && !pssCurrent.Observed.Contains(pObserve.Negate()))
                         {
                             Formula fObserved = null;
-                            pssCurrent.ApplyOffline(a, out bool bObservationPreconditionFailed, out fObserved, out PartiallySpecifiedState psTrueState, out PartiallySpecifiedState psFalseState);
+                            pssCurrent.ApplyOffline(a, out bool bObservationPreconditionFailed, out PartiallySpecifiedState psTrueState, out PartiallySpecifiedState psFalseState);
                             if (psTrueState != null && psFalseState != null)
                             {
                                 stateStack.Push(psTrueState);

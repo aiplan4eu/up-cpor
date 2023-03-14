@@ -5,7 +5,7 @@ using System.IO;
 
 public class Program
 {
-    public static void RunTest(string sName)
+    public static void RunTest(string sName, bool bOnline)
     {
         string sPath = @"..\..\..\..\Tests\" + sName;
         //string sPath = @"C:\Users\Guy\OneDrive - Ben Gurion University of the Negev\Research\projects\AIPlan4EU\up-cpor\Tests\" + sName;
@@ -15,44 +15,46 @@ public class Program
         Run.RunPlanner(sDomainFile
             , sProblemFile,
             sOutputFile,
-            false, false);
+            bOnline, false);
     }
-    public static void TestAll()
+    public static void TestAll(bool bOnline)
     {
-        FFUtilities.Verbose = true;
-        gcmd_line.display_info = 1;
-        gcmd_line.debug = 3;
+        FFUtilities.Verbose = false;
+        gcmd_line.display_info = 0;
+        gcmd_line.debug = 0;
         
+        RunTest("medpks010", bOnline);
         
-        RunTest("doors5"); 
-        RunTest("blocks3");
+        RunTest("localize5", bOnline);
+        
+        RunTest("wumpus05", bOnline);
+        
+        RunTest("doors5", bOnline); 
+        RunTest("blocks3", bOnline);
 
               
-        RunTest("medpks010");
-        RunTest("colorballs2-2");
-        RunTest("blocks2");
-        RunTest("wumpus05");
-        RunTest("unix1");
-        RunTest("localize5");
+        RunTest("colorballs2-2", bOnline);
+        RunTest("blocks2", bOnline);
+        RunTest("unix1", bOnline);
 
 
-        RunTest("doors15");
-        RunTest("wumpus10");
+        RunTest("doors15", bOnline);
+        RunTest("wumpus10", bOnline);
         
 
-        RunTest("blocks3");
-        RunTest("blocks2");
-        RunTest("wumpus05");
-        RunTest("medpks010");
-        RunTest("unix1");
-        RunTest("localize5");
-        RunTest("doors5");
-        RunTest("colorballs2-2");   
+        RunTest("blocks3", bOnline);
+        RunTest("blocks2", bOnline);
+        //RunTest("wumpus05", bOnline);
+        //RunTest("medpks010", bOnline);
+        //RunTest("unix1", bOnline);
+        //RunTest("localize5", bOnline);
+        //RunTest("doors5", bOnline);
+        //RunTest("colorballs2-2", bOnline);   
     }
 
     public static void Main(string[] args)
     {
-        //TestAll();
+        TestAll(true);
         //return;
 
         //TestClassicalFFCS();

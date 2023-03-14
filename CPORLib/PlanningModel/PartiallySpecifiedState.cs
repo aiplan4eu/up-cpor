@@ -643,7 +643,7 @@ namespace CPORLib.PlanningModel
 
         public bool IsApplicable(string sActionName)
         {
-            Action a = Problem.Domain.GroundActionByName(Utilities.SplitString(sActionName,' '));
+            Action a = GetAction(sActionName);
             if (a == null)
                 return false;
             return IsApplicable(a);
@@ -969,12 +969,30 @@ namespace CPORLib.PlanningModel
 
         }
 
-        public PartiallySpecifiedState Apply(string sActionName, out Formula fObserve)
+        public Action GetAction(string sActionName)
         {
-            fObserve = null;
             string sRevisedActionName = sActionName.Replace(Utilities.DELIMITER_CHAR, " ");
             string[] aName = Utilities.SplitString(sRevisedActionName, ' ');
             Action a = Problem.Domain.GroundActionByName(aName);
+            return a;
+        }
+
+        public PartiallySpecifiedState Apply(string sActionName, string sObserve)
+        {
+            Action a = GetAction(sActionName);
+            if (a == null)
+            {
+                return null;
+            }
+            PartiallySpecifiedState pssNext = Apply(a, sObserve);
+            return pssNext;
+        }
+
+
+        public PartiallySpecifiedState Apply(string sActionName, out Formula fObserve)
+        {
+            fObserve = null;
+            Action a = GetAction(sActionName);
             if (a == null)
             {
                 return null;
@@ -992,12 +1010,11 @@ namespace CPORLib.PlanningModel
 
 
 
-        public void ApplyOffline(Action a, out bool bPreconditionFailure, out Formula fObserve, out PartiallySpecifiedState psTrueState,
+        public void ApplyOffline(Action a, out bool bPreconditionFailure, out PartiallySpecifiedState psTrueState,
             out PartiallySpecifiedState psFalseState, bool bAllowRedundantObservations = false)
         {
             psTrueState = null;
             psFalseState = null;
-            fObserve = null;
             bPreconditionFailure = false;
 
 
@@ -1194,19 +1211,16 @@ namespace CPORLib.PlanningModel
 
         PartiallySpecifiedState FirstObsChild = null;
         PartiallySpecifiedState SecondObsChild = null;
-        public void ApplyOffline(string sActionName, out Action a, out bool bPreconditionFailure, out Formula fObserve, out PartiallySpecifiedState psTrueState, out PartiallySpecifiedState psFalseState)
+        public void ApplyOffline(string sActionName, out Action a, out bool bPreconditionFailure, out PartiallySpecifiedState psTrueState, out PartiallySpecifiedState psFalseState)
         {
             psTrueState = null;
             psFalseState = null;
-            fObserve = null;
             bPreconditionFailure = false;
-            string sRevisedActionName = sActionName.Replace(Utilities.DELIMITER_CHAR, " ");
-            string[] aName = Utilities.SplitString(sRevisedActionName, ' ', StringSplitOptions.RemoveEmptyEntries);
-            a = Problem.Domain.GroundActionByName(aName);
+            a = GetAction(sActionName);
             if (a == null || a is ParametrizedAction)
                 return;
 
-            ApplyOffline(a, out bPreconditionFailure, out fObserve, out psTrueState, out psFalseState);
+            ApplyOffline(a, out bPreconditionFailure, out psTrueState, out psFalseState);
 
             if (bPreconditionFailure)
                 return;
@@ -1421,6 +1435,108 @@ namespace CPORLib.PlanningModel
 
             return bsNew;
         }
+
+
+        public PartiallySpecifiedState Apply(Action aOrg, string sObservation)
+        {
+            if (aOrg is ParametrizedAction)
+                return null;
+
+            DateTime dtStart = DateTime.Now;
+
+            if (aOrg.Observe == null && sObservation != null || aOrg.Observe != null && sObservation == null)
+                return null;
+
+            Action a = aOrg.ApplyObserved(m_lObserved);
+            
+
+            if (a.Preconditions != null && !IsApplicable(a))
+                return null;
+
+            a.ComputeRegressions();
+
+            tsPre += DateTime.Now - dtStart;
+            dtStart = DateTime.Now;
+
+            State sNew = null;
+            if (UnderlyingEnvironmentState != null)
+                sNew = UnderlyingEnvironmentState.Apply(a);
+
+            CompoundFormula cfAndChoices = null;
+            if (a.ContainsNonDeterministicEffect)
+            {
+                a = a.RemoveNonDeterminism(Time, out cfAndChoices);
+            }
+
+            PartiallySpecifiedState bsNew = new PartiallySpecifiedState(this, a);
+            if (sNew != null)
+            {
+                bsNew.UnderlyingEnvironmentState = sNew;
+            }
+
+            if (a.Effects != null)
+            {
+                if (a.HasConditionalEffects)
+                {
+                    List<CompoundFormula> lApplicableConditions = ApplyKnown(a.GetConditions());
+                    bsNew.ApplyKnowledgeLoss(lApplicableConditions);
+                    HashSet<Predicate> lAddEffects = new HashSet<Predicate>(), lRemoveEffects = new HashSet<Predicate>();
+                    a.GetApplicableEffects(m_lObserved, lAddEffects, lRemoveEffects, true);
+                    //first removing then adding
+                    foreach (Predicate p in lRemoveEffects)
+                        bsNew.AddEffect(p);
+                    foreach (Predicate p in lAddEffects)
+                        bsNew.AddEffect(p);
+                    //bsNew.UpdateHidden(a, m_lObserved);
+                    bsNew.UpdateHidden();
+                }
+                else
+                {
+                    bsNew.AddEffects(a.Effects);
+                }
+            }
+
+            //if(m_sPredecessor != null)//the first one holds all knowns, to avoid propogation from the initial belief
+            //   RemoveDuplicateObserved(bsNew.m_lObserved);//if p is true at t+1 and p is true at t, there is no point in maintaining the copy at t 
+
+            tsEffects += DateTime.Now - dtStart;
+            dtStart = DateTime.Now;
+
+            if (a.Observe != null)
+            {
+                Formula fObserve = a.Observe;
+                if (sObservation.ToLower().Trim() == "false")
+                    fObserve = fObserve.Negate();
+
+                if (!ConsistentWith(fObserve, false))
+                    return null;
+
+                bsNew.GeneratingObservation = fObserve;
+                bsNew.AddObserved(fObserve);
+
+                /*
+                if (ReviseInitialBelief(fObserve))
+                    bsNew.PropogateObservedPredicates();
+                 * */
+                HashSet<int> hsModified = m_bsInitialBelief.ReviseInitialBelief(fObserve, this);
+                if (hsModified.Count > 0)
+                {
+                    if (!Options.OptimizeMemoryConsumption)
+                        bsNew.PropogateObservedPredicates();
+                }
+
+            }
+
+            tsObs += DateTime.Now - dtStart;
+
+
+            if (bsNew != null && cfAndChoices != null)
+                m_bsInitialBelief.AddInitialStateFormula(cfAndChoices);
+
+
+            return bsNew;
+        }
+
 
         private void RemoveDuplicateObserved(HashSet<Predicate> hObservedAtNextStep)
         {
