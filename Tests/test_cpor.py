@@ -17,8 +17,8 @@ if __name__ == "__main__":
         print(f"###########################Problem: {prob} start###########################")
         # Parsing a PDDL problem from file
         problem = reader.parse_problem(
-            f"../Tests/DLLs/{prob}/d.pddl",
-            f"../Tests/DLLs/{prob}/p.pddl"
+            f"../Tests/{prob}/d.pddl",
+            f"../Tests/{prob}/p.pddl"
         )
 
         solver = CPORImpl()
