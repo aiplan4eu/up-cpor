@@ -10,10 +10,9 @@ clr.AddReference(DLL_PATH)
 
 from CPORLib.PlanningModel import Domain, Problem, ParametrizedAction, PlanningAction
 from CPORLib.LogicalUtilities import Predicate, ParametrizedPredicate, GroundedPredicate, PredicateFormula, CompoundFormula, Formula
-from CPORLib.Algorithms import CPORPlanner
+from CPORLib.Algorithms import CPORPlanner, SDRPlanner
 sys.path.append(PROJECT_PATH)
 
-from unified_planning.io import PDDLReader
 from unified_planning.model import FNode, OperatorKind, Fluent, Effect, SensingAction
 from unified_planning.plans import ActionInstance
 from unified_planning.plans.contingent_plan import ContingentPlanNode
@@ -46,13 +45,27 @@ class UpCporConverter:
 
         return p
 
-    def createPlan(self, c_domain, c_problem):
+    def createCPORPlan(self, c_domain, c_problem):
         solver = CPORPlanner(c_domain, c_problem)
-        # if not self.ClassicalSolver is None:
-        #     solver.SetClassicalPlanner(self.ClassicalSolver)
-        #     solver.SetParser(PDDLReader())
         c_plan = solver.OfflinePlanning()
         return c_plan
+
+    def createSDRPlan(self, c_domain, c_problem):
+        solver = SDRPlanner(c_domain, c_problem)
+        c_plan = solver.OnlineReplanning()
+        return solver, c_plan
+
+    def createSDRSolver(self, c_domain, c_problem):
+        solver = SDRPlanner(c_domain, c_problem)
+        return solver
+
+    def SDRupdate(self, solver, observation):
+        applied = solver.SetObservation(str(observation))
+        return applied
+
+    def SDRget_action(self, solver, problem)  -> ActionInstance:
+        c_action = solver.GetAction()
+        return self.__convert_string_to_action_instance(str(c_action), problem)
 
 
     def createDomain(self, problem):
@@ -179,8 +192,6 @@ class UpCporConverter:
             fSub = self.__CreateFormula(nSub, lActionParameters)
             cp.SimpleAddOperand(fSub)
         return cp
-
-
 
     def __convert_string_to_action_instance(self, string, problem) -> 'up.plans.InstantaneousAction':
         if string != 'None':

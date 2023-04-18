@@ -2,22 +2,15 @@ from unified_planning.engines import Credits, MetaEngine, Engine
 from unified_planning.model import FNode
 from unified_planning.plans import ContingentPlan
 import unified_planning.engines.mixins as mixins
+from unified_planning.engines.mixins.action_selector import ActionSelectorMixin
 from unified_planning.engines.mixins.compiler import CompilationKind
 import unified_planning as up
 from unified_planning.model import ProblemKind
 from unified_planning.engines.results import PlanGenerationResultStatus, PlanGenerationResult
 
-from typing import Type, IO, Optional, Callable
+from typing import Type, IO, Optional, Callable, Dict
 from up_cpor.converter import UpCporConverter
 
-
-def print_plan(p_planNode, moves):
-    if p_planNode is not None:
-        x = p_planNode
-        moves.append(x.action_instance)
-        for c in x.children:
-            moves.append(print_plan(c[1], moves))
-    return moves
 
 credits = Credits('CPOR planner',
                   'BGU',
@@ -29,6 +22,15 @@ credits = Credits('CPOR planner',
                 )
 
 MetaCredits = Credits('CPOR Meat planner',
+                  'BGU',
+                  'Guy Shani',
+                  'https://github.com/???',
+                  'Version 1',
+                  'CPOR planner is a lightweight STRIPS planner written in c#.',
+                  'we whant to cradit the relevant inner engine as well.'
+                )
+
+SDRCredits = Credits('CPOR Meat planner',
                   'BGU',
                   'Guy Shani',
                   'https://github.com/???',
@@ -82,7 +84,7 @@ class CPORImpl(Engine):
         c_domain = self.cnv.createDomain(problem)
         c_problem = self.cnv.createProblem(problem, c_domain)
 
-        solution = self.cnv.createPlan(c_domain, c_problem)
+        solution = self.cnv.createCPORPlan(c_domain, c_problem)
         actions = self.cnv.createActionTree(solution, problem)
         if solution is None or actions is None:
             return PlanGenerationResult(PlanGenerationResultStatus.UNSOLVABLE_PROVEN, None, self.name)
@@ -151,7 +153,7 @@ class CPORMetaEngineImpl(MetaEngine, mixins.OneshotPlannerMixin):
         c_domain = self.cnv.createDomain(problem)
         c_problem = self.cnv.createProblem(problem, c_domain)
 
-        solution = self.cnv.createPlan(c_domain, c_problem)
+        solution = self.cnv.createCPORPlan(c_domain, c_problem)
         actions = self.cnv.createActionTree(solution, problem)
 
         if solution is None or actions is None:
@@ -159,6 +161,78 @@ class CPORMetaEngineImpl(MetaEngine, mixins.OneshotPlannerMixin):
 
         return PlanGenerationResult(PlanGenerationResultStatus.SOLVED_SATISFICING, ContingentPlan(actions), self.name)
 
+
+class SDRImpl(Engine, ActionSelectorMixin):
+
+    def __init__(self, bOnline = False, problem: 'up.model.ContingentProblem' = None, **options):
+        self.bOnline = bOnline
+        self._skip_checks = False
+        self.cnv = UpCporConverter()
+        self.problem = problem
+        self.solver = self._setSolver(self.problem)
+
+    @property
+    def name(self) -> str:
+        return "SDRPlanning"
+
+    @staticmethod
+    def supports_compilation(compilation_kind: CompilationKind) -> bool:
+        return compilation_kind == CompilationKind.GROUNDING
+
+    @staticmethod
+    def supported_kind():
+        # Ask what more need to be added
+        supported_kind = ProblemKind()
+        supported_kind.set_problem_class('CONTINGENT')
+        supported_kind.set_problem_class("ACTION_BASED")
+        supported_kind.set_conditions_kind("NEGATIVE_CONDITIONS")
+        supported_kind.set_effects_kind("CONDITIONAL_EFFECTS")
+        supported_kind.set_typing('FLAT_TYPING')
+        supported_kind.set_typing('HIERARCHICAL_TYPING')
+        return supported_kind
+
+    @staticmethod
+    def supports(problem_kind):
+        return problem_kind <= SDRImpl.supported_kind()
+
+    @staticmethod
+    def get_credits(**kwargs) -> Optional["Credits"]:
+        return credits
+
+    def solve(self, problem: 'up.model.ContingentProblem') -> 'PlanGenerationResult':
+
+        assert isinstance(problem, up.model.Problem)
+
+        if not self.supports(problem.kind):
+            return PlanGenerationResult(PlanGenerationResultStatus.UNSOLVABLE_PROVEN, None, self.name)
+
+        c_domain = self.cnv.createDomain(problem)
+        c_problem = self.cnv.createProblem(problem, c_domain)
+        self.solver, solution = self.cnv.createSDRPlan(c_domain, c_problem)
+
+        if not self.bOnline:
+            actions = self.cnv.createActionTree(solution, problem)
+            if solution is None or actions is None:
+                return PlanGenerationResult(PlanGenerationResultStatus.UNSOLVABLE_PROVEN, None, self.name)
+
+            return PlanGenerationResult(PlanGenerationResultStatus.SOLVED_SATISFICING, ContingentPlan(actions), self.name)
+
+        else:
+            PlanGenerationResult(PlanGenerationResultStatus.INTERMEDIATE, None, self.name)
+
+    def destroy(self):
+        pass
+
+    def _get_action(self) -> "up.plans.ActionInstance":
+        return self.cnv.SDRget_action(self.solver, self.problem)
+
+    def _update(self, observation: Dict["up.model.FNode", "up.model.FNode"]):
+        return self.cnv.SDRupdate(self.solver, observation)
+
+    def _setSolver(self, problem):
+        c_domain = self.cnv.createDomain(problem)
+        c_problem = self.cnv.createProblem(problem, c_domain)
+        self.solver = self.cnv.createSDRSolver(c_domain, c_problem)
 
 
 
