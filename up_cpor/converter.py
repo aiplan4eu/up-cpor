@@ -117,10 +117,10 @@ class UpCporConverter:
                 if solution.SingleChild:
                     root.add_child({}, self.createActionTree(solution.SingleChild, problem))
                 if solution.FalseObservationChild and obser:
-                    observation = {obser: problem.env.expression_manager.TRUE()}
+                    observation = {obser: problem.environment.expression_manager.TRUE()}
                     root.add_child(observation, self.createActionTree(solution.FalseObservationChild, problem))
                 if solution.TrueObservationChild and obser:
-                    observation = {obser: problem.env.expression_manager.FALSE()}
+                    observation = {obser: problem.environment.expression_manager.FALSE()}
                     root.add_child(observation, self.createActionTree(solution.TrueObservationChild, problem))
                 return root
         return None
@@ -199,7 +199,7 @@ class UpCporConverter:
             list_str = string[1:-1].replace(":", "").replace('~', ' ').split("\n")
             ac = list_str[0].split(" ")
             action = problem.action(ac[1])
-            expr_manager = problem.env.expression_manager
+            expr_manager = problem.environment.expression_manager
             param = tuple(expr_manager.ObjectExp(problem.object(o_name)) for o_name in ac[2:])
             return ActionInstance(action, param)
 
@@ -208,9 +208,12 @@ class UpCporConverter:
             ob = string.replace("\n", " ").replace(")", "").replace("(", "").split(":observe ")[1]
             obs = ob.split(" ")
             obs = obs[0:2]
-            expr_manager = problem.env.expression_manager
+            expr_manager = problem.environment.expression_manager
             obse = problem.fluent(obs[0])
             location = tuple(expr_manager.ObjectExp(problem.object(o_name)) for o_name in obs[1:])
             obresv = expr_manager.FluentExp(obse, location)
             return obresv
         return None
+
+    def SDRGoal(self, solver):
+        return solver.GoalReached

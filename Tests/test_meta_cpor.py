@@ -21,7 +21,7 @@ if __name__ == "__main__":
             f"../Tests/{prob}/p.pddl"
         )
 
-        env = environment.get_env()
+        env = environment.get_environment()
         env.factory.add_meta_engine('MetaCPORPlanning', 'up_cpor.engine', 'CPORMetaEngineImpl')
 
         with OneshotPlanner(name='MetaCPORPlanning[tamer]') as planner:

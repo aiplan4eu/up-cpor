@@ -1,5 +1,6 @@
 from unified_planning.io import PDDLReader
-from unified_planning.engines.results import PlanGenerationResultStatus
+import unified_planning.environment as environment
+from unified_planning.shortcuts import *
 
 from up_cpor.engine import CPORImpl
 
@@ -21,11 +22,9 @@ if __name__ == "__main__":
             f"../Tests/{prob}/p.pddl"
         )
 
-        solver = CPORImpl()
-        result = solver.solve(problem)
+        env = environment.get_environment()
+        env.factory.add_engine('CPORPlanning', 'up_cpor.engine', 'CPORImpl')
 
-        if result.status == PlanGenerationResultStatus.SOLVED_SATISFICING:
-            print(f'{solver.name} found a valid plan!')
-            print(f'Success')
-        else:
-            print('No plan found!')
+        with OneshotPlanner(name='CPORPlanning') as planner:
+            result = planner.solve(problem)
+            print("%s returned: %s" % (planner.name, result.plan))
