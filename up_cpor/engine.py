@@ -2,10 +2,12 @@ from unified_planning.engines import Credits, MetaEngine, Engine
 from unified_planning.model import FNode
 from unified_planning.plans import ContingentPlan
 import unified_planning.engines.mixins as mixins
+from unified_planning.engines.mixins.oneshot_planner import OneshotPlannerMixin
 from unified_planning.engines.mixins.action_selector import ActionSelectorMixin
 from unified_planning.engines.mixins.compiler import CompilationKind
 import unified_planning as up
-from unified_planning.model import ProblemKind
+from unified_planning.model import ProblemKind, AbstractProblem
+from unified_planning.model.contingent.contingent_problem import ContingentProblem
 from unified_planning.engines.results import PlanGenerationResultStatus, PlanGenerationResult
 
 from typing import Type, IO, Optional, Callable, Dict
@@ -21,7 +23,7 @@ credits = Credits('CPOR planner',
                   'CPOR planner is a lightweight STRIPS planner written in c#.\nPlease note that CPOR planner deliberately prefers clean code over fast code. It is designed to be used as a teaching or prototyping tool. If you use it for paper experiments, please state clearly that CPOR planner does not offer state-of-the-art performance.'
                 )
 
-MetaCredits = Credits('CPOR Meat planner',
+MetaCredits = Credits('CPOR Meta planner',
                   'BGU',
                   'Guy Shani',
                   'https://github.com/???',
@@ -30,16 +32,16 @@ MetaCredits = Credits('CPOR Meat planner',
                   'we whant to cradit the relevant inner engine as well.'
                 )
 
-SDRCredits = Credits('CPOR Meat planner',
+SDRCredits = Credits('SDR planner',
                   'BGU',
                   'Guy Shani',
                   'https://github.com/???',
                   'Version 1',
-                  'CPOR planner is a lightweight STRIPS planner written in c#.',
-                  'we whant to cradit the relevant inner engine as well.'
+                  '',
+                  ''
                 )
 
-class CPORImpl(Engine):
+class CPORImpl(Engine, OneshotPlannerMixin):
 
     def __init__(self, bOnline = False, **options):
         self.bOnline = bOnline
@@ -74,9 +76,9 @@ class CPORImpl(Engine):
     def get_credits(**kwargs) -> Optional["Credits"]:
         return credits
 
-    def solve(self, problem: 'up.model.ContingentProblem') -> 'PlanGenerationResult':
+    def solve(self, problem: AbstractProblem) -> 'PlanGenerationResult':
 
-        assert isinstance(problem, up.model.Problem)
+        assert isinstance(problem, ContingentProblem)
 
         if not self.supports(problem.kind):
             return PlanGenerationResult(PlanGenerationResultStatus.UNSOLVABLE_PROVEN, None, self.name)
@@ -111,7 +113,7 @@ class CPORMetaEngineImpl(MetaEngine, mixins.OneshotPlannerMixin):
         return engine.is_oneshot_planner() and engine.supports(ProblemKind({"ACTION_BASED"}))  # type: ignore
 
     @staticmethod
-    def _supported_kind(engine: Type[Engine]) -> "ProblemKind":
+    def _supported_kind(engine: Type[Engine]) -> ProblemKind:
         supported_kind = ProblemKind()
         supported_kind.set_problem_class('CONTINGENT')
         supported_kind.set_problem_class("ACTION_BASED")
@@ -123,7 +125,7 @@ class CPORMetaEngineImpl(MetaEngine, mixins.OneshotPlannerMixin):
         return final_supported_kind
 
     @staticmethod
-    def _supports(problem_kind: "ProblemKind", engine: Type[Engine]) -> bool:
+    def _supports(problem_kind: ProblemKind, engine: Type[Engine]) -> bool:
         return problem_kind <= CPORMetaEngineImpl._supported_kind(engine)
 
     def SetClassicalPlanner(self, classical):
@@ -134,15 +136,15 @@ class CPORMetaEngineImpl(MetaEngine, mixins.OneshotPlannerMixin):
         return MetaCredits
 
     def _solve(self,
-        problem: "up.model.AbstractProblem",
+        problem: AbstractProblem,
         heuristic: Optional[
-            Callable[["up.model.state.ROState"], Optional[float]]
+            Callable[["up.model.state.State"], Optional[float]]
         ] = None,
         timeout: Optional[float] = None,
         output_stream: Optional[IO[str]] = None,
     ) -> PlanGenerationResult:
 
-        assert isinstance(problem, up.model.Problem)
+        assert isinstance(problem, ContingentProblem)
         assert isinstance(self.engine, mixins.OneshotPlannerMixin)
 
         if not self._supports(problem.kind, self.engine):
@@ -164,12 +166,12 @@ class CPORMetaEngineImpl(MetaEngine, mixins.OneshotPlannerMixin):
 
 class SDRImpl(Engine, ActionSelectorMixin):
 
-    def __init__(self, bOnline = False, problem: 'up.model.ContingentProblem' = None, **options):
-        self.bOnline = bOnline
+    def __init__(self, bOnline = False, problem: AbstractProblem = None, **options):
         self._skip_checks = False
         self.cnv = UpCporConverter()
         self.problem = problem
         self.solver = self._setSolver(self.problem)
+        self.bOnline = bOnline
 
     @property
     def name(self) -> str:
@@ -199,9 +201,9 @@ class SDRImpl(Engine, ActionSelectorMixin):
     def get_credits(**kwargs) -> Optional["Credits"]:
         return credits
 
-    def solve(self, problem: 'up.model.ContingentProblem') -> 'PlanGenerationResult':
+    def solve(self, problem: AbstractProblem) -> 'PlanGenerationResult':
 
-        assert isinstance(problem, up.model.Problem)
+        assert isinstance(problem, ContingentProblem)
 
         if not self.supports(problem.kind):
             return PlanGenerationResult(PlanGenerationResultStatus.UNSOLVABLE_PROVEN, None, self.name)
@@ -232,7 +234,8 @@ class SDRImpl(Engine, ActionSelectorMixin):
     def _setSolver(self, problem):
         c_domain = self.cnv.createDomain(problem)
         c_problem = self.cnv.createProblem(problem, c_domain)
-        self.solver = self.cnv.createSDRSolver(c_domain, c_problem)
+        solver = self.cnv.createSDRSolver(c_domain, c_problem)
+        return solver
 
 
 

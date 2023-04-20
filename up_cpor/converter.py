@@ -65,7 +65,7 @@ class UpCporConverter:
 
     def SDRget_action(self, solver, problem)  -> ActionInstance:
         c_action = solver.GetAction()
-        return self.__convert_string_to_action_instance(str(c_action), problem)
+        return self.__convert_SDR_string_to_action_instance(str(c_action), problem)
 
 
     def createDomain(self, problem):
@@ -110,7 +110,7 @@ class UpCporConverter:
 
     def createActionTree(self, solution, problem) -> ContingentPlanNode:
         if solution is not None:
-            ai = self.__convert_string_to_action_instance(str(solution.Action), problem)
+            ai = self.__convert_CPOR_string_to_action_instance(str(solution.Action), problem)
             if ai:
                 root = ContingentPlanNode(ai)
                 obser = self.__convert_string_to_observation(str(solution.Action), problem)
@@ -193,15 +193,30 @@ class UpCporConverter:
             cp.SimpleAddOperand(fSub)
         return cp
 
-    def __convert_string_to_action_instance(self, string, problem) -> 'up.plans.InstantaneousAction':
+    def __convert_CPOR_string_to_action_instance(self, string, problem) -> 'up.plans.InstantaneousAction':
         if string != 'None':
             assert string[0] == "(" and string[-1] == ")"
             list_str = string[1:-1].replace(":", "").replace('~', ' ').split("\n")
             ac = list_str[0].split(" ")
-            action = problem.action(ac[1])
-            expr_manager = problem.environment.expression_manager
-            param = tuple(expr_manager.ObjectExp(problem.object(o_name)) for o_name in ac[2:])
-            return ActionInstance(action, param)
+            action_name = ac[1]
+            action_param = ac[2:]
+            return self.__convert_string_action_to_action_instance(action_name, action_param, problem)
+
+    def __convert_SDR_string_to_action_instance(self, action_string, problem) -> 'up.plans.InstantaneousAction':
+        if action_string != 'None':
+            print(action_string)
+            ac = action_string.split(" ")
+            action_name = ac[0]
+            if action_name == 'senseon-t':
+                action_name = 'senseon'
+            action_param = ac[1:]
+            return self.__convert_string_action_to_action_instance(action_name, action_param, problem)
+
+    def __convert_string_action_to_action_instance(self, action_name, action_param, problem) -> 'up.plans.InstantaneousAction':
+        action = problem.action(action_name)
+        expr_manager = problem.environment.expression_manager
+        param = tuple(expr_manager.ObjectExp(problem.object(o_name)) for o_name in action_param)
+        return ActionInstance(action, param)
 
     def __convert_string_to_observation(self, string, problem):
         if string != 'None' and ":observe" in string:
