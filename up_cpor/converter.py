@@ -14,7 +14,8 @@ else:
         System.Environment.SetEnvironmentVariable("DOTNET_ROOT", "/usr/local/share/dotnet")
 import pathlib
 PROJECT_PATH = str(pathlib.Path().resolve().parent)
-sys.path.remove(PROJECT_PATH)
+if PROJECT_PATH in sys.path:
+    sys.path.remove(PROJECT_PATH)
 RELATIVE_DLL_PATH = "CPORLib/obj/Debug/netstandard2.0/CPORLib.dll".replace('/', os.path.sep)
 DLL_PATH = os.path.join(PROJECT_PATH, RELATIVE_DLL_PATH)
 clr.AddReference(DLL_PATH)
