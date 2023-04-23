@@ -7,10 +7,10 @@ import up_cpor
 long_description=\
 '''
  ============================================================
-    UP_TAMER
+    UP_CPOR
  ============================================================
-    up_tamer is a small package that allows an exchange of
-    equivalent data structures between unified_planning and Tamer.
+    up_cpor is a small package that allows an exchange of
+    equivalent data structures between unified_planning and CPOR.
     It automatically considers the different programming languages.
 '''
 
@@ -20,7 +20,7 @@ setup(name='up_cpor',
       author='BGU CPOR Development Team',
       author_email='shanigu@bgu.ac.il',
       url='',
-      packages=['up_cpor'],
+      packages=['up_cpor', 'CPORLib'],
       install_requires=['pythonnet==3.0.0'],
       python_requires='>=3.7',
       license='APACHE'
