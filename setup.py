@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from setuptools import setup # type: ignore
+from setuptools import setup, find_packages
 import up_cpor
 
 
@@ -20,8 +20,9 @@ setup(name='up_cpor',
       author='BGU CPOR Development Team',
       author_email='shanigu@bgu.ac.il',
       url='',
-      packages=['up_cpor', 'CPORLib'],
+      packages= find_packages(),
       install_requires=['pythonnet==3.0.0'],
       python_requires='>=3.7',
+      package_data={"CPORLib": ["**/*.dll", "**/*.exe"]},
       license='APACHE'
 )
