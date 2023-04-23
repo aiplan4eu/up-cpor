@@ -22,12 +22,18 @@ public class Program
         FFUtilities.Verbose = false;
         gcmd_line.display_info = 0;
         gcmd_line.debug = 0;
-        
-        RunTest("medpks010", bOnline);
-        
-        RunTest("localize5", bOnline);
+
+        //RunTest("localize5noisy", bOnline);
         
         RunTest("wumpus05", bOnline);
+        RunTest("localize5", bOnline);
+
+
+        RunTest("wumpus10", bOnline);
+
+        RunTest("medpks010", bOnline);
+        
+        
         
         RunTest("doors5", bOnline); 
         RunTest("blocks3", bOnline);
@@ -39,7 +45,6 @@ public class Program
 
 
         RunTest("doors15", bOnline);
-        RunTest("wumpus10", bOnline);
         
 
         RunTest("blocks3", bOnline);

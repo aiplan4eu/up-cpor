@@ -154,11 +154,23 @@ namespace CPORLib.Algorithms
                 lPlan = Plan( pssCurrent, out sChosen);
             }
 
+            List<string> lFilteredActions = new List<string>();
+            foreach(string sActionName in lPlan)
+            {
+                if (!IsReasoningAction(sActionName))
+                {
+                    Action a = pssCurrent.GetAction(sActionName);
+                    string sCleanName = a.Name.Replace(Utilities.DELIMITER_CHAR, " ");
+                    lFilteredActions.Add(sCleanName);
+                }
+            }
 
-            return lPlan;
+
+            return lFilteredActions;
         }
         protected bool IsReasoningAction(string sAction)
         {
+            sAction = sAction.ToLower();
             if (sAction.StartsWith("merge") || sAction.StartsWith("refute") || sAction.StartsWith("unmerge") || sAction.StartsWith("tagmerge"))
                 return true;
             if (sAction.Contains("knowledgegain") || sAction.Contains("knowledgeloss"))

@@ -38,6 +38,45 @@ namespace CPORLib
         }
 
 
+        public static void TestHAdd(Domain d, Problem p)
+        {
+            int cExecutions = 1000;
+            HAddHeuristic h = new HAddHeuristic(d, p);
+            BeliefState bs = p.GetInitialBelief();
+            Console.WriteLine("Testing " + p.Name);
+
+            Console.WriteLine("Choosing states");
+
+            List<State> states = new List<State>();
+            for (int i = 0; i < cExecutions; i++)
+            {
+                State s = bs.ChooseState(true);
+                states.Add(s);
+                if (i % 100 == 0)
+                    Console.Write("\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b" + i + "/" + cExecutions);
+
+            }
+
+            DateTime dtStart = DateTime.Now;
+            Console.WriteLine("\n Computing hadd");
+
+            double dSum = 0.0;
+
+            for(int i = 0; i < cExecutions; i++)
+            {
+                State s = states[i];
+                double cost = h.ComputeHAdd(s);
+                dSum += cost;
+                //if (i % 100 == 0)
+                  //  Console.Write("\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b" + i + "/" + cExecutions);
+            }
+
+            DateTime dtEnd = DateTime.Now;
+            Console.WriteLine();
+            Console.WriteLine("Run " + cExecutions + " in " + (dtEnd - dtStart).TotalMilliseconds + ", avg = " + dSum / cExecutions);
+
+        }
+
         public static void RunPlanner(string sDomainFile, string sProblemFile, string sOutputFile, bool bOnline, bool bValidate = false)
         {
 
@@ -46,6 +85,10 @@ namespace CPORLib
             Domain domain = parser.ParseDomain(sDomainFile);
             Problem problem = parser.ParseProblem(sProblemFile, domain);
             Debug.WriteLine("Done reading domain and problem");
+
+
+            //TestHAdd(domain, problem);
+            //return;
 
             Options.TagsCount = 2;
             //Options.SDR_OBS = true;

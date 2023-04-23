@@ -125,7 +125,7 @@ namespace CPORLib.Algorithms
                         foreach (string sAction in lPlan)
                         {
                             actionIndex++;
-                            if (!IsReasoningAction(sAction.ToLower()))
+                            if (!IsReasoningAction(sAction))
                             {
                                 PartiallySpecifiedState psTrueState, psFalseState;
                                 lExecutedPlans.Last().Add(sAction);
