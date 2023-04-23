@@ -16,6 +16,7 @@ long_description=\
 
 setup(name='up_cpor',
       version=up_cpor.__version__,
+      include_package_data=True,
       description='up_cpor',
       author='BGU CPOR Development Team',
       author_email='shanigu@bgu.ac.il',
