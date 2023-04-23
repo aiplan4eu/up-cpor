@@ -1,6 +1,17 @@
 import os
 import sys
 import clr
+import System
+
+if sys.platform.startswith('win'):
+    # use the .NET Framework runtime
+    System.Environment.SetEnvironmentVariable("COMPLUS_Version", "v4.0.30319")
+else:
+    # use Mono or .NET Core depending on the platform
+    if sys.platform.startswith('linux') or sys.platform.startswith('darwin'):
+        System.Environment.SetEnvironmentVariable("MONO_ENV_OPTIONS", "--debug")
+    elif sys.platform.startswith('openbsd') or sys.platform.startswith('freebsd'):
+        System.Environment.SetEnvironmentVariable("DOTNET_ROOT", "/usr/local/share/dotnet")
 import pathlib
 PROJECT_PATH = str(pathlib.Path().resolve().parent)
 sys.path.remove(PROJECT_PATH)
