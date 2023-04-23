@@ -2,7 +2,6 @@ import os
 import sys
 import clr
 import System
-
 if sys.platform.startswith('win'):
     # use the .NET Framework runtime
     System.Environment.SetEnvironmentVariable("COMPLUS_Version", "v4.0.30319")
