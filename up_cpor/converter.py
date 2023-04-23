@@ -1,19 +1,25 @@
 import os
 import sys
 import clr
-import pathlib
-PROJECT_PATH = str(pathlib.Path().resolve().parent)
-sys.path.remove(PROJECT_PATH)
-RELATIVE_DLL_PATH = "CPORLib/obj/Debug/netstandard2.0/CPORLib.dll".replace('/', os.path.sep)
-DLL_PATH = os.path.join(PROJECT_PATH, RELATIVE_DLL_PATH)
+import System
+if sys.platform.startswith('win'):
+    # use the .NET Framework runtime
+    System.Environment.SetEnvironmentVariable("COMPLUS_Version", "v4.0.30319")
+else:
+    # use Mono or .NET Core depending on the platform
+    if sys.platform.startswith('linux') or sys.platform.startswith('darwin'):
+        System.Environment.SetEnvironmentVariable("MONO_ENV_OPTIONS", "--debug")
+    elif sys.platform.startswith('openbsd') or sys.platform.startswith('freebsd'):
+        System.Environment.SetEnvironmentVariable("DOTNET_ROOT", "/usr/local/share/dotnet")
+
+PROJECT_PATH = os.path.dirname(os.path.abspath(__file__))
+DLL_PATH = os.path.join(PROJECT_PATH, "CPORLib.dll")
 clr.AddReference(DLL_PATH)
 
 from CPORLib.PlanningModel import Domain, Problem, ParametrizedAction, PlanningAction
 from CPORLib.LogicalUtilities import Predicate, ParametrizedPredicate, GroundedPredicate, PredicateFormula, CompoundFormula, Formula
-from CPORLib.Algorithms import CPORPlanner
-sys.path.append(PROJECT_PATH)
+from CPORLib.Algorithms import CPORPlanner, SDRPlanner
 
-from unified_planning.io import PDDLReader
 from unified_planning.model import FNode, OperatorKind, Fluent, Effect, SensingAction
 from unified_planning.plans import ActionInstance
 from unified_planning.plans.contingent_plan import ContingentPlanNode
@@ -46,13 +52,27 @@ class UpCporConverter:
 
         return p
 
-    def createPlan(self, c_domain, c_problem):
+    def createCPORPlan(self, c_domain, c_problem):
         solver = CPORPlanner(c_domain, c_problem)
-        # if not self.ClassicalSolver is None:
-        #     solver.SetClassicalPlanner(self.ClassicalSolver)
-        #     solver.SetParser(PDDLReader())
         c_plan = solver.OfflinePlanning()
         return c_plan
+
+    def createSDRPlan(self, c_domain, c_problem):
+        solver = SDRPlanner(c_domain, c_problem)
+        c_plan = solver.OnlineReplanning()
+        return solver, c_plan
+
+    def createSDRSolver(self, c_domain, c_problem):
+        solver = SDRPlanner(c_domain, c_problem)
+        return solver
+
+    def SDRupdate(self, solver, observation):
+        applied = solver.SetObservation(str(observation))
+        return applied
+
+    def SDRget_action(self, solver, problem)  -> ActionInstance:
+        c_action = solver.GetAction()
+        return self.__convert_SDR_string_to_action_instance(str(c_action), problem)
 
 
     def createDomain(self, problem):
@@ -97,17 +117,17 @@ class UpCporConverter:
 
     def createActionTree(self, solution, problem) -> ContingentPlanNode:
         if solution is not None:
-            ai = self.__convert_string_to_action_instance(str(solution.Action), problem)
+            ai = self.__convert_CPOR_string_to_action_instance(str(solution.Action), problem)
             if ai:
                 root = ContingentPlanNode(ai)
                 obser = self.__convert_string_to_observation(str(solution.Action), problem)
                 if solution.SingleChild:
                     root.add_child({}, self.createActionTree(solution.SingleChild, problem))
                 if solution.FalseObservationChild and obser:
-                    observation = {obser: problem.env.expression_manager.TRUE()}
+                    observation = {obser: problem.environment.expression_manager.TRUE()}
                     root.add_child(observation, self.createActionTree(solution.FalseObservationChild, problem))
                 if solution.TrueObservationChild and obser:
-                    observation = {obser: problem.env.expression_manager.FALSE()}
+                    observation = {obser: problem.environment.expression_manager.FALSE()}
                     root.add_child(observation, self.createActionTree(solution.TrueObservationChild, problem))
                 return root
         return None
@@ -180,26 +200,42 @@ class UpCporConverter:
             cp.SimpleAddOperand(fSub)
         return cp
 
-
-
-    def __convert_string_to_action_instance(self, string, problem) -> 'up.plans.InstantaneousAction':
+    def __convert_CPOR_string_to_action_instance(self, string, problem) -> 'up.plans.InstantaneousAction':
         if string != 'None':
             assert string[0] == "(" and string[-1] == ")"
             list_str = string[1:-1].replace(":", "").replace('~', ' ').split("\n")
             ac = list_str[0].split(" ")
-            action = problem.action(ac[1])
-            expr_manager = problem.env.expression_manager
-            param = tuple(expr_manager.ObjectExp(problem.object(o_name)) for o_name in ac[2:])
-            return ActionInstance(action, param)
+            action_name = ac[1]
+            action_param = ac[2:]
+            return self.__convert_string_action_to_action_instance(action_name, action_param, problem)
+
+    def __convert_SDR_string_to_action_instance(self, action_string, problem) -> 'up.plans.InstantaneousAction':
+        if action_string != 'None':
+            print(action_string)
+            ac = action_string.split(" ")
+            action_name = ac[0]
+            if action_name == 'senseon-t':
+                action_name = 'senseon'
+            action_param = ac[1:]
+            return self.__convert_string_action_to_action_instance(action_name, action_param, problem)
+
+    def __convert_string_action_to_action_instance(self, action_name, action_param, problem) -> 'up.plans.InstantaneousAction':
+        action = problem.action(action_name)
+        expr_manager = problem.environment.expression_manager
+        param = tuple(expr_manager.ObjectExp(problem.object(o_name)) for o_name in action_param)
+        return ActionInstance(action, param)
 
     def __convert_string_to_observation(self, string, problem):
         if string != 'None' and ":observe" in string:
             ob = string.replace("\n", " ").replace(")", "").replace("(", "").split(":observe ")[1]
             obs = ob.split(" ")
             obs = obs[0:2]
-            expr_manager = problem.env.expression_manager
+            expr_manager = problem.environment.expression_manager
             obse = problem.fluent(obs[0])
             location = tuple(expr_manager.ObjectExp(problem.object(o_name)) for o_name in obs[1:])
             obresv = expr_manager.FluentExp(obse, location)
             return obresv
         return None
+
+    def SDRGoal(self, solver):
+        return solver.GoalReached

@@ -1,6 +1,9 @@
 from unified_planning.io import PDDLReader
 import unified_planning.environment as environment
+from unified_planning.model.contingent.environment import SimulatedEnvironment
 from unified_planning.shortcuts import *
+
+from up_cpor.engine import SDRImpl
 
 if __name__ == "__main__":
 
@@ -21,8 +24,11 @@ if __name__ == "__main__":
         )
 
         env = environment.get_environment()
-        env.factory.add_engine('CPORPlanning', 'up_cpor.engine', 'CPORImpl')
+        env.factory.add_engine('SDRPlanning', 'up_cpor.engine', 'SDRImpl')
 
-        with OneshotPlanner(name='CPORPlanning') as planner:
-            result = planner.solve(problem)
-            print("%s returned: %s" % (planner.name, result.plan))
+        with ActionSelector(name='SDRPlanning', problem=problem) as solver:
+            simulatedEnv = SimulatedEnvironment(problem)
+            while not simulatedEnv.is_goal_reached():
+                a = solver.get_action()
+                o = simulatedEnv.apply(a)
+                solver.update(o)
