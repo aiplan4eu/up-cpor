@@ -11,19 +11,14 @@ else:
         System.Environment.SetEnvironmentVariable("MONO_ENV_OPTIONS", "--debug")
     elif sys.platform.startswith('openbsd') or sys.platform.startswith('freebsd'):
         System.Environment.SetEnvironmentVariable("DOTNET_ROOT", "/usr/local/share/dotnet")
-# import pathlib
-# PROJECT_PATH = str(pathlib.Path().resolve().parent)
-# print(PROJECT_PATH)
-# if PROJECT_PATH in sys.path:
-#     sys.path.remove(PROJECT_PATH)
-# RELATIVE_DLL_PATH = "CPORLib/obj/Debug/netstandard2.0/CPORLib.dll".replace('/', os.path.sep)
-# DLL_PATH = os.path.join(PROJECT_PATH, RELATIVE_DLL_PATH)
-clr.AddReference('CPORLib.dll')
+
+PROJECT_PATH = os.path.dirname(os.path.abspath(__file__))
+DLL_PATH = os.path.join(PROJECT_PATH, "CPORLib.dll")
+clr.AddReference(DLL_PATH)
 
 from CPORLib.PlanningModel import Domain, Problem, ParametrizedAction, PlanningAction
 from CPORLib.LogicalUtilities import Predicate, ParametrizedPredicate, GroundedPredicate, PredicateFormula, CompoundFormula, Formula
 from CPORLib.Algorithms import CPORPlanner, SDRPlanner
-sys.path.append(PROJECT_PATH)
 
 from unified_planning.model import FNode, OperatorKind, Fluent, Effect, SensingAction
 from unified_planning.plans import ActionInstance
