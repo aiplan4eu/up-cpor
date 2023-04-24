@@ -24,7 +24,7 @@ namespace CPORLib.Parsing
             StreamReader sr = new StreamReader(sFileName);
 
 
-            CPORStack<string> s = ToStack(sr);
+            CPORStack<string> s = ToStack(new StringStreamReader(sr));
             CompoundExpression eDomain = (CompoundExpression)ToExpression(s);
             CompoundExpression eProblem = (CompoundExpression)ToExpression(s);
             sr.Close();
@@ -38,7 +38,7 @@ namespace CPORLib.Parsing
         {
             StreamReader sr = new StreamReader(msModels);
 
-            CPORStack<string> s = ToStack(sr);
+            CPORStack<string> s = ToStack(new StringStreamReader(sr));
             CompoundExpression eDomain = (CompoundExpression)ToExpression(s);
             CompoundExpression eProblem = (CompoundExpression)ToExpression(s);
             sr.Close();
@@ -55,7 +55,7 @@ namespace CPORLib.Parsing
             StreamReader sr = new StreamReader(sDomainFile);
 
 
-            CompoundExpression exp = (CompoundExpression)ToExpression(sr);
+            CompoundExpression exp = (CompoundExpression)ToExpression(new StringStreamReader(sr));
             sr.Close();
 
             return ParseDomain(exp, sPath);
@@ -66,7 +66,7 @@ namespace CPORLib.Parsing
             StreamReader sr = new StreamReader(msModel);
 
 
-            CompoundExpression exp = (CompoundExpression)ToExpression(sr);
+            CompoundExpression exp = (CompoundExpression)ToExpression(new StringStreamReader(sr));
             sr.Close();
 
             return ParseDomain(exp, "");
@@ -148,7 +148,7 @@ namespace CPORLib.Parsing
             Debug.WriteLine(sProblemFile);
             Debug.WriteLine(sDeadEndFile);
             StreamReader sr = new StreamReader(sProblemFile);
-            CompoundExpression exp = (CompoundExpression)ToExpression(sr);
+            CompoundExpression exp = (CompoundExpression)ToExpression(new StringStreamReader(sr));
             sr.Close();
 
             Problem p = ParseProblem(exp, sDeadEndFile, d);
@@ -778,7 +778,7 @@ namespace CPORLib.Parsing
             p.AddConstant(c);
             return p;
         }
-        public CPORStack<string> ToStack(StreamReader sr)
+        public CPORStack<string> ToStack(StringStreamReader sr)
         {
             CPORStack<string> lStack = new CPORStack<string>();
             char[] aDelimiters = { ' ', '\n', '(', ')' };
@@ -843,7 +843,7 @@ namespace CPORLib.Parsing
             return sAll;
         }
 
-        private Expression ToExpression(StreamReader sr)
+        private Expression ToExpression(StringStreamReader sr)
         {
             CPORStack<string> s = ToStack(sr);
             while (s.Count > 0 && s.Peek() == "\n")
@@ -903,7 +903,7 @@ namespace CPORLib.Parsing
             List<List<GroundedPredicate>> listDeadEnds = new List<List<GroundedPredicate>>();
 
             StreamReader sr = new StreamReader(sProblemFile);
-            CompoundExpression exp = (CompoundExpression)ToExpression(sr);
+            CompoundExpression exp = (CompoundExpression)ToExpression(new StringStreamReader(sr));
             sr.Close();
             CompoundExpression eSub = null;
             CompoundExpression eeSub = null;
@@ -946,7 +946,7 @@ namespace CPORLib.Parsing
             List<Formula> listDeadEndsFormula = new List<Formula>();
 
             StreamReader sr = new StreamReader(sProblemFile);
-            CompoundExpression exp = (CompoundExpression)ToExpression(sr);
+            CompoundExpression exp = (CompoundExpression)ToExpression(new StringStreamReader(sr));
             sr.Close();
             CompoundExpression eSub = null;
             CompoundExpression eeSub = null;
@@ -1006,17 +1006,15 @@ namespace CPORLib.Parsing
             }
             return listDeadEndAnd;
         }
-
-        public CompoundFormula ParseFormula(string sFile, Domain d)
+        
+        public Formula ParseFormula(string sFormula, Domain d)
         {
-            string sPath = sFile.Substring(0, sFile.LastIndexOf(@"\") + 1);
-            StreamReader sr = new StreamReader(sFile);
-            CompoundExpression exp = (CompoundExpression)ToExpression(sr);
-            sr.Close();
+            
+            CompoundExpression exp = (CompoundExpression)ToExpression(new StringStreamReader(sFormula));
             Formula cf = ReadFormula(exp, null, false, d);
-            return (CompoundFormula)cf;
+            return cf;
         }
-
+        
 
 
 

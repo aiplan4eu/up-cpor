@@ -1,4 +1,5 @@
 ﻿using CPORLib.LogicalUtilities;
+using CPORLib.Parsing;
 using CPORLib.Tools;
 using System;
 using System.Collections.Generic;
@@ -1505,8 +1506,20 @@ namespace CPORLib.PlanningModel
             if (a.Observe != null)
             {
                 Formula fObserve = a.Observe;
-                if (sObservation.ToLower().Trim() == "false")
-                    fObserve = fObserve.Negate();
+
+                sObservation = sObservation.ToLower().Trim();
+                if (sObservation == "false" || sObservation == "true")
+                {
+                    if (sObservation == "false")
+                        fObserve = fObserve.Negate();
+                }
+                else
+                {
+                    Parser parser = new Parser();
+                    Formula fInputObservation = parser.ParseFormula(sObservation, Problem.Domain);
+                    fObserve = fInputObservation;
+                }
+
 
                 if (!ConsistentWith(fObserve, false))
                     return null;

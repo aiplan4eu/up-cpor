@@ -103,15 +103,16 @@ namespace CPORLib
                 for (int i = 0; i < cIterations; i++)
                 {
                     SDRPlanner sdr = new SDRPlanner(domain, problem);
+                    Simulator sim = new Simulator(domain, problem);
                     Console.WriteLine("Starting " + domain.Name);
-                    while (!sdr.GoalReached)
+                    while (!sim.GoalReached)
                     {
-                        //if (idx == 19)
-                        //    Console.Write("*");
+                        if (idx == 39)
+                           Console.Write("*");
                         string sAction = sdr.GetAction();
                         if (sAction == null)
                             Console.Write("*");
-                        string sObservation = null;
+                        string sObservation = sim.Apply(sAction);
                         bool bResult = sdr.SetObservation(sObservation);
                         if (!bResult)
                         {

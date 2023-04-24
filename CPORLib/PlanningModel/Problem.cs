@@ -4,12 +4,14 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using CPORLib.LogicalUtilities;
+using CPORLib.Parsing;
 using CPORLib.Tools;
 
 namespace CPORLib.PlanningModel
 {
     public class Problem
     {
+
         public string Name { get; private set; }
         public Formula Goal { get; set; }
         public Domain Domain { get; private set; }
