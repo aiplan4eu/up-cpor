@@ -11,9 +11,12 @@ else:
         System.Environment.SetEnvironmentVariable("MONO_ENV_OPTIONS", "--debug")
     elif sys.platform.startswith('openbsd') or sys.platform.startswith('freebsd'):
         System.Environment.SetEnvironmentVariable("DOTNET_ROOT", "/usr/local/share/dotnet")
-
-PROJECT_PATH = os.path.dirname(os.path.abspath(__file__))
-DLL_PATH = os.path.join(PROJECT_PATH, "CPORLib.dll")
+import pathlib
+PROJECT_PATH = str(pathlib.Path().resolve().parent)
+if PROJECT_PATH in sys.path:
+    sys.path.remove(PROJECT_PATH)
+RELATIVE_DLL_PATH = "CPORLib/obj/Debug/netstandard2.0/CPORLib.dll".replace('/', os.path.sep)
+DLL_PATH = os.path.join(PROJECT_PATH, RELATIVE_DLL_PATH)
 clr.AddReference(DLL_PATH)
 
 from CPORLib.PlanningModel import Domain, Problem, ParametrizedAction, PlanningAction
@@ -214,8 +217,6 @@ class UpCporConverter:
             print(action_string)
             ac = action_string.split(" ")
             action_name = ac[0]
-            if action_name == 'senseon-t':
-                action_name = 'senseon'
             action_param = ac[1:]
             return self.__convert_string_action_to_action_instance(action_name, action_param, problem)
 
