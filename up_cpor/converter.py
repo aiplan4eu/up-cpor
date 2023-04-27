@@ -214,8 +214,6 @@ class UpCporConverter:
             print(action_string)
             ac = action_string.split(" ")
             action_name = ac[0]
-            if action_name == 'senseon-t':
-                action_name = 'senseon'
             action_param = ac[1:]
             return self.__convert_string_action_to_action_instance(action_name, action_param, problem)
 

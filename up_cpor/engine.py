@@ -14,31 +14,41 @@ from typing import Type, IO, Optional, Callable, Dict
 from up_cpor.converter import UpCporConverter
 
 
-credits = Credits('CPOR planner',
-                  'BGU',
-                  'Guy Shani',
-                  'https://github.com/???',
-                  'Version 1',
-                  'CPOR planner is a lightweight STRIPS planner written in c#.',
-                  'CPOR planner is a lightweight STRIPS planner written in c#.\nPlease note that CPOR planner deliberately prefers clean code over fast code. It is designed to be used as a teaching or prototyping tool. If you use it for paper experiments, please state clearly that CPOR planner does not offer state-of-the-art performance.'
-                )
+MetaCredits = Credits('Conitngent Planning Algorithms',
+                    'Guy Shani',
+                    'shanigu@bgu.ac.il',
+                    'https://github.com/shanigu',
+                    '',
+                    'Algorithms for offline and online decision making under partial observability and sensing actions',
+                    'This package provides a Python API to the algorithms developed by the group of Guy Shani and Ronen Brafman at the Ben Gurion university.\n '
+                    'Contingent planning under partial observation and sensing actions models domains where a single agent must make decisions, while some information is unknown, and sensing actions can provide useful information for deciding which actions to execute.\n '
+                    'The package contains CPOR, an offline planner that computes complete plan trees, and SDR, an online planner that interleaves planning and execution.'
+                      )
 
-MetaCredits = Credits('CPOR Meta planner',
-                  'BGU',
-                  'Guy Shani',
-                  'https://github.com/???',
-                  'Version 1',
-                  'CPOR planner is a lightweight STRIPS planner written in c#.',
-                  'we whant to cradit the relevant inner engine as well.'
-                )
+CPORCredits = Credits('CPOR',
+                    'Guy Shani',
+                    'shanigu@bgu.ac.il',
+                    'https://github.com/shanigu',
+                    '',
+                    'CPOR is an offline contingent planner.\n '
+                    'It computes a complete plan tree (or graph) where each node is labeled by an action, and edges are labeled by observations.\n'
+                    'The leaves of the plan tree correspond to goal states.',
+                    'CPOR uses the SDR translation to compute actions.\n '
+                    'When a sensing action is chosen, CPOR expands both child nodes corresponding to the possible observations.\n'
+                    'CPOR contains a mechanism for reusing plan segments, resulting in a more compact graph.\n	'
+                    'Complete information can be found at the followign paper: Computing Contingent Plan Graphs using Online Planning, Maliah and Shani,TAAS,2021.'
+)
 
-SDRCredits = Credits('SDR planner',
-                  'BGU',
-                  'Guy Shani',
-                  'https://github.com/???',
-                  'Version 1',
-                  '',
-                  ''
+SDRCredits = Credits('SDR',
+                    'Guy Shani',
+                    'shanigu@bgu.ac.il',
+                    'https://github.com/shanigu',
+                    '',
+                    'SDR is an online contingent replanner.\n'
+                    'It provides one action at a time, and then awaits to receive an observation from the environment.',
+                    'SDR operates by compiling a contingent problem into a classical problem, representing only some of the partial knowledge that the agent has. \n	'
+                    'The classical problem is then solved. If an action is not applicable, due to the partial information, SDR modifies the classical problem and replans. \n	'
+                    'Complete information can be found at the followign paper: Replanning in Domains with Partial Information and Sensing Actions, Brafman and Shani, JAIR, 2012.'
                 )
 
 class CPORImpl(Engine, OneshotPlannerMixin):
@@ -74,7 +84,7 @@ class CPORImpl(Engine, OneshotPlannerMixin):
 
     @staticmethod
     def get_credits(**kwargs) -> Optional["Credits"]:
-        return credits
+        return CPORCredits
 
     def solve(self, problem: AbstractProblem) -> 'PlanGenerationResult':
 
@@ -199,7 +209,7 @@ class SDRImpl(Engine, ActionSelectorMixin):
 
     @staticmethod
     def get_credits(**kwargs) -> Optional["Credits"]:
-        return credits
+        return SDRCredits
 
     def solve(self, problem: AbstractProblem) -> 'PlanGenerationResult':
 
