@@ -266,6 +266,52 @@ namespace CPORLib.PlanningModel
         }
 
 
+        public Domain CreateTaggedDomain(Dictionary<string, List<Predicate>> dTags, Problem pCurrent, List<Formula> lDeadends)
+        {
+            if (HasNonDeterministicActions() && Options.UseOptions)
+            {
+                Domain dDeterministic = RemoveNonDeterministicEffects();
+
+                return dDeterministic.CreateTaggedDomain(dTags, pCurrent, lDeadends);
+            }
+
+            Domain dTagged = new Domain("K" + Name);
+
+
+
+            //sw.WriteLine("(:requirements :strips :typing)");
+
+            dTagged.Functions = Functions;
+            dTagged.Types = new List<string>(Types);
+            dTagged.Types.Add(Utilities.TAG);
+            dTagged.Types.Add(Utilities.VALUE);
+            dTagged.TypeHierarchy = new Dictionary<string, string>(TypeHierarchy);
+            dTagged.Constants = CreateTaggedConstants(dTags);
+ 
+
+            List<Predicate> lPredicates = CreateTaggedPredicates();
+            foreach (Predicate p in lPredicates)
+                dTagged.AddPredicate(p);
+
+            List<Predicate> lAdditionalPredicates = new List<Predicate>();
+            List<PlanningAction> lAllActions = GetKnowledgeActions(dTags, lAdditionalPredicates);
+            foreach (PlanningAction a in lAllActions)
+                dTagged.AddAction(a);
+
+            foreach (Predicate p in lAdditionalPredicates)
+                dTagged.AddPredicate(p);
+            
+            List<PlanningAction> lReasoningActions = CreateReasoningActions(dTags, pCurrent, lDeadends);
+            foreach (PlanningAction a in lReasoningActions)
+                dTagged.AddAction(a);
+
+            if (Options.RemoveConflictingConditionalEffects)
+                throw new NotImplementedException();
+
+            return dTagged;
+        }
+
+
         public MemoryStream WriteTaggedDomain(Dictionary<string, List<Predicate>> dTags, Problem pCurrent, List<Formula> lDeadends)
         {
             if (HasNonDeterministicActions() && Options.UseOptions)
@@ -296,7 +342,7 @@ namespace CPORLib.PlanningModel
             if (Options.SplitConditionalEffects)
             {
                 List<Predicate> lAdditionalPredicates = new List<Predicate>();
-                List<PlanningAction> lAllActions = GetKnowledgeActions(sw, dTags, lAdditionalPredicates);
+                List<PlanningAction> lAllActions = GetKnowledgeActions(dTags, lAdditionalPredicates);
                 WriteTaggedPredicates(sw, lAdditionalPredicates);
                 foreach (PlanningAction aKnowWhether in lAllActions)
                     WriteConditionalAction(sw, aKnowWhether, lDeadends);
@@ -336,6 +382,8 @@ namespace CPORLib.PlanningModel
 
             }
         }
+
+        
 
         private Domain RemoveNonDeterministicEffects()
         {
@@ -834,7 +882,7 @@ namespace CPORLib.PlanningModel
 
 
 
-        private List<PlanningAction> GetKnowledgeActions(StreamWriter sw, Dictionary<string, List<Predicate>> dTags, List<Predicate> lAdditionalPredicates)
+        private List<PlanningAction> GetKnowledgeActions(Dictionary<string, List<Predicate>> dTags, List<Predicate> lAdditionalPredicates)
         {
             List<PlanningAction> lAllActions = new List<PlanningAction>();
             lAdditionalPredicates.Add(new GroundedPredicate("NotInAction"));
@@ -974,6 +1022,39 @@ namespace CPORLib.PlanningModel
                  * */
             }
         }
+
+
+        private List<PlanningAction> CreateReasoningActions(Dictionary<string, List<Predicate>> dTags, Problem pCurrent, List<Formula> lDeadends)
+        {
+            List<PlanningAction> lReasoningActions = new List<PlanningAction>();
+            //write merges and TAG refutation
+            foreach (Predicate p in Predicates)
+            {
+                if (p is ParametrizedPredicate)
+                {
+                    ParametrizedPredicate pp = (ParametrizedPredicate)p;
+                    if (!AlwaysKnown(pp))
+                    {
+                        PlanningAction aMergeTrue = GenerateMergeAction(pp, dTags, true);
+                        aMergeTrue.AddPrecondition(Utilities.Observed);
+                        lReasoningActions.Add(aMergeTrue);
+                        PlanningAction aMergeFalse = GenerateMergeAction(pp, dTags, false);
+                        aMergeFalse.AddPrecondition(Utilities.Observed);
+                        lReasoningActions.Add(aMergeFalse);
+                        PlanningAction aRefute = GenerateRefutationAction(pp, true);
+                        aRefute.AddPrecondition(Utilities.Observed);
+                        lReasoningActions.Add(aRefute);
+                        aRefute = GenerateRefutationAction(pp, false);
+                        aRefute.AddPrecondition(Utilities.Observed);
+                        lReasoningActions.Add(aRefute);
+
+                        
+                    }
+                }
+            }
+            return lReasoningActions;
+        }
+
 
         private void WriteReasoningActions(StreamWriter sw, Dictionary<string, List<Predicate>> dTags, Problem pCurrent, List<Formula> lDeadends)
         {
@@ -1654,6 +1735,111 @@ namespace CPORLib.PlanningModel
             sw.WriteLine(")");
         }
 
+        private List<Predicate> CreateTaggedPredicates()
+        {
+            List<Predicate> lTaggedPredicates = new List<Predicate>();
+
+            lTaggedPredicates.Add(Utilities.Observed);
+
+            foreach (Predicate p in Predicates)
+            {
+                List<Argument> lParams = new List<Argument>();
+                if (p is ParametrizedPredicate pp)
+                    lParams = new List<Argument>(pp.Parameters);
+
+                lTaggedPredicates.Add(p);
+
+
+                if (Options.RemoveConflictingConditionalEffects)
+                {
+                    Predicate pNot = p.Clone();
+                    pNot.Name = "Not-" + p.Name;
+                    lTaggedPredicates.Add(pNot);
+                }
+
+                if (Options.SplitConditionalEffects)
+                {
+                    Predicate pAdd = p.Clone();
+                    pAdd.Name = p.Name + "-Add";
+                    lTaggedPredicates.Add(pAdd);
+
+                    Predicate pRemove = p.Clone();
+                    pRemove.Name = p.Name + "-Remove";
+                    lTaggedPredicates.Add(pRemove);
+                }
+
+                if (!AlwaysKnown(p))
+                {
+                    Predicate pK = p.Clone();
+                    pK.Name = "K" + p.Name;
+                    lTaggedPredicates.Add(pK);
+
+                    Predicate pKN = p.Clone();
+                    pKN.Name = "KN" + p.Name;
+                    lTaggedPredicates.Add(pKN);
+
+                    if (Options.RemoveConflictingConditionalEffects)
+                    {
+                        ParametrizedPredicate pNotK = new ParametrizedPredicate("Not-K" + p.Name);
+
+                        foreach (Argument param in lParams)
+                            pNotK.AddParameter(param);
+
+                        pNotK.AddParameter(new Parameter(Utilities.VALUE, Utilities.VALUE_PARAMETER));
+                        lTaggedPredicates.Add(pNotK);
+                    }
+
+                    if (Options.SplitConditionalEffects)
+                    {
+                        throw new NotImplementedException();
+                    }
+
+                    ParametrizedPredicate ppGiven = new ParametrizedPredicate("KGiven" + p.Name);
+                    foreach (Argument param in lParams)
+                        ppGiven.AddParameter(param);
+                    ppGiven.AddParameter(new Parameter(Utilities.TAG, Utilities.TAG_PARAMETER));
+                    ppGiven.AddParameter(new Parameter(Utilities.VALUE, Utilities.VALUE_PARAMETER));
+                    lTaggedPredicates.Add(ppGiven);
+
+                    
+
+                    if (Options.RemoveConflictingConditionalEffects)
+                    {
+                        ParametrizedPredicate ppNotGiven = new ParametrizedPredicate("Not-KGiven" + p.Name);
+                        foreach (Argument param in lParams)
+                            ppNotGiven.AddParameter(param);
+                        ppNotGiven.AddParameter(Utilities.VALUE_PARAMETER, Utilities.VALUE);
+                        lTaggedPredicates.Add(ppNotGiven);
+
+                        
+                    }
+
+                    if (Options.SplitConditionalEffects)
+                    {
+                        throw new NotImplementedException();
+                    }
+                }
+            }
+            ParametrizedPredicate ppKNot = new ParametrizedPredicate("KNot");
+            ppKNot.AddParameter(new Parameter(Utilities.TAG, Utilities.TAG_PARAMETER));
+            lTaggedPredicates.Add(ppKNot);
+
+
+            if (Options.RemoveConflictingConditionalEffects)
+            {
+                throw new NotImplementedException();
+
+            }
+            
+            
+            for (int iTime = 0; iTime < Options.TIME_STEPS; iTime++)
+            {
+                GroundedPredicate gp = new GroundedPredicate("time" + iTime);
+                lTaggedPredicates.Add(gp);
+            }
+             
+            return lTaggedPredicates;
+        }
 
         private void WriteTaggedPredicates(StreamWriter sw, List<Predicate> lAdditinalPredicates)
         {
@@ -1862,6 +2048,21 @@ namespace CPORLib.PlanningModel
             sw.WriteLine(")");
         }
 
+        private List<Constant> CreateTaggedConstants(Dictionary<string, List<Predicate>> dTags)
+        {
+            List<Constant> lConstants = new List<Constant>(Constants);
+         
+            foreach (KeyValuePair<string, List<Predicate>> p in dTags)
+            {
+                lConstants.Add(new Constant(Utilities.TAG, p.Key));
+            }
+            lConstants.Add(new Constant(Utilities.VALUE, Utilities.TRUE_VALUE));
+            lConstants.Add(new Constant(Utilities.VALUE, Utilities.FALSE_VALUE));
+
+            return lConstants;
+        }
+
+
         private void WriteConstants(StreamWriter sw, Dictionary<string, List<Predicate>> dTags)
         {
             sw.WriteLine("(:constants");
@@ -1889,6 +2090,8 @@ namespace CPORLib.PlanningModel
              * */
             sw.WriteLine(")");
         }
+
+
 
         private void WriteTypes(StreamWriter sw, bool bUseTags)
         {
@@ -2941,11 +3144,15 @@ namespace CPORLib.PlanningModel
         private void WritePredicates(StreamWriter sw, bool bAddInit, int cInit)
         {
             sw.WriteLine("(:predicates");
-            foreach (ParametrizedPredicate pp in Predicates)
+            foreach (Predicate p in Predicates)
             {
-                sw.Write("(" + pp.Name);//write regular predicate
-                foreach (Parameter p in pp.Parameters)
-                    sw.Write(" " + p.FullString());
+                
+                sw.Write("(" + p.Name);//write regular predicate
+                if (p is ParametrizedPredicate pp)
+                {
+                    foreach (Parameter param in pp.Parameters)
+                        sw.Write(" " + param.FullString());
+                }
                 sw.WriteLine(")");
             }
             if (bAddInit)
@@ -3031,10 +3238,8 @@ namespace CPORLib.PlanningModel
             WriteActions(sw, bWriteObserveActions, false, null);
             sw.WriteLine(")");
             sw.Flush();
-
             
             return msDomain;
-
         }
 
         public MemoryStream WriteDeadendDetectionDomain(string sFileName, Problem p, bool bSimpleChoose = false)

@@ -624,5 +624,127 @@ namespace CPORLib.Algorithms
 #endif
         }
 
+
+
+
+
+        public void CreateTaggedDomainAndProblem(List<State> lStates, DeadendStrategies dsStrategy, out int cTags, out Domain domain, out Problem problem)
+        {
+            HashSet<Predicate> lObserved = new HashSet<Predicate>();
+            Dictionary<string, List<Predicate>> dTags = GetTags(lStates, lObserved);
+
+            cTags = dTags.Count;
+
+            MemoryStream msModels = new MemoryStream();
+            BinaryWriter swModels = new BinaryWriter(msModels);
+
+            if (Options.Translation != Options.Translations.SDR)
+                throw new NotImplementedException();
+
+            MemoryStream msDomain = null, msProblem = null;
+            
+
+            msDomain = Problem.Domain.WriteTaggedDomain(dTags, Problem, null);
+
+            msDomain.Position = 0;
+            BinaryReader sr = new BinaryReader(msDomain);
+            byte b = sr.ReadByte();
+            while (b >= 0)
+            {
+                swModels.Write(b);
+                if (sr.BaseStream.Position == sr.BaseStream.Length)
+                {
+                    break;
+                }
+                b = sr.ReadByte();
+            }
+            swModels.Write('\0');
+            swModels.Flush();
+            
+
+            msProblem = Problem.WriteTaggedProblem(dTags, lObserved, dTags.Values.First(), lStates.First().FunctionValues, dsStrategy); //the first tag is the real state
+            
+
+            msProblem.Position = 0;
+            sr = new BinaryReader(msProblem);
+            b = sr.ReadByte();
+            while (b >= 0)
+            {
+                swModels.Write(b);
+                if (sr.BaseStream.Position == sr.BaseStream.Length)
+                {
+                    break;
+                }
+                b = sr.ReadByte();
+            }
+            swModels.Write('\0');
+            //sr.Close();
+            swModels.Flush();
+
+
+            Parser parser = new Parser();
+            parser.ParseDomainAndProblem(msModels, out domain, out problem);
+        }
+
+        /*
+        public void CreateTaggedDomainAndProblem(List<State> lStates, DeadendStrategies dsStrategy, out int cTags, out Domain domain, out Problem problem)
+        {
+            HashSet<Predicate> lObserved = new HashSet<Predicate>();
+            Dictionary<string, List<Predicate>> dTags = GetTags(lStates, lObserved);
+
+            cTags = dTags.Count;
+
+            if (Options.Translation == Options.Translations.BestCase || Options.Translation == Options.Translations.Conformant)
+                throw new NotImplementedException();
+            else if (Options.Translation == Options.Translations.SingleStateK)
+                throw new NotImplementedException();
+            else if (Options.Translation == Options.Translations.SDR)
+                domain = Problem.Domain.CreateTaggedDomain(dTags, Problem, null);
+            else
+                throw new NotImplementedException();
+
+            if (Options.Translation == Options.Translations.BestCase || Options.Translation == Options.Translations.Conformant)
+                throw new NotImplementedException();
+            else if (Options.Translation == Options.Translations.SingleStateK)
+                throw new NotImplementedException();
+            else if (Options.Translation == Options.Translations.SDR)
+                problem = Problem.CreateTaggedProblem(domain, dTags, lObserved, dTags.Values.First(), lStates.First().FunctionValues, dsStrategy); //the first tag is the real state
+            else
+                throw new NotImplementedException();
+        }
+        */
+        private Dictionary<string, List<Predicate>> GetTags(List<State> lStates, HashSet<Predicate> lObserved)
+        {
+            Dictionary<string, List<Predicate>> dTags = new Dictionary<string, List<Predicate>>();
+            int iTag = 0;
+            //bugbug - what happens when there is only a single state?
+
+            foreach (Predicate p in lStates[0].Predicates)
+            {
+                bool bObserved = true;
+                for (int i = 1; i < lStates.Count && bObserved; i++)
+                {
+                    if (!lStates[i].Predicates.Contains(p))
+                        bObserved = false;
+                }
+                if (bObserved)
+                    lObserved.Add(p);
+            }
+
+
+            foreach (State s in lStates)
+            {
+                string sTag = "tag" + iTag;
+                iTag++;
+                List<Predicate> lHidden = new List<Predicate>();
+                foreach (Predicate p in s.Predicates)
+                {
+                    if (!lObserved.Contains(p))
+                        lHidden.Add(p);
+                }
+                dTags[sTag] = lHidden;
+            }
+            return dTags;
+        }
     }
 }

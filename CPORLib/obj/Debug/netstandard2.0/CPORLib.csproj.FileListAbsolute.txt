@@ -38,3 +38,13 @@ D:\OneDrive\OneDrive - BGU\Research\projects\AIPlan4EU\up-cpor\CPORLib\obj\Debug
 D:\OneDrive\OneDrive - BGU\Research\projects\AIPlan4EU\up-cpor\CPORLib\obj\Debug\netstandard2.0\CPORLib.csproj.CoreCompileInputs.cache
 D:\OneDrive\OneDrive - BGU\Research\projects\AIPlan4EU\up-cpor\CPORLib\obj\Debug\netstandard2.0\CPORLib.dll
 D:\OneDrive\OneDrive - BGU\Research\projects\AIPlan4EU\up-cpor\CPORLib\obj\Debug\netstandard2.0\CPORLib.pdb
+C:\Users\Guy\OneDrive - BGU\Research\projects\AIPlan4EU\up-cpor\CPORLib\bin\Debug\netstandard2.0\CPORLib.deps.json
+C:\Users\Guy\OneDrive - BGU\Research\projects\AIPlan4EU\up-cpor\CPORLib\bin\Debug\netstandard2.0\CPORLib.dll
+C:\Users\Guy\OneDrive - BGU\Research\projects\AIPlan4EU\up-cpor\CPORLib\bin\Debug\netstandard2.0\CPORLib.pdb
+C:\Users\Guy\OneDrive - BGU\Research\projects\AIPlan4EU\up-cpor\CPORLib\obj\Debug\netstandard2.0\CPORLib.csproj.AssemblyReference.cache
+C:\Users\Guy\OneDrive - BGU\Research\projects\AIPlan4EU\up-cpor\CPORLib\obj\Debug\netstandard2.0\CPORLib.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Guy\OneDrive - BGU\Research\projects\AIPlan4EU\up-cpor\CPORLib\obj\Debug\netstandard2.0\CPORLib.AssemblyInfoInputs.cache
+C:\Users\Guy\OneDrive - BGU\Research\projects\AIPlan4EU\up-cpor\CPORLib\obj\Debug\netstandard2.0\CPORLib.AssemblyInfo.cs
+C:\Users\Guy\OneDrive - BGU\Research\projects\AIPlan4EU\up-cpor\CPORLib\obj\Debug\netstandard2.0\CPORLib.csproj.CoreCompileInputs.cache
+C:\Users\Guy\OneDrive - BGU\Research\projects\AIPlan4EU\up-cpor\CPORLib\obj\Debug\netstandard2.0\CPORLib.dll
+C:\Users\Guy\OneDrive - BGU\Research\projects\AIPlan4EU\up-cpor\CPORLib\obj\Debug\netstandard2.0\CPORLib.pdb

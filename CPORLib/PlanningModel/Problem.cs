@@ -691,7 +691,39 @@ namespace CPORLib.PlanningModel
             return sKP + ")";
         }
 
+        private GroundedPredicate GenerateKnowGiven(GroundedPredicate gp, string sTag, bool bKnowWhether)
+        {
+            GroundedPredicate gpK = new GroundedPredicate("?");
+            string sKP = "";
+            if (bKnowWhether)
+                gpK.Name = "KWGiven" + gp.Name;
+            else
+            {
+                if (Options.Translation == Options.Translations.SDR)
+                    gpK.Name = "KGiven" + gp.Name;
+                else
+                    gpK.Name = "Given" + gp.Name;
 
+            }
+            foreach (Constant c in gp.Constants)
+            {
+                gpK.AddConstant(c);
+            }
+
+            gpK.AddConstant(sTag, Utilities.TAG_PARAMETER);
+
+            if (Options.Translation == Options.Translations.SDR)
+            {
+                Constant cValue = null;
+                if (gp.Negation)
+                    cValue = new Constant( Utilities.FALSE_VALUE, Utilities.VALUE_PARAMETER);
+                else
+                    cValue = new Constant(Utilities.TRUE_VALUE, Utilities.VALUE_PARAMETER);
+                gpK.AddConstant(cValue);
+            }
+
+            return gpK;
+        }
         public MemoryStream WriteKnowledgeProblem(HashSet<Predicate> lObserved, HashSet<Predicate> lHidden, int cMinMishaps, int cMishaps)
         {
             MemoryStream msProblem = new MemoryStream();
@@ -925,6 +957,126 @@ namespace CPORLib.PlanningModel
 
             return msProblem;
         }
+
+
+
+        public Problem CreateTaggedProblem(Domain dTagged, Dictionary<string, List<Predicate>> dTags, IEnumerable<Predicate> lObserved,
+                                        List<Predicate> lTrueState, Dictionary<string, double> dFunctionValues, Options.DeadendStrategies dsStrategy)
+        {
+            Problem problem = new Problem("K" + Name, dTagged);
+
+            GroundedPredicate gpTime = new GroundedPredicate("time0");
+            problem.AddKnown(gpTime);
+
+
+
+            if (Options.SplitConditionalEffects)
+                throw new NotImplementedException();
+
+            if(dFunctionValues != null)
+                throw new NotImplementedException();
+
+            foreach (GroundedPredicate gp in lObserved)
+            {
+                if (gp.Name == "Choice" || gp.Name.ToLower().Contains(Utilities.OPTION_PREDICATE))
+                    continue;
+                GroundedPredicate gpK = new GroundedPredicate("K + gp.Name");
+                if (gp.Negation)
+                    gpK.Name = "(KN" + gp.Name;
+                
+                foreach (Constant c in gp.Constants)
+                {
+                    gpK.AddConstant(c);
+                }
+                
+
+                if (!Domain.AlwaysKnown(gp))
+                    problem.AddKnown(gpK);
+                if (!gp.Negation)
+                    problem.AddKnown(gp);
+            }
+            foreach (GroundedPredicate gp in lTrueState)
+            {
+                if (gp.Name == "Choice" || gp.Name.ToLower().Contains("_" + Utilities.OPTION_PREDICATE))
+                    continue;
+                problem.AddKnown(gp);
+            }
+            foreach (KeyValuePair<string, List<Predicate>> p in dTags)
+            {
+
+                foreach (GroundedPredicate gp in p.Value)
+                {
+                    if (gp.Name == "Choice" || gp.Name.ToLower().Contains("_" + Utilities.OPTION_PREDICATE))
+                        continue;
+                    GroundedPredicate gpK = GenerateKnowGiven(gp, p.Key, false);
+                    problem.AddKnown(gpK);
+                }
+
+                if (Options.AddAllKnownToGiven)
+                {
+                    foreach (GroundedPredicate gp in lObserved)
+                    {
+                        if (gp.Name == "Choice" || gp.Name.ToLower().Contains("_" + Utilities.OPTION_PREDICATE))
+                            continue;
+                        if (!Domain.AlwaysKnown(gp))
+                        {
+                            GroundedPredicate gpK = GenerateKnowGiven(gp, p.Key, false);
+                            problem.AddKnown(gpK);
+                        }
+                    }
+                }
+
+            }
+
+
+            
+
+            CompoundFormula cfTrueGoal = new CompoundFormula("and");
+            CompoundFormula cfIdentificationGoal = new CompoundFormula("and");
+
+            for (int i = 1; i < dTags.Keys.Count; i++)
+            {
+                Predicate pKNotT = Predicate.GenerateKNot(new Constant(Utilities.TAG, dTags.Keys.ElementAt(i)));
+                cfIdentificationGoal.AddOperand(pKNotT);
+            }
+
+            cfTrueGoal.AddOperand(Goal);
+            HashSet<Predicate> lGoalPredicates = new HashSet<Predicate>();
+            cfTrueGoal.GetAllPredicates(lGoalPredicates);
+
+            foreach (Predicate p in lGoalPredicates)
+            {
+                if (!Domain.AlwaysKnown(p))
+                    cfTrueGoal.AddOperand(new KnowPredicate(p));
+            }
+
+            CompoundFormula cfGoal = null;
+            if (dsStrategy == Options.DeadendStrategies.Active)
+            {
+                cfGoal = cfIdentificationGoal;
+            }
+            if (dsStrategy == Options.DeadendStrategies.Lazy)
+            {
+                cfGoal = cfTrueGoal;
+            }
+            if (dsStrategy == Options.DeadendStrategies.Both)
+            {
+                cfGoal = new CompoundFormula("or");
+                cfGoal.AddOperand(cfTrueGoal);
+                cfGoal.AddOperand(cfIdentificationGoal);
+            }
+            problem.Goal = cfGoal;
+            //sw.WriteLine("))");
+            if (MetricStatement != null)
+            {
+                throw new NotImplementedException();
+            }
+            
+
+
+            return problem;
+        }
+
 
         public MemoryStream WriteTaggedProblem(Dictionary<string, List<Predicate>> dTags, IEnumerable<Predicate> lObserved,
                                         List<Predicate> lTrueState, Dictionary<string, double> dFunctionValues, Options.DeadendStrategies dsStrategy)
