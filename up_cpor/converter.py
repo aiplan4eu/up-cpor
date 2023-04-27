@@ -16,7 +16,7 @@ PROJECT_PATH = os.path.dirname(os.path.abspath(__file__))
 DLL_PATH = os.path.join(PROJECT_PATH, "CPORLib.dll")
 clr.AddReference(DLL_PATH)
 
-from CPORLib.PlanningModel import Domain, Problem, ParametrizedAction, PlanningAction
+from CPORLib.PlanningModel import Domain, Problem, ParametrizedAction, PlanningAction, Simulator
 from CPORLib.LogicalUtilities import Predicate, ParametrizedPredicate, GroundedPredicate, PredicateFormula, CompoundFormula, Formula
 from CPORLib.Algorithms import CPORPlanner, SDRPlanner
 
@@ -25,6 +25,7 @@ from unified_planning.plans import ActionInstance
 from unified_planning.plans.contingent_plan import ContingentPlanNode
 import unified_planning as up
 
+from typing import Dict
 
 class UpCporConverter:
 
@@ -67,12 +68,36 @@ class UpCporConverter:
         return solver
 
     def SDRupdate(self, solver, observation):
-        applied = solver.SetObservation(str(observation))
+        if observation is not None:
+            if len(observation)>0 and not str(observation).split(': ')[1].replace('}', '') == 'false':
+                observation = str(observation).split(':')[0].replace('(', ' ').replace('{', '(')
+            else:
+                observation = None
+        applied = solver.SetObservation(observation)
         return applied
 
-    def SDRget_action(self, solver, problem)  -> ActionInstance:
+    def SDRGet_action(self, solver, problem)  -> ActionInstance:
         c_action = solver.GetAction()
         return self.__convert_SDR_string_to_action_instance(str(c_action), problem)
+
+    def createSDRSimulator(self, problem):
+        c_domain = self.createDomain(problem)
+        c_problem = self.createProblem(problem, c_domain)
+        c_simulator = Simulator(c_domain, c_problem)
+        return c_simulator
+
+    def create_c_problem_and_domain(self, problem):
+        return problem.actions,
+
+    def SDRSimulatorApply(self, simulator, problem, action: "up.plans.ActionInstance")-> Dict["up.model.FNode", "up.model.FNode"]:
+        str_action = str(action)
+        str_action = str_action.replace(',', '').replace(')', '').replace('(', ' ')
+        str_obser = simulator.Apply(str_action)
+        obser = self.__convert_string_to_observation(str_obser, problem)
+        return obser
+
+    def SDRGoal(self, simulator):
+        return simulator.GoalReached
 
 
     def createDomain(self, problem):
@@ -224,7 +249,7 @@ class UpCporConverter:
         return ActionInstance(action, param)
 
     def __convert_string_to_observation(self, string, problem):
-        if string != 'None' and ":observe" in string:
+        if string is not None and string != 'None' and ":observe" in string:
             ob = string.replace("\n", " ").replace(")", "").replace("(", "").split(":observe ")[1]
             obs = ob.split(" ")
             obs = obs[0:2]
@@ -234,6 +259,3 @@ class UpCporConverter:
             obresv = expr_manager.FluentExp(obse, location)
             return obresv
         return None
-
-    def SDRGoal(self, solver):
-        return solver.GoalReached
