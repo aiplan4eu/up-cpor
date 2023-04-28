@@ -44,9 +44,14 @@ namespace CPORLib.FFCS
                     TypedList tl = new TypedList(p.Name, p.Type);
                     lParams.Add(tl);
                 }
-                for(int i = 0; i < lParams.Count - 1; i++)
-                    lParams[i].next = lParams[i + 1];
-                op.parse_params = lParams[0];
+                if (pa.Parameters.Count > 0)
+                {
+                    for (int i = 0; i < lParams.Count - 1; i++)
+                        lParams[i].next = lParams[i + 1];
+                    op.parse_params = lParams[0];
+                }
+                else
+                    op.parse_params = null;
                 op.number_of_real_params = pa.Parameters.Count;
             }
             op.preconds = Convert(a.Preconditions);
@@ -96,9 +101,8 @@ namespace CPORLib.FFCS
                         }
                         tll.args = lArgs[0];
                     }
-                    lPredicates.Add(tll);
                 }
-                
+                lPredicates.Add(tll);
             }
             if(lPredicates.Count > 0)
             {
@@ -165,16 +169,16 @@ namespace CPORLib.FFCS
         {
             TokenList tl = new TokenList(p.Name);
             TokenList tlCurrent = tl;
-            if(p is ParametrizedPredicate pp)
+            if (p is ParametrizedPredicate pp)
             {
-                foreach(Argument arg in pp.Parameters)
+                foreach (Argument arg in pp.Parameters)
                 {
                     TokenList tlNew = new TokenList(arg.Name);
                     tlCurrent.next = tlNew;
                     tlCurrent = tlNew;
                 }
             }
-            else if(p is GroundedPredicate gp)
+            else if (p is GroundedPredicate gp)
             {
                 foreach (Constant c in gp.Constants)
                 {
@@ -183,6 +187,15 @@ namespace CPORLib.FFCS
                     tlCurrent = tlNew;
                 }
             }
+            /*
+            else if (p is KnowPredicate kp)
+            {
+                tl = Convert(kp.Knowledge);
+                tl.item = p.Name;
+            }
+            */
+            else
+                throw new NotImplementedException();
             return tl;
         }
 

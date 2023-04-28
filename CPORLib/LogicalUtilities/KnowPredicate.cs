@@ -6,26 +6,26 @@ using CPORLib.Tools;
 
 namespace CPORLib.LogicalUtilities
 {
-    class KnowPredicate : Predicate
+    class KnowPredicateX : Predicate
     {
         public Predicate Knowledge { get; private set; }
         public bool Value { get; private set; }
         public bool Parametrized { get; set; }
 
 
-        public KnowPredicate(Predicate p)
+        private KnowPredicateX(Predicate p)
             : this(p, !p.Negation, false)
         {
 
         }
-        public KnowPredicate(KnowPredicate kp) : base(kp.Name)
+        private KnowPredicateX(KnowPredicateX kp) : base(kp.Name)
         {
             Knowledge = kp.Knowledge;
             Value = kp.Value;
             Parametrized = kp.Parametrized;
 
         }
-        public KnowPredicate(Predicate p, bool bValue, bool bParametrized)
+        private KnowPredicateX(Predicate p, bool bValue, bool bParametrized)
             : base("N/A")
         {
             if (bValue)
@@ -52,11 +52,11 @@ namespace CPORLib.LogicalUtilities
         public override Predicate Negate()
         {
             /*
-            KnowPredicate kpNegate = new KnowPredicate(Knowledge, Value, Parametrized);
+            KnowPredicate kpNegate = Predicate.GenerateKnowPredicate(Knowledge, Value, Parametrized);
             kpNegate.Negation = !Negation;
             return kpNegate;
              */
-            KnowPredicate kpNegate = new KnowPredicate(this);
+            Predicate kpNegate = Predicate.GenerateKnowPredicate(this);
             kpNegate.Negation = !Negation;
             return kpNegate;
 
@@ -68,9 +68,9 @@ namespace CPORLib.LogicalUtilities
         }
         public override bool Equals(object obj)
         {
-            if (obj is KnowPredicate)
+            if (obj is KnowPredicateX)
             {
-                KnowPredicate kp = (KnowPredicate)obj;
+                KnowPredicateX kp = (KnowPredicateX)obj;
                 if (Value == kp.Value && Negation == kp.Negation)
                     return Knowledge.Equals(kp.Knowledge);
             }
@@ -165,7 +165,7 @@ namespace CPORLib.LogicalUtilities
 
         public override Predicate ToTag()
         {
-            KnowPredicate ppNew = new KnowPredicate(this);
+            Predicate ppNew = Predicate.GenerateKnowPredicate(this);
             if (Negation)
                 ppNew.Name = ppNew.Name + "-Remove";
             else

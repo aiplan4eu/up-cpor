@@ -3,13 +3,13 @@ using System.Collections.Generic;
 
 namespace CPORLib.LogicalUtilities
 {
-    class KnowGivenPredicate : GroundedPredicate
+    class KnowGivenPredicateX : GroundedPredicate
     {
         public bool KnowWhether { get; private set; }
         public GroundedPredicate Predicate { get; private set; }
         public string Tag { get; private set; }
         public bool Value { get; private set; }
-        public KnowGivenPredicate(GroundedPredicate p, bool bValue, string sTag, bool bKnowWhether)
+        private KnowGivenPredicateX(GroundedPredicate p, bool bValue, string sTag, bool bKnowWhether)
             : base((bKnowWhether ? "KWGiven" : "KGiven") + p.Name)
         {
             KnowWhether = bKnowWhether;

@@ -243,7 +243,7 @@ namespace CPORLib.PlanningModel
             }
             sw.WriteLine(")");
             sw.Write(":implies (and");
-            foreach (KnowPredicate pEffect in lEffects)
+            foreach (Predicate pEffect in lEffects)
             {
                 sw.Write(pEffect);
             }
@@ -256,14 +256,14 @@ namespace CPORLib.PlanningModel
             List<Predicate> lKnowPreconditions = new List<Predicate>();
             foreach (GroundedPredicate p in lPreconditions)
             {
-                KnowPredicate pKnow = new KnowPredicate(p);
+                Predicate pKnow = Predicate.GenerateKnowPredicate(p);
                 lKnowPreconditions.Add(pKnow);
                 lKnowPreconditions.Add(p);
             }
             List<Predicate> lKnowEffects = new List<Predicate>();
             foreach (GroundedPredicate p in lEffects)
             {
-                KnowPredicate pKnow = new KnowPredicate(p);
+                Predicate pKnow = Predicate.GenerateKnowPredicate(p);
                 lKnowEffects.Add(pKnow);
             }
             if (dActions.ContainsKey(lKnowPreconditions))
@@ -275,7 +275,7 @@ namespace CPORLib.PlanningModel
             dActions[lKnowPreconditions] = lKnowEffects;
         }
 
-        private void AddReasoningAction(List<GroundedPredicate> lAssignment, List<KnowPredicate> lKnown, List<Predicate> lEffects, Dictionary<List<Predicate>, List<Predicate>> dActions)
+        private void AddReasoningAction(List<GroundedPredicate> lAssignment, List<Predicate> lKnown, List<Predicate> lEffects, Dictionary<List<Predicate>, List<Predicate>> dActions)
         {
             List<Predicate> lPreconditions = new List<Predicate>(lAssignment);
             lPreconditions.AddRange(lKnown);
@@ -283,7 +283,7 @@ namespace CPORLib.PlanningModel
             List<Predicate> lKnowEffects = new List<Predicate>();
             foreach (GroundedPredicate p in lEffects)
             {
-                KnowPredicate pKnow = new KnowPredicate(p);
+                Predicate pKnow = Predicate.GenerateKnowPredicate(p);
                 lKnowEffects.Add(pKnow);
             }
             if (dActions.ContainsKey(lPreconditions))
@@ -374,66 +374,6 @@ namespace CPORLib.PlanningModel
             return dFiltered;
         }
 
-        private Dictionary<List<Predicate>, List<Predicate>> ReduceActions(Dictionary<List<Predicate>, List<Predicate>> dActions)
-        {
-            Dictionary<List<Predicate>, List<Predicate>> dReduced = null;
-            PredicateListComparer comparer = new PredicateListComparer();
-            Dictionary<List<Predicate>, List<Predicate>> dToReduce = new Dictionary<List<Predicate>, List<Predicate>>(dActions, comparer);
-            Dictionary<List<Predicate>, List<Predicate>> dNonReduceable = new Dictionary<List<Predicate>, List<Predicate>>();
-            bool bDone = false, bReduced = false;
-            while (!bDone)
-            {
-                bDone = true;
-                dReduced = new Dictionary<List<Predicate>, List<Predicate>>(comparer);
-                List<List<Predicate>> lAllPreconditions = new List<List<Predicate>>(dToReduce.Keys);
-                foreach (List<Predicate> lActionPreconditions in lAllPreconditions)
-                {
-                    if (!dToReduce.ContainsKey(lActionPreconditions))
-                        continue;
-                    bReduced = false;
-                    foreach (Predicate p in lActionPreconditions)
-                    {
-                        if (p is KnowPredicate)
-                        {
-
-                        }
-                        else
-                        {
-                            List<Predicate> lNegateActionPreconditions = new List<Predicate>();
-                            foreach (Predicate pOther in lActionPreconditions)
-                            {
-                                if (pOther != p)
-                                    lNegateActionPreconditions.Add(pOther);
-                                else
-                                    lNegateActionPreconditions.Add(p.Negate());
-                            }
-                            if (dToReduce.ContainsKey(lNegateActionPreconditions))
-                            {
-                                List<Predicate> lNegateEffects = dToReduce[lNegateActionPreconditions];
-                                List<Predicate> lEffects = dToReduce[lActionPreconditions];
-                                if (comparer.Equals(lNegateEffects, lEffects))
-                                {
-                                    dToReduce.Remove(lNegateActionPreconditions);
-                                    dToReduce.Remove(lActionPreconditions);
-                                    lNegateActionPreconditions.Remove(p.Negate());
-                                    dReduced[lNegateActionPreconditions] = lEffects;
-                                    bReduced = true;
-                                    bDone = false;
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                    if (!bReduced)
-                    {
-                        dNonReduceable[lActionPreconditions] = dToReduce[lActionPreconditions];
-                    }
-                }
-                dToReduce = dReduced;
-            }
-            return dNonReduceable;
-        }
-
         private int WriteReasoningActions(StreamWriter sw, CompoundFormula cfHidden, int cActions, bool bRequireP)
         {
             HashSet<Predicate> lPredicates = new HashSet<Predicate>();
@@ -474,8 +414,9 @@ namespace CPORLib.PlanningModel
             {
                 if (p.Value.Count == 1)
                 {
-                    KnowPredicate kp = (KnowPredicate)p.Value.First();
-                    GroundedPredicate pOrg = (GroundedPredicate)kp.Knowledge;
+                    throw new NotImplementedException();
+                    //KnowPredicate kp = (KnowPredicate)p.Value.First();
+                    //GroundedPredicate pOrg = (GroundedPredicate)kp.Knowledge;
                     //GroundedPredicate gpNotK = new GroundedPredicate(pOrg);
                     //gpNotK.Name = "NotK" + gpNotK.Name;
                     //p.Key.Add(gpNotK);
@@ -497,7 +438,7 @@ namespace CPORLib.PlanningModel
                 {
                     //Kp and p -> K everything else is false
                     lPreconditions = new HashSet<Predicate>();
-                    lPreconditions.Add(new KnowPredicate(p));
+                    lPreconditions.Add(Predicate.GenerateKnowPredicate(p));
                     if (bRequireP)
                         lPreconditions.Add(p);
 
@@ -508,7 +449,7 @@ namespace CPORLib.PlanningModel
                         {
                             if (bRequireP)
                                 lPreconditions.Add(pOther.Negate());
-                            lEffects.Add(new KnowPredicate(pOther.Negate()));
+                            lEffects.Add(Predicate.GenerateKnowPredicate(pOther.Negate()));
                         }
                     }
                     dActions[lPreconditions] = lEffects;
@@ -521,11 +462,11 @@ namespace CPORLib.PlanningModel
                         {
                             if (bRequireP)
                                 lPreconditions.Add(pOther.Negate());
-                            lPreconditions.Add(new KnowPredicate(pOther.Negate()));
+                            lPreconditions.Add(Predicate.GenerateKnowPredicate(pOther.Negate()));
                         }
                     }
                     lEffects = new HashSet<Predicate>();
-                    lEffects.Add(new KnowPredicate(p));
+                    lEffects.Add(Predicate.GenerateKnowPredicate(p));
                     if (bRequireP)
                         lPreconditions.Add(p);
 
@@ -545,11 +486,11 @@ namespace CPORLib.PlanningModel
                         {
                             if (bRequireP)
                                 lPreconditions.Add(pOther.Negate());
-                            lPreconditions.Add(new KnowPredicate(pOther.Negate()));
+                            lPreconditions.Add(Predicate.GenerateKnowPredicate(pOther.Negate()));
                         }
                     }
                     lEffects = new HashSet<Predicate>();
-                    lEffects.Add(new KnowPredicate(p));
+                    lEffects.Add(Predicate.GenerateKnowPredicate(p));
                     if (bRequireP)
                         lPreconditions.Add(p);
 
@@ -714,12 +655,10 @@ namespace CPORLib.PlanningModel
 
             if (Options.Translation == Options.Translations.SDR)
             {
-                Constant cValue = null;
                 if (gp.Negation)
-                    cValue = new Constant( Utilities.FALSE_VALUE, Utilities.VALUE_PARAMETER);
+                    gpK.AddConstant( Utilities.FALSE_VALUE, Utilities.VALUE_PARAMETER);
                 else
-                    cValue = new Constant(Utilities.TRUE_VALUE, Utilities.VALUE_PARAMETER);
-                gpK.AddConstant(cValue);
+                    gpK.AddConstant(Utilities.TRUE_VALUE, Utilities.VALUE_PARAMETER);
             }
 
             return gpK;
@@ -743,7 +682,7 @@ namespace CPORLib.PlanningModel
                     sw.WriteLine(gp);
                 if (!Domain.AlwaysKnown(gp))
                 {
-                    Predicate kp = new KnowPredicate(gp);
+                    Predicate kp = Predicate.GenerateKnowPredicate(gp);
                     sw.WriteLine(kp);
                 }
 
@@ -771,7 +710,7 @@ namespace CPORLib.PlanningModel
                 if (Domain.AlwaysKnown(p))
                     cfGoal.AddOperand(p);
                 else
-                    cfGoal.AddOperand(new KnowPredicate(p));
+                    cfGoal.AddOperand(Predicate.GenerateKnowPredicate(p));
             }
 
             CompoundFormula cfAnd = new CompoundFormula(cfGoal);
@@ -810,7 +749,7 @@ namespace CPORLib.PlanningModel
                 sw.WriteLine(gp);
                 if (!Domain.AlwaysKnown(gp))
                 {
-                    Predicate kp = new KnowPredicate(gp);
+                    Predicate kp = Predicate.GenerateKnowPredicate(gp);
                     sw.WriteLine(kp);
                 }
 
@@ -837,7 +776,7 @@ namespace CPORLib.PlanningModel
                 if (Domain.AlwaysKnown(p))
                     cfGoal.AddOperand(p);
                 else
-                    cfGoal.AddOperand(new KnowPredicate(p));
+                    cfGoal.AddOperand(Predicate.GenerateKnowPredicate(p));
             }
 
             CompoundFormula cfAnd = new CompoundFormula(cfGoal);
@@ -941,7 +880,7 @@ namespace CPORLib.PlanningModel
             foreach (Predicate p in lGoalPredicates)
             {
                 if (!Domain.AlwaysKnown(p))
-                    cfGoal.AddOperand(new KnowPredicate(p));
+                    cfGoal.AddOperand(Predicate.GenerateKnowPredicate(p));
             }
 
 
@@ -965,24 +904,26 @@ namespace CPORLib.PlanningModel
         {
             Problem problem = new Problem("K" + Name, dTagged);
 
-            GroundedPredicate gpTime = new GroundedPredicate("time0");
-            problem.AddKnown(gpTime);
-
+            if (Options.TIME_STEPS > 0)
+            {
+                GroundedPredicate gpTime = new GroundedPredicate("time0");
+                problem.AddKnown(gpTime);
+            }
 
 
             if (Options.SplitConditionalEffects)
                 throw new NotImplementedException();
 
-            if(dFunctionValues != null)
+            if(dFunctionValues != null && dFunctionValues.Count > 0)
                 throw new NotImplementedException();
 
             foreach (GroundedPredicate gp in lObserved)
             {
                 if (gp.Name == "Choice" || gp.Name.ToLower().Contains(Utilities.OPTION_PREDICATE))
                     continue;
-                GroundedPredicate gpK = new GroundedPredicate("K + gp.Name");
+                GroundedPredicate gpK = new GroundedPredicate("K" + gp.Name);
                 if (gp.Negation)
-                    gpK.Name = "(KN" + gp.Name;
+                    gpK.Name = "KN" + gp.Name;
                 
                 foreach (Constant c in gp.Constants)
                 {
@@ -1047,7 +988,7 @@ namespace CPORLib.PlanningModel
             foreach (Predicate p in lGoalPredicates)
             {
                 if (!Domain.AlwaysKnown(p))
-                    cfTrueGoal.AddOperand(new KnowPredicate(p));
+                    cfTrueGoal.AddOperand(Predicate.GenerateKnowPredicate(p));
             }
 
             CompoundFormula cfGoal = null;
@@ -1182,7 +1123,7 @@ namespace CPORLib.PlanningModel
             foreach (Predicate p in lGoalPredicates)
             {
                 if (!Domain.AlwaysKnown(p))
-                    cfTrueGoal.AddOperand(new KnowPredicate(p));
+                    cfTrueGoal.AddOperand(Predicate.GenerateKnowPredicate(p));
             }
 
             CompoundFormula cfGoal = null;
@@ -1372,11 +1313,18 @@ namespace CPORLib.PlanningModel
         {
             MemoryStream msProblem = new MemoryStream();
             StreamWriter sw = new StreamWriter(msProblem);
-            sw.WriteLine("(define (problem K" + Name + ")");
-            sw.WriteLine("(:domain K" + Domain.Name + ")");
+            sw.WriteLine("(define (problem " + Name + ")");
+            sw.WriteLine("(:domain " + Domain.Name + ")");
             sw.WriteLine("(:init"); //ff doesn't like the and (and");
             string sP = "";
-            foreach (GroundedPredicate gp in sCurrent.Predicates)
+
+            List<Predicate> lPredicates = null;
+            if (sCurrent == null)
+                lPredicates = new List<Predicate>(Known);
+            else
+                lPredicates = new List<Predicate>(sCurrent.Predicates);
+
+            foreach (GroundedPredicate gp in lPredicates)
             {
                 if (!gp.Negation)
                 {

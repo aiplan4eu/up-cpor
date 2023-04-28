@@ -270,7 +270,6 @@ namespace CPORLib.FFCS
 
 
         public int position_in_types_table(string str)
-
         {
 
             int i;
@@ -292,7 +291,6 @@ namespace CPORLib.FFCS
 
 
         public  int position_in_constants_table(string str)
-
         {
 
             int i;
@@ -313,7 +311,6 @@ namespace CPORLib.FFCS
 
 
         public  int position_in_predicates_table(string str)
-
         {
 
             int i;
@@ -334,7 +331,6 @@ namespace CPORLib.FFCS
 
 
         public  void create_integer_representation()
-
         {
 
             PlNode n, nn;
@@ -2744,7 +2740,8 @@ namespace CPORLib.FFCS
 
             if (gcmd_line.debug >= 3)
             {
-                if (result || gcmd_line.debug >= 4) FFUtilities.Write("\n\nderived predicate of OP %d, %s, ", i, FF.DP.gpredicates[p]);
+                if (result || gcmd_line.debug >= 4) 
+                    FFUtilities.Write("\n\nderived predicate of OP %d, %s, ", i, FF.DP.gpredicates[p]);
                 if (result)
                 {
                     FFUtilities.Write("occurs negatively in prec OP %d", j);

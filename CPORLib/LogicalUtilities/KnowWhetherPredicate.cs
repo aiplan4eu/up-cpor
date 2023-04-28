@@ -4,10 +4,10 @@ using System.Collections.Generic;
 
 namespace CPORLib.LogicalUtilities
 {
-    class KnowWhetherPredicate : Predicate
+    class KnowWhetherPredicateX : Predicate
     {
         public Predicate Knowledge { get; private set; }
-        public KnowWhetherPredicate(Predicate p)
+        private KnowWhetherPredicateX(Predicate p)
             : base("KW" + p.Name)
         {
             if (p.Negation)
@@ -27,7 +27,7 @@ namespace CPORLib.LogicalUtilities
 
         public override Predicate Negate()
         {
-            KnowWhetherPredicate kpNegate = new KnowWhetherPredicate(Knowledge);
+            Predicate kpNegate = Predicate.GenerateKnowWhetherPredicate(Knowledge);
             kpNegate.Negation = !Negation;
             return kpNegate;
         }
@@ -38,9 +38,9 @@ namespace CPORLib.LogicalUtilities
         }
         public override bool Equals(object obj)
         {
-            if (obj is KnowWhetherPredicate)
+            if (obj is KnowWhetherPredicateX)
             {
-                KnowWhetherPredicate kp = (KnowWhetherPredicate)obj;
+                KnowWhetherPredicateX kp = (KnowWhetherPredicateX)obj;
                 if (Negation == kp.Negation)
                     return Knowledge.Equals(kp.Knowledge);
             }

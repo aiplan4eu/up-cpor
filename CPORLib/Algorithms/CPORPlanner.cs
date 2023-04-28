@@ -887,7 +887,7 @@ namespace CPORLib.Algorithms
 
                         if (lPlan == null && bMaybeDeadend == false && bDeadendClosed == false)
                         {
-                            lPlan = base.Plan(pssCurrent, out sChosen);
+                            lPlan = base.Plan(pssCurrent);
                         }
                     }
                 }

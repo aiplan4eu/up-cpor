@@ -98,7 +98,7 @@ namespace CPORLib
             {
                 Random rnd = new Random(0);
                 //sdr.OnlineReplanning();
-                int cIterations = 50, cSuccess = 0;
+                int cIterations = 10, cSuccess = 0;
                     int idx = 0;
                 for (int i = 0; i < cIterations; i++)
                 {

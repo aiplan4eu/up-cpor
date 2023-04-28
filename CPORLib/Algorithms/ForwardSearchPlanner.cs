@@ -17,10 +17,10 @@ namespace CPORLib.Algorithms
         private int m_cObservedStates;
         private List<Action> m_lGroundedActions;
 
-        public ForwardSearchPlanner(Domain d, Problem p, HeuristicFunction fHeuristic)
+        public ForwardSearchPlanner(Domain d, Problem p)
             : base(d, p)
         {
-            m_fHeuristic = fHeuristic;
+            m_fHeuristic = new HSPHeuristic(m_lGroundedActions, m_pProblem.Goal, true);
         }
 
         public ForwardSearchPlanner(MemoryStream msModel)
