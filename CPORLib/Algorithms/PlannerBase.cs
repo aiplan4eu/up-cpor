@@ -795,55 +795,12 @@ namespace CPORLib.Algorithms
 
             cTags = dTags.Count;
 
-            MemoryStream msModels = new MemoryStream();
-            BinaryWriter swModels = new BinaryWriter(msModels);
-
             if (Options.Translation != Options.Translations.SDR)
                 throw new NotImplementedException();
 
-            MemoryStream msDomain = null, msProblem = null;
-            
+            domain = Problem.Domain.CreateTaggedDomain(dTags, Problem, null);
 
-            msDomain = Problem.Domain.WriteTaggedDomain(dTags, Problem, null);
-
-            msDomain.Position = 0;
-            BinaryReader sr = new BinaryReader(msDomain);
-            byte b = sr.ReadByte();
-            while (b >= 0)
-            {
-                swModels.Write(b);
-                if (sr.BaseStream.Position == sr.BaseStream.Length)
-                {
-                    break;
-                }
-                b = sr.ReadByte();
-            }
-            swModels.Write('\0');
-            swModels.Flush();
-            
-
-            msProblem = Problem.WriteTaggedProblem(dTags, lObserved, dTags.Values.First(), lStates.First().FunctionValues, dsStrategy); //the first tag is the real state
-            
-
-            msProblem.Position = 0;
-            sr = new BinaryReader(msProblem);
-            b = sr.ReadByte();
-            while (b >= 0)
-            {
-                swModels.Write(b);
-                if (sr.BaseStream.Position == sr.BaseStream.Length)
-                {
-                    break;
-                }
-                b = sr.ReadByte();
-            }
-            swModels.Write('\0');
-            //sr.Close();
-            swModels.Flush();
-
-
-            Parser parser = new Parser();
-            parser.ParseDomainAndProblem(msModels, out domain, out problem);
+            problem = Problem.CreateTaggedProblem(domain, dTags, lObserved, dTags.Values.First(), lStates.First().FunctionValues, dsStrategy); //the first tag is the real state
         }
 
         /*
