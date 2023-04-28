@@ -236,7 +236,7 @@ class SDRImpl(Engine, ActionSelectorMixin):
         pass
 
     def _get_action(self) -> "up.plans.ActionInstance":
-        return self.cnv.SDRget_action(self.solver, self.problem)
+        return self.cnv.SDRGet_action(self.solver, self.problem)
 
     def _update(self, observation: Dict["up.model.FNode", "up.model.FNode"]):
         return self.cnv.SDRupdate(self.solver, observation)
