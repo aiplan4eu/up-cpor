@@ -69,8 +69,13 @@ class UpCporConverter:
 
     def SDRupdate(self, solver, observation):
         if observation is not None:
-            if len(observation)>0 and not str(observation).split(': ')[1].replace('}', '') == 'false':
-                observation = str(observation).split(':')[0].replace('(', ' ').replace('{', '(')
+            if len(observation)>0:
+                full_observation = str(observation).split(': ')
+                observation = full_observation[0].replace('(', ' ').replace('{', '(')
+                if "on" in observation:
+                    observation = None
+                elif full_observation[1].replace('}', '') == 'false':
+                    observation = f"(not {observation})"
             else:
                 observation = None
         applied = solver.SetObservation(observation)
