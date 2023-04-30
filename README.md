@@ -1,37 +1,32 @@
 # CPOR
-CPOR is an offline contingent planner.
-It computes a complete plan tree (or graph) where each node is labeled by an action, and edges are labeled by observations.
-The leaves of the plan tree correspond to goal states.
-CPOR uses the SDR translation to compute actions.
-When a sensing action is chosen, CPOR expands both child nodes corresponding to the possible observations.
-CPOR contains a mechanism for reusing plan segments, resulting in a more compact graph.
-Complete information can be found at the followign paper: Computing Contingent Plan Graphs using Online Planning, Maliah and Shani,TAAS,2021.
+CPOR is an offline contingent planner that computes a complete plan tree (or graph) where each node is labeled by an action, and edges are labeled by observations. The leaves of the plan tree correspond to goal states. CPOR uses the SDR translation to compute actions. When a sensing action is chosen, CPOR expands both child nodes corresponding to the possible observations. CPOR contains a mechanism for reusing plan segments, resulting in a more compact graph.
+
+More information about CPOR can be found in the paper: "Computing Contingent Plan Graphs using Online Planning" by Maliah and Shani, published in TAAS in 2021.
 
 # SDR
+SDR is an online contingent replanner that provides one action at a time and then awaits to receive an observation from the environment. SDR operates by compiling a contingent problem into a classical problem, representing only some of the partial knowledge that the agent has. The classical problem is then solved. If an action is not applicable due to the partial information, SDR modifies the classical problem and replans.
 
-SDR is an online contingent replanner
-It provides one action at a time, and then awaits to receive an observation from the environment.
-SDR operates by compiling a contingent problem into a classical problem, representing only some of the partial knowledge that the agent has.
-The classical problem is then solved. If an action is not applicable, due to the partial information, SDR modifies the classical problem and replans.
-Complete information can be found at the followign paper: Replanning in Domains with Partial Information and Sensing Actions, Brafman and Shani, JAIR, 2012.'
+More information about SDR can be found in the paper: "Replanning in Domains with Partial Information and Sensing Actions" by Brafman and Shani, published in JAIR in 2012.
 
 # Installation
 
-After cloning the project open cmd from the project dir in you PC and create new env:
+To install 'up-cpor', clone the project and open a command prompt from the project directory on your PC. Then create a new environment with the following command:
 
 ```bash
 conda create -n up_cpor_env python=3.8.0
 conda activate up_cpor_env
 ```
 
-Use the package manager [pip](https://pip.pypa.io/en/stable/) to install up-cpor.
+Finally, use pip to install the required dependencies:
 
 ```bash
 pip install -r requirements.txt
 ```
-It will install the unified_planning package and all the essential to run the algorithm. 
+This will install the unified_planning package and all the essential components to run the algorithm.
 
 ## Usage
+
+CPOR and SDR can be used in different ways, depending on the specific requirements of your project. Here are some examples:
 
 ### CPOR Engine
 
@@ -102,8 +97,14 @@ with ActionSelector(name='SDRPlanning', problem=problem) as solver:
 
 ```
 
-#Notebooks
+# Notebooks
 
-There are 2 examples: 
-1) Full running example on Windows settings [CPOR_and_SDR_running_examples.ipynb](https://github.com/aiplan4eu/up-cpor/blob/master/Tests/CPOR_engine_demo.ipynb)
-2) Full running example on Google Colab settings [CPOR_and_SDR_running_examples_colab.ipynb](https://github.com/aiplan4eu/up-cpor/blob/master/Tests/CPOR_and_SDR_running_examples_colab.ipynb)
+We provide two example notebooks to demonstrate the usage of CPOR and SDR engines in different settings:
+
+[CPOR_and_SDR_running_examples.ipynb](https://github.com/aiplan4eu/up-cpor/blob/master/Tests/CPOR_engine_demo.ipynb): This notebook contains a full running example on a Windows machine, showcasing the CPOR engine and the SDR engine with a simulated environment. It includes step-by-step instructions and explanations of the code, making it easy to follow along and experiment with the engines.
+
+[CPOR_and_SDR_running_examples_colab.ipynb](https://github.com/aiplan4eu/up-cpor/blob/master/Tests/CPOR_and_SDR_running_examples_colab.ipynb): This notebook contains a full running example on Google Colab, showcasing the same engines and the same problem, but running in a cloud environment. This allows you to experiment with the engines even if you don't have a powerful machine or a local Python environment set up.
+
+Both notebooks can be found in the Tests directory of the project repository on GitHub. We recommend starting with the first notebook, which provides a more detailed explanation of the concepts and code, before moving on to the Colab notebook if needed.
+
+We hope these examples will help you get started with using CPOR and SDR engines in your own projects!
