@@ -58,7 +58,7 @@ namespace CPORLib.Algorithms
 
             Problem.PrepareForPlanning();
 
-
+            FF.ClearEfficientMemory();
         }
 
 
@@ -128,6 +128,31 @@ namespace CPORLib.Algorithms
             return false;
         }
 
+        protected bool StuckInLoopPlanBased(PartiallySpecifiedState pssCurrent)
+        {
+            if (pssCurrent.History.Count >= 100000)
+                return true;
+            if (pssCurrent.History.Count < 50)
+                return false;
+            string sLastAction = pssCurrent.History.Last();
+            sLastAction = sLastAction.Substring(sLastAction.IndexOf(")") + 1).Trim();
+            if (sLastAction[0] == '(')
+                return false;
+            int cSame = 0;
+            for(int i = pssCurrent.History.Count - 2 ; i > 0; i--)
+            {
+                string sAction = pssCurrent.History[i];
+                string sClean = sAction.Substring(sAction.IndexOf(")") + 1).Trim();
+                if (sClean[0] == '(') //an observation = no loop
+                    return false;
+                if (sClean == sLastAction)
+                    cSame++;
+                if (cSame == 2)
+                    return true;
+            }
+            return false;
+        }
+
         protected List<string> Plan(PartiallySpecifiedState pssCurrent, bool bPreconditionFailure, out bool bDeadEndReached, out State sChosen)
         {
             List<string> lPlan = null;
@@ -152,7 +177,7 @@ namespace CPORLib.Algorithms
 
             if (lPlan == null)
             {
-                lPlan = Plan( pssCurrent);
+                lPlan = Plan( pssCurrent, bPreconditionFailure);
             }
 
             List<string> lFilteredActions = new List<string>();
@@ -255,7 +280,7 @@ namespace CPORLib.Algorithms
             return ManualSolve(dK,pK);
         }
 
-        protected List<string> Plan(PartiallySpecifiedState pssCurrent)
+        protected List<string> Plan(PartiallySpecifiedState pssCurrent, bool bPreconditionFailure)
         {
             Debug.WriteLine("Started classical planning");
             List<string> lPlan = null;
@@ -272,9 +297,8 @@ namespace CPORLib.Algorithms
             //MemoryStream msModels = null;
             //sChosen = pssCurrent.WriteTaggedDomainAndProblem( out cTags, out msModels);
 
-            pssCurrent.GetTaggedDomainAndProblem(DeadendStrategies.Lazy, out int cTags, out Domain dTagged, out Problem pTagged);
+            pssCurrent.GetTaggedDomainAndProblem(DeadendStrategies.Lazy, bPreconditionFailure, out int cTags, out Domain dTagged, out Problem pTagged);
 
-            MemoryStream msPlan = null;
 
             if (!WriteAllKVariations || cTags == 1)
             {
@@ -800,7 +824,7 @@ namespace CPORLib.Algorithms
 
             domain = Problem.Domain.CreateTaggedDomain(dTags, Problem, null);
 
-            problem = Problem.CreateTaggedProblem(domain, dTags, lObserved, dTags.Values.First(), lStates.First().FunctionValues, dsStrategy); //the first tag is the real state
+            problem = Problem.CreateTaggedProblem(domain, dTags, lObserved, dTags.Values.First(), lStates.First().FunctionValues, dsStrategy, false); //the first tag is the real state
         }
 
         /*

@@ -81,7 +81,8 @@ namespace CPORLib.Algorithms
                     if (bStateHandled)
                         continue;
 
-                    if (StuckInLoopPlanBased(cActions, pssCurrent, lExecutedPlans))
+                    
+                    if (StuckInLoopPlanBased(pssCurrent))
                     {
                         TagsCount++;
                     }
@@ -90,7 +91,7 @@ namespace CPORLib.Algorithms
                         if (TagsCount > 2)
                             TagsCount--;
                     }
-
+                    
 
                     if (InfoLevel > 1)
                         Console.WriteLine("Planning for state: " + pssCurrent);
@@ -100,9 +101,14 @@ namespace CPORLib.Algorithms
 
                     if (InfoLevel == 1)
                         if (lExecutedPlans.Count % 5 == 0)
-                            Console.Write("\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b" +
-                                "Replanning: " + lExecutedPlans.Count + ", goal leaves: " + cGoalReached + " closed states: " + lClosedStates.Count
+                        {
+                            TimeSpan ts = DateTime.Now - dtStart;
+                            Console.Write("\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b" +
+                                "Replanning: " + lExecutedPlans.Count + ", goal leaves: " +
+                                cGoalReached + " closed states: " + lClosedStates.Count +
+                                " elpased time: " + Math.Round(ts.TotalSeconds)
                                 );
+                        }
 
                     if (bDone)
                         break;
@@ -158,6 +164,7 @@ namespace CPORLib.Algorithms
 
 
                                 CPORPlanner.TraceListener.WriteLine("ApplyOffline: " + sAction);
+
 
                                 pssCurrent.ApplyOffline(sAction, out a, out bPreconditionFailure, out psTrueState, out psFalseState);
 
@@ -257,6 +264,16 @@ namespace CPORLib.Algorithms
                         }
                     }
 
+                }
+
+                if (InfoLevel == 1)
+                {
+                    TimeSpan ts = DateTime.Now - dtStart;
+                    Console.Write("\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b" +
+                        "Replanning: " + lExecutedPlans.Count + ", goal leaves: " +
+                        cGoalReached + " closed states: " + lClosedStates.Count +
+                        " elpased time: " + Math.Round(ts.TotalSeconds)
+                        );
                 }
 
 
@@ -887,7 +904,7 @@ namespace CPORLib.Algorithms
 
                         if (lPlan == null && bMaybeDeadend == false && bDeadendClosed == false)
                         {
-                            lPlan = base.Plan(pssCurrent);
+                            lPlan = base.Plan(pssCurrent, bPreconditionFailure);
                         }
                     }
                 }

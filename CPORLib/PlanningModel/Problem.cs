@@ -900,7 +900,8 @@ namespace CPORLib.PlanningModel
 
 
         public Problem CreateTaggedProblem(Domain dTagged, Dictionary<string, List<Predicate>> dTags, IEnumerable<Predicate> lObserved,
-                                        List<Predicate> lTrueState, Dictionary<string, double> dFunctionValues, Options.DeadendStrategies dsStrategy)
+                                        List<Predicate> lTrueState, Dictionary<string, double> dFunctionValues, Options.DeadendStrategies dsStrategy,
+                                        bool bPreconditionFailure)
         {
             Problem problem = new Problem("K" + Name, dTagged);
 
@@ -1006,8 +1007,18 @@ namespace CPORLib.PlanningModel
                 cfGoal.AddOperand(cfTrueGoal);
                 cfGoal.AddOperand(cfIdentificationGoal);
             }
+
+            if (bPreconditionFailure && dTags.Keys.Count > 1)
+            {
+                cfGoal = cfIdentificationGoal;
+                //cfGoal.AddOperand(cfIdentificationGoal);
+            }
+
+            if (cfGoal.Operands.Count == 0)
+                Console.Write("*");
+
             problem.Goal = cfGoal;
-            //sw.WriteLine("))");
+
             if (MetricStatement != null)
             {
                 throw new NotImplementedException();

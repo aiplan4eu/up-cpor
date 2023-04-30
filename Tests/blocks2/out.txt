@@ -1,9 +1,9 @@
 digraph contingent_plan {
 	_nil [style="invis"];
-	0 [label="763)senseclear~b1"];
-	3 [label="764)move-t-to-b~b1~b2"];
-	4 [label="765)move-to-t~b2~b1"];
-	5 [label="766) Goal"];
+	0 [label="3001)senseclear~b1"];
+	3 [label="3002)move-t-to-b~b1~b2"];
+	4 [label="3003)move-to-t~b2~b1"];
+	5 [label="3004) Goal"];
 	1 [label="False" ,shape="box"];
 	2 [label="True" ,shape="box"];
 	0 -> 1;

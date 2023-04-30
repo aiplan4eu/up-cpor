@@ -25,8 +25,11 @@ public class Program
 
         //RunTest("localize5noisy", bOnline);
         
+        //RunTest("wumpus10", bOnline);        
+        
         RunTest("blocks3", bOnline);
         RunTest("localize5", bOnline);
+        RunTest("doors15", bOnline);
 
 
 
@@ -41,10 +44,9 @@ public class Program
         RunTest("blocks2", bOnline);
         RunTest("unix1", bOnline);
         RunTest("wumpus05", bOnline);
-        RunTest("wumpus10", bOnline);
 
 
-        //RunTest("doors15", bOnline);
+
         
 
         RunTest("blocks3", bOnline);
@@ -59,7 +61,7 @@ public class Program
 
     public static void Main(string[] args)
     {
-        TestAll(true);
+        TestAll(false);
         //return;
 
         //TestClassicalFFCS();

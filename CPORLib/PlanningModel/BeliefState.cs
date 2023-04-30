@@ -1486,7 +1486,7 @@ namespace CPORLib.PlanningModel
             {
                 bAllTrue = false;//choosing true first is better in some domains
                 bAllFalse = false;//but not in others...
-                return lUnknown[0];//the order of the variables is already randomized - miFF.Search.gHt as well return the first one. This is important because oneofs appear first.
+                return lUnknown[0];//the order of the variables is already randomized - might as well return the first one. This is important because oneofs appear first.
                 //return lUnknown[RandomGenerator.Next(lUnknown.Count)]; the order of the variables is already randomized - miFF.Search.gHt as well return the first one. This is important because oneofs appear first.
             }
             List<Predicate>[] alPredicates = new List<Predicate>[3];
@@ -1905,8 +1905,10 @@ namespace CPORLib.PlanningModel
 
         public List<List<Predicate>> ChosenStates = null;
 
-        public void GetTaggedDomainAndProblem(PartiallySpecifiedState pssCurrent, List<Action> lAppliedActions, Options.DeadendStrategies dsStrategy,
-            out int cTags, out Domain dTagged, out Problem pTagged)
+        public void GetTaggedDomainAndProblem(PartiallySpecifiedState pssCurrent, List<Action> lAppliedActions, 
+            Options.DeadendStrategies dsStrategy, bool bPreconditionFailure,
+            out int cTags, out Domain dTagged, out Problem pTagged
+            )
         {
             cTags = 0;
             List<List<Predicate>> lChosen = ChooseStateSet();
@@ -1944,7 +1946,8 @@ namespace CPORLib.PlanningModel
 
             if (Options.Translation == Options.Translations.SDR)
             {
-                pTagged = Problem.CreateTaggedProblem(dTagged, dTags, lObserved, dTags.Values.First(), lStates.First().FunctionValues, dsStrategy);
+                pTagged = Problem.CreateTaggedProblem(dTagged, dTags, lObserved, dTags.Values.First(), 
+                    lStates.First().FunctionValues, dsStrategy, bPreconditionFailure);
             }
             else
                 throw new NotImplementedException();
@@ -2187,7 +2190,7 @@ namespace CPORLib.PlanningModel
                 msProblem = Problem.WriteKnowledgeProblem(new HashSet<Predicate>(pssCurrent.Observed), new HashSet<Predicate>(lStates[0].Predicates));
             else if (Options.Translation == Options.Translations.SDR)
             {
-                Problem pTagged = Problem.CreateTaggedProblem(dTagged, dTags, lObserved, dTags.Values.First(), lStates.First().FunctionValues, dsStrategy);
+                Problem pTagged = Problem.CreateTaggedProblem(dTagged, dTags, lObserved, dTags.Values.First(), lStates.First().FunctionValues, dsStrategy, false);
                 msProblem = pTagged.WriteSimpleProblem(null);
 
                 //Parser parser = new Parser();

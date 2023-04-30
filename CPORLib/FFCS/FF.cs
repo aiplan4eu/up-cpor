@@ -303,6 +303,9 @@ namespace CPORLib.FFCS
 
         private void Init()
         {
+            EfficientArrayMemory.Reset();
+
+
             DP = new DomainProperties();
             Inertia = new Inertia();
             CF = new ConnectivityGraph();
@@ -624,5 +627,9 @@ namespace CPORLib.FFCS
             throw new NotImplementedException();
         }
 
+        public static void ClearEfficientMemory()
+        {
+            EfficientArrayMemory.Clear();
+        }
     }
 }
