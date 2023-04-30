@@ -243,7 +243,6 @@ class UpCporConverter:
 
     def __convert_SDR_string_to_action_instance(self, action_string, problem) -> 'up.plans.InstantaneousAction':
         if action_string != 'None':
-            print(action_string)
             ac = action_string.split(" ")
             action_name = ac[0]
             action_param = ac[1:]
