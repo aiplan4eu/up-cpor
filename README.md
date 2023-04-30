@@ -103,7 +103,7 @@ We provide two example notebooks to demonstrate the usage of CPOR and SDR engine
 
 [CPOR_and_SDR_running_examples.ipynb](https://github.com/aiplan4eu/up-cpor/blob/master/Tests/CPOR_engine_demo.ipynb): This notebook contains a full running example on a Windows machine, showcasing the CPOR engine and the SDR engine with a simulated environment. It includes step-by-step instructions and explanations of the code, making it easy to follow along and experiment with the engines.
 
-[CPOR_and_SDR_running_examples_colab.ipynb](https://github.com/aiplan4eu/up-cpor/blob/master/Tests/CPOR_and_SDR_running_examples_colab.ipynb): This notebook contains a full running example on Google Colab, showcasing the same engines and the same problem, but running in a cloud environment. This allows you to experiment with the engines even if you don't have a powerful machine or a local Python environment set up.
+[CPOR_and_SDR_running_examples_colab.ipynb](https://colab.research.google.com/drive/1e9u9bbjRgBZpF9Trrpu_dcdGgdVFFqwF?usp=sharing#scrollTo=7SMMuaddoPTn): This notebook contains a full running example on Google Colab, showcasing the same engines and the same problem, but running in a cloud environment. This allows you to experiment with the engines even if you don't have a powerful machine or a local Python environment set up.
 
 Both notebooks can be found in the Tests directory of the project repository on GitHub. We recommend starting with the first notebook, which provides a more detailed explanation of the concepts and code, before moving on to the Colab notebook if needed.
 
