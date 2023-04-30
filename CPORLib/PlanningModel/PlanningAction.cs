@@ -469,7 +469,7 @@ namespace CPORLib.PlanningModel
                 foreach (Predicate p in lKnowPreconditions)
                 {
                     if (!lAlwaysKnown.Contains(p.Name))
-                        cfPreconditions.AddOperand(new PredicateFormula(new KnowPredicate(p)));
+                        cfPreconditions.AddOperand(new PredicateFormula(Predicate.GenerateKnowPredicate(p)));
                 }
                 aNew.Preconditions = cfPreconditions;
             }
@@ -484,7 +484,7 @@ namespace CPORLib.PlanningModel
             {
                 if (!lAlwaysKnown.Contains(p.Name))
                 {
-                    cfEffects.AddOperand(new PredicateFormula(new KnowPredicate(p)));
+                    cfEffects.AddOperand(new PredicateFormula(Predicate.GenerateKnowPredicate(p)));
                 }
             }
             foreach (CompoundFormula cfCondition in lConditions)
@@ -502,6 +502,7 @@ namespace CPORLib.PlanningModel
         public PlanningAction NonConditionalObservationTranslation(Dictionary<string, List<Predicate>> dTags, List<string> lAlwaysKnown, bool bTrue)
         {
             PlanningAction aNew = Clone();
+            
             if (bTrue)
                 aNew.Name += "-T";
             else
@@ -519,15 +520,15 @@ namespace CPORLib.PlanningModel
                 cfPreconditions.AddOperand(Preconditions);
                 foreach (Predicate p in lKnowPreconditions)
                     if (!lAlwaysKnown.Contains(p.Name))
-                        cfPreconditions.AddOperand(new PredicateFormula(new KnowPredicate(p)));
+                        cfPreconditions.AddOperand(new PredicateFormula(Predicate.GenerateKnowPredicate(p)));
             }
             if (bTrue)
                 cfPreconditions.AddOperand(pObserve);
             else
                 cfPreconditions.AddOperand(pObserve.Negate());
 
-            Predicate pKObserve = new KnowPredicate(pObserve);
-            Predicate pKNObserve = new KnowPredicate(pObserve.Negate());
+            Predicate pKObserve = Predicate.GenerateKnowPredicate(pObserve);
+            Predicate pKNObserve = Predicate.GenerateKnowPredicate(pObserve.Negate());
 
             cfPreconditions.AddOperand(pKObserve.Negate());
             cfPreconditions.AddOperand(pKNObserve.Negate());
@@ -542,63 +543,9 @@ namespace CPORLib.PlanningModel
             else
                 aNew.Effects = new PredicateFormula(pKNObserve);
 
+            aNew.AddEffect(Utilities.Observed);
 
-            return aNew;
-        }
-
-        public PlanningAction KnowWhetherObservationTranslation(Dictionary<string, List<Predicate>> dTags, Domain d)
-        {
-            PlanningAction aNew = Clone();
-            aNew.Name = Name + "-KW";
-            CompoundFormula cfPreconditions = new CompoundFormula("and");
-            HashSet<Predicate> lKnowPreconditions = new HashSet<Predicate>();
-            if (Observe == null)
-                throw new NotImplementedException();
-            if (Effects != null)
-                throw new NotImplementedException();
-            Predicate pObserve = ((PredicateFormula)Observe).Predicate;
-
-            if (Preconditions != null)
-            {
-                Preconditions.GetAllPredicates(lKnowPreconditions);
-                foreach (Predicate p in lKnowPreconditions)
-                {
-                    if (!d.AlwaysKnown(p))
-                        cfPreconditions.AddOperand(new KnowWhetherPredicate(p));
-                    if (d.AlwaysKnown(p) && d.AlwaysConstant(p))
-                        cfPreconditions.AddOperand(new KnowPredicate(p));
-                }
-            }
-            if (cfPreconditions.Operands.Count > 0)
-                aNew.Preconditions = cfPreconditions;
-            else
-                aNew.Preconditions = null;
-
-            CompoundFormula cfEffects = new CompoundFormula("and");
-
-            foreach (string sTag in dTags.Keys)
-            {
-                CompoundFormula cfCondition = new CompoundFormula("when");
-                CompoundFormula cfAnd = new CompoundFormula("and");
-                foreach (Predicate p in lKnowPreconditions)
-                {
-                    if (d.AlwaysKnown(p) && d.AlwaysConstant(p))
-                        continue;
-                    if (d.AlwaysConstant(p))
-                        cfAnd.AddOperand(new KnowPredicate(p));
-                    else
-                        cfAnd.AddOperand(p.GenerateGiven(sTag));
-                }
-                cfCondition.AddOperand(cfAnd);
-                cfCondition.AddOperand(pObserve.GenerateKnowGiven(sTag, true));//know-whether given
-                if (cfAnd.Operands.Count > 0)
-                    cfEffects.AddOperand(cfCondition);
-                else
-                    cfEffects.AddOperand(cfCondition.Operands[1]);
-
-            }
-
-            aNew.Effects = cfEffects;
+            aNew.Observe = null;
 
             return aNew;
         }
@@ -863,14 +810,14 @@ namespace CPORLib.PlanningModel
                 Preconditions.GetAllPredicates(lKnowPreconditions);
                 foreach (Predicate p in lKnowPreconditions)
                 {
-                    cfPreconditions.AddOperand(new KnowPredicate(p));
+                    cfPreconditions.AddOperand(Predicate.GenerateKnowPredicate(p));
                 }
                 aNew.Preconditions = cfPreconditions;
             }
             else
                 aNew.Preconditions = null;
 
-            aNew.Effects = new PredicateFormula(new KnowWhetherPredicate(pObserve));
+            aNew.Effects = new PredicateFormula(Predicate.GenerateKnowWhetherPredicate(pObserve));
 
             return aNew;
         }
@@ -889,7 +836,7 @@ namespace CPORLib.PlanningModel
                 cfPreconditions.AddOperand(Preconditions);
                 foreach (Predicate p in lKnowPreconditions)
                     if (!lAlwaysKnown.Contains(p.Name))
-                        cfPreconditions.AddOperand(new PredicateFormula(new KnowPredicate(p)));
+                        cfPreconditions.AddOperand(new PredicateFormula(Predicate.GenerateKnowPredicate(p)));
                 if (Options.SplitConditionalEffects)
                     cfPreconditions.AddOperand(new GroundedPredicate("NotInAction"));
 
@@ -908,9 +855,9 @@ namespace CPORLib.PlanningModel
                 {
                     if (!lAlwaysKnown.Contains(p.Name))
                     {
-                        Predicate pKEffect = new KnowPredicate(p);
+                        Predicate pKEffect = Predicate.GenerateKnowPredicate(p);
                         cfEffects.AddOperand(pKEffect);
-                        pKEffect = new KnowPredicate(p.Negate());
+                        pKEffect = Predicate.GenerateKnowPredicate(p.Negate());
                         cfEffects.AddOperand(pKEffect.Negate());
                         foreach (string sTag in dTags.Keys)
                         {
@@ -951,11 +898,11 @@ namespace CPORLib.PlanningModel
                 Predicate pObserve = ((PredicateFormula)Observe).Predicate;
                 CompoundFormula cfWhen = new CompoundFormula("when");
                 cfWhen.AddOperand(pObserve);
-                cfWhen.AddOperand(new KnowPredicate(pObserve));
+                cfWhen.AddOperand(Predicate.GenerateKnowPredicate(pObserve));
                 ((CompoundFormula)aNew.Effects).AddOperand(cfWhen);
                 cfWhen = new CompoundFormula("when");
                 cfWhen.AddOperand(pObserve.Negate());
-                cfWhen.AddOperand(new KnowPredicate(pObserve.Negate()));
+                cfWhen.AddOperand(Predicate.GenerateKnowPredicate(pObserve.Negate()));
                 ((CompoundFormula)aNew.Effects).AddOperand(cfWhen);
 
             }
@@ -1006,7 +953,7 @@ namespace CPORLib.PlanningModel
                 cfPreconditions.AddOperand(Preconditions);
                 foreach (Predicate p in lKnowPreconditions)
                     if (!lAlwaysKnown.Contains(p.Name))
-                        cfPreconditions.AddOperand(new PredicateFormula(new KnowPredicate(p)));
+                        cfPreconditions.AddOperand(new PredicateFormula(Predicate.GenerateKnowPredicate(p)));
             }
             cfPreconditions.AddOperand(gpNotInAction);
 
@@ -1030,9 +977,9 @@ namespace CPORLib.PlanningModel
             {
                 if (!lAlwaysKnown.Contains(p.Name))
                 {
-                    Predicate pKEffect = new KnowPredicate(p);
+                    Predicate pKEffect = Predicate.GenerateKnowPredicate(p);
                     cfAddEffects.AddOperand(pKEffect);
-                    pKEffect = new KnowPredicate(p.Negate());
+                    pKEffect = Predicate.GenerateKnowPredicate(p.Negate());
                     cfRemoveEffects.AddOperand(pKEffect.Negate());
                     foreach (string sTag in dTags.Keys)
                     {
@@ -1205,7 +1152,7 @@ namespace CPORLib.PlanningModel
                 Preconditions.GetAllPredicates(lKnowPreconditions);
                 foreach (Predicate p in lKnowPreconditions)
                 {
-                    cfPreconditions.AddOperand(new KnowPredicate(p));
+                    cfPreconditions.AddOperand(Predicate.GenerateKnowPredicate(p));
                 }
                 aNew.Preconditions = cfPreconditions;
             }
@@ -1223,12 +1170,12 @@ namespace CPORLib.PlanningModel
                 foreach (Predicate p in lKnowEffects)
                 {
 
-                    Predicate pKEffect = new KnowPredicate(p);
+                    Predicate pKEffect = Predicate.GenerateKnowPredicate(p);
                     cfEffects.AddOperand(pKEffect);
-                    Predicate pKNegateEffect = new KnowPredicate(p.Negate()).Negate();
+                    Predicate pKNegateEffect = Predicate.GenerateKnowPredicate(p.Negate()).Negate();
                     cfEffects.AddOperand(pKNegateEffect);
                     /* why do we need all this?
-                    pKEffect = new KnowPredicate(p.Negate());
+                    pKEffect = Predicate.GenerateKnowPredicate(p.Negate());
                     cfEffects.AddOperand(pKEffect.Negate());
                     foreach (string sTag in dTags.Keys)
                     {
@@ -1315,9 +1262,9 @@ namespace CPORLib.PlanningModel
                 foreach (Predicate p in lKnowPreconditions)
                 {
                     if (!d.AlwaysKnown(p))
-                        cfKWPreconditions.AddOperand(new KnowWhetherPredicate(p));
+                        cfKWPreconditions.AddOperand(Predicate.GenerateKnowWhetherPredicate(p));
                     if (d.AlwaysKnown(p) && d.AlwaysConstant(p))
-                        cfKWPreconditions.AddOperand(new KnowPredicate(p));
+                        cfKWPreconditions.AddOperand(Predicate.GenerateKnowPredicate(p));
                 }
                 if (cfKWPreconditions.Operands.Count > 0)
                     aNew.Preconditions = cfKWPreconditions;
@@ -1369,7 +1316,7 @@ namespace CPORLib.PlanningModel
                 //forgetting: ~K~p
                 foreach (Predicate p in lKnowEffects)
                 {
-                    Predicate pKNotp = new KnowPredicate(p.Negate());
+                    Predicate pKNotp = Predicate.GenerateKnowPredicate(p.Negate());
                     cfEffects.AddOperand(pKNotp.Negate());
                 }
                 foreach (CompoundFormula cfCondition in lConditions)
@@ -1384,7 +1331,7 @@ namespace CPORLib.PlanningModel
                         cfOr = new CompoundFormula("or");
                         foreach (Predicate p in lKnowPreconditions)
                         {
-                            Predicate pKNot = new KnowPredicate(p.Negate());
+                            Predicate pKNot = Predicate.GenerateKnowPredicate(p.Negate());
                             cfOr.AddOperand(pKNot.Negate());
                         }
                         if (cfK.Operator == "when")
@@ -1411,7 +1358,7 @@ namespace CPORLib.PlanningModel
                         cfOr = new CompoundFormula("or");
                         foreach (Predicate p in lKnowPreconditions)
                         {
-                            Predicate pKNot = new KnowPredicate(p.Negate());
+                            Predicate pKNot = Predicate.GenerateKnowPredicate(p.Negate());
                             cfOr.AddOperand(pKNot.Negate());
                         }
                         if (cfK.Operator == "when")
@@ -1438,7 +1385,7 @@ namespace CPORLib.PlanningModel
                             foreach (Predicate p in lKnowPreconditions)
                             {
                                 if (d.AlwaysKnown(p) && d.AlwaysConstant(p))
-                                    cfAnd.AddOperand(new KnowPredicate(p));
+                                    cfAnd.AddOperand(Predicate.GenerateKnowPredicate(p));
                                 else
                                     cfAnd.AddOperand(p.GenerateGiven(sTag));
                             }
@@ -1459,7 +1406,7 @@ namespace CPORLib.PlanningModel
                             foreach (Predicate p in lKnowPreconditions)
                             {
                                 if (d.AlwaysKnown(p) && d.AlwaysConstant(p))
-                                    cfAnd.AddOperand(new KnowPredicate(p));
+                                    cfAnd.AddOperand(Predicate.GenerateKnowPredicate(p));
                                 else
                                     cfAnd.AddOperand(p.GenerateGiven(sTag));
                             }
@@ -1479,7 +1426,7 @@ namespace CPORLib.PlanningModel
                             cfOr = new CompoundFormula("or");
                             foreach (Predicate p in lKnowPreconditions)
                             {
-                                Predicate pKNot = new KnowPredicate(p.Negate());
+                                Predicate pKNot = Predicate.GenerateKnowPredicate(p.Negate());
                                 cfOr.AddOperand(pKNot.Negate());
                             }
                             if (cfK.Operator == "when")
@@ -1519,7 +1466,7 @@ namespace CPORLib.PlanningModel
                 foreach (Predicate p in lKnowPreconditions)
                 {
                     if (d.AlwaysKnown(p) && d.AlwaysConstant(p))
-                        cfKWPreconditions.AddOperand(new KnowPredicate(p));
+                        cfKWPreconditions.AddOperand(Predicate.GenerateKnowPredicate(p));
                 }
 
                 foreach (string sTag in lIncludedTags)
@@ -2357,7 +2304,7 @@ namespace CPORLib.PlanningModel
                 //forgetting: ~K~p
                 foreach (Predicate p in lKnowEffects)
                 {
-                    Predicate pKNotp = new KnowPredicate(p.Negate());
+                    Predicate pKNotp = Predicate.GenerateKnowPredicate(p.Negate());
                     cfEffects.AddOperand(pKNotp.Negate());
                 }
                  * */
@@ -2372,11 +2319,11 @@ namespace CPORLib.PlanningModel
                     {
                         if (p.Name != Utilities.OPTION_PREDICATE)
                         {
-                            Predicate pK = new KnowPredicate(p);
+                            Predicate pK = Predicate.GenerateKnowPredicate(p);
                             cfAnd.AddOperand(pK.Negate());
-                            pK = new KnowPredicate(p.Negate());
+                            pK = Predicate.GenerateKnowPredicate(p.Negate());
                             cfAnd.AddOperand(pK.Negate());
-                            pK = new KnowWhetherPredicate(p);
+                            pK = Predicate.GenerateKnowWhetherPredicate(p);
                             cfAnd.AddOperand(pK.Negate());
                         }
                     }
@@ -2447,7 +2394,7 @@ namespace CPORLib.PlanningModel
                 cfPreconditions.AddOperand(Preconditions);
                 foreach (Predicate p in lKnowPreconditions)
                     if (!lAlwaysKnown.Contains(p.Name))
-                        cfPreconditions.AddOperand(new PredicateFormula(new KnowPredicate(p)));
+                        cfPreconditions.AddOperand(new PredicateFormula(Predicate.GenerateKnowPredicate(p)));
                 aNew.Preconditions = cfPreconditions;
             }
 
@@ -2470,7 +2417,7 @@ namespace CPORLib.PlanningModel
                 {
                     if (!lAlwaysKnown.Contains(p.Name))
                     {
-                        cfEffects.AddOperand(new PredicateFormula(new KnowPredicate(p)));
+                        cfEffects.AddOperand(new PredicateFormula(Predicate.GenerateKnowPredicate(p)));
                         foreach (string sTag in dTags.Keys)
                         {
                             Predicate pKEffect = p.GenerateKnowGiven(sTag);
@@ -2492,7 +2439,7 @@ namespace CPORLib.PlanningModel
                         HashSet<Predicate> lOptionalPredicates = cfCondition.GetAllOptionalPredicates();
                         foreach (Predicate p in lOptionalPredicates)
                         {
-                            cfForgetAll.AddOperand(new PredicateFormula(new KnowPredicate(p)).Negate());
+                            cfForgetAll.AddOperand(new PredicateFormula(Predicate.GenerateKnowPredicate(p)).Negate());
                         }
                         CompoundFormula cfForgetCondition = new CompoundFormula("when");
                         cfForgetCondition.AddOperand(cfCondition.Operands[0].Clone());
@@ -2548,7 +2495,7 @@ namespace CPORLib.PlanningModel
                 cfPreconditions.AddOperand(Preconditions);
                 foreach (Predicate p in lKnowPreconditions)
                     if (!lAlwaysKnown.Contains(p.Name))
-                        cfPreconditions.AddOperand(new PredicateFormula(new KnowPredicate(p)));
+                        cfPreconditions.AddOperand(new PredicateFormula(Predicate.GenerateKnowPredicate(p)));
                 aNew.Preconditions = cfPreconditions;
             }
 
@@ -2572,7 +2519,7 @@ namespace CPORLib.PlanningModel
                 }
                 foreach (Predicate p in lKnowEffects)
                     if (!lAlwaysKnown.Contains(p.Name))
-                        cfEffects.AddOperand(new PredicateFormula(new KnowPredicate(p)));
+                        cfEffects.AddOperand(new PredicateFormula(Predicate.GenerateKnowPredicate(p)));
 
                 foreach (CompoundFormula cfCondition in lConditions)
                 {
@@ -2586,7 +2533,7 @@ namespace CPORLib.PlanningModel
                         HashSet<Predicate> lOptionalPredicates = cfCondition.GetAllOptionalPredicates();
                         foreach (Predicate p in lOptionalPredicates)
                         {
-                            cfForgetAll.AddOperand(new PredicateFormula(new KnowPredicate(p)).Negate());
+                            cfForgetAll.AddOperand(new PredicateFormula(Predicate.GenerateKnowPredicate(p)).Negate());
                         }
                         CompoundFormula cfForgetCondition = new CompoundFormula("when");
                         cfForgetCondition.AddOperand(cfCondition.Operands[0].Clone());
@@ -2636,7 +2583,7 @@ namespace CPORLib.PlanningModel
                 cfPreconditions.AddOperand(Preconditions);
                 foreach (Predicate p in lKnowPreconditions)
                     if (!lAlwaysKnown.Contains(p.Name))
-                        cfPreconditions.AddOperand(new PredicateFormula(new KnowPredicate(p)));
+                        cfPreconditions.AddOperand(new PredicateFormula(Predicate.GenerateKnowPredicate(p)));
                 aNew.Preconditions = cfPreconditions;
             }
             if (Effects != null)
@@ -2648,7 +2595,7 @@ namespace CPORLib.PlanningModel
 
                 foreach (Predicate p in lKnowEffects)
                     if (!lAlwaysKnown.Contains(p.Name))
-                        cfEffects.AddOperand(new PredicateFormula(new KnowPredicate(p)));
+                        cfEffects.AddOperand(new PredicateFormula(Predicate.GenerateKnowPredicate(p)));
 
                 aNew.Effects = cfEffects;
             }
@@ -2657,7 +2604,7 @@ namespace CPORLib.PlanningModel
                 if (aNew.Effects == null)
                     aNew.Effects = new CompoundFormula("and");
                 Predicate pObserve = ((PredicateFormula)Observe).Predicate;
-                ((CompoundFormula)aNew.Effects).AddOperand(new KnowPredicate(pObserve));
+                ((CompoundFormula)aNew.Effects).AddOperand(Predicate.GenerateKnowPredicate(pObserve));
             }
             return aNew;
         }
@@ -2675,7 +2622,7 @@ namespace CPORLib.PlanningModel
                 cfPreconditions.AddOperand(Preconditions);
                 foreach (Predicate p in lKnowPreconditions)
                     if (!lAlwaysKnown.Contains(p.Name))
-                        cfPreconditions.AddOperand(new PredicateFormula(new KnowPredicate(p)));
+                        cfPreconditions.AddOperand(new PredicateFormula(Predicate.GenerateKnowPredicate(p)));
             }
 
             if (Effects != null)
@@ -2693,7 +2640,7 @@ namespace CPORLib.PlanningModel
                 }
                 foreach (Predicate p in lKnowEffects)
                     if (!lAlwaysKnown.Contains(p.Name))
-                        cfGeneralEffects.AddOperand(new PredicateFormula(new KnowPredicate(p)));
+                        cfGeneralEffects.AddOperand(new PredicateFormula(Predicate.GenerateKnowPredicate(p)));
 
                 int iCondition = 0;
                 foreach (CompoundFormula cfCondition in lConditions)
@@ -2760,11 +2707,11 @@ namespace CPORLib.PlanningModel
                 if (lAlwaysKnown == null || !lAlwaysKnown.Contains(p.Name))
                 {
                     if (bKnowWhether)
-                        cfEffects.AddOperand(new KnowWhetherPredicate(p));
+                        cfEffects.AddOperand(Predicate.GenerateKnowWhetherPredicate(p));
                     else
                     {
-                        cfEffects.AddOperand(new KnowPredicate(p));
-                        cfEffects.AddOperand(new KnowPredicate(p.Negate()).Negate());
+                        cfEffects.AddOperand(Predicate.GenerateKnowPredicate(p));
+                        cfEffects.AddOperand(Predicate.GenerateKnowPredicate(p.Negate()).Negate());
                     }
                 }
             if (cfEffects.Operands.Count == 0)
@@ -2789,20 +2736,20 @@ namespace CPORLib.PlanningModel
                 if (p.Name == Utilities.OPTION_PREDICATE)
                     return null;//we never know an option value
                 if (bKnowWhether)
-                    cfPreconditions.AddOperand(new KnowWhetherPredicate(p));
+                    cfPreconditions.AddOperand(Predicate.GenerateKnowWhetherPredicate(p));
                 else
-                    cfPreconditions.AddOperand(new KnowPredicate(p));
+                    cfPreconditions.AddOperand(Predicate.GenerateKnowPredicate(p));
             }
             CompoundFormula cfEffects = new CompoundFormula("and");
             foreach (Predicate p in lEffects)
             //if (lAlwaysKnown == null || !lAlwaysKnown.Contains(p.Name))
             {
                 if (bKnowWhether)
-                    cfEffects.AddOperand(new KnowWhetherPredicate(p));
+                    cfEffects.AddOperand(Predicate.GenerateKnowWhetherPredicate(p));
                 else
                 {
-                    cfEffects.AddOperand(new KnowPredicate(p));
-                    cfEffects.AddOperand(new KnowPredicate(p.Negate()).Negate());
+                    cfEffects.AddOperand(Predicate.GenerateKnowPredicate(p));
+                    cfEffects.AddOperand(Predicate.GenerateKnowPredicate(p.Negate()).Negate());
                 }
             }
             if (cfEffects.Operands.Count == 0)
@@ -2829,7 +2776,7 @@ namespace CPORLib.PlanningModel
                     cfEffects.AddOperand(pKEffect);
                     if (bNonDetEffect)
                     {
-                        KnowPredicate pK = new KnowPredicate(p);
+                        Predicate pK = Predicate.GenerateKnowPredicate(p);
                         cfEffects.AddOperand(pK.Negate());
                     }
                 }
@@ -2927,7 +2874,7 @@ namespace CPORLib.PlanningModel
 
                 if (d.AlwaysKnown(p) && d.AlwaysConstant(p))
                 {
-                    pKGiven = new KnowPredicate(p);
+                    pKGiven = Predicate.GenerateKnowPredicate(p);
                     cfPreconditions.AddOperand(pKGiven);
                 }
                 else
@@ -2969,7 +2916,7 @@ namespace CPORLib.PlanningModel
 
                 if (d.AlwaysKnown(p) && d.AlwaysConstant(p))
                 {
-                    pKGiven = new KnowPredicate(p);
+                    pKGiven = Predicate.GenerateKnowPredicate(p);
                     cfPreconditions.AddOperand(pKGiven);
                 }
             }
@@ -3043,7 +2990,7 @@ namespace CPORLib.PlanningModel
 
                     if (d.AlwaysKnown(p) && d.AlwaysConstant(p))
                     {
-                        pKGiven = new KnowPredicate(p);
+                        pKGiven = Predicate.GenerateKnowPredicate(p);
                         cfPreconditions.AddOperand(pKGiven);
                     }
 
@@ -3335,9 +3282,9 @@ namespace CPORLib.PlanningModel
                 if (lAlwaysKnown == null || !lAlwaysKnown.Contains(p.Name))
                 {
                     if (bKnowWhether)
-                        cfPreconditions.AddOperand(new KnowWhetherPredicate(p.Negate()).Negate());
+                        cfPreconditions.AddOperand(Predicate.GenerateKnowWhetherPredicate(p.Negate()).Negate());
                     else
-                        cfPreconditions.AddOperand(new KnowPredicate(p.Negate()).Negate());
+                        cfPreconditions.AddOperand(Predicate.GenerateKnowPredicate(p.Negate()).Negate());
                 }
             }
             //if (bAllKnown)
@@ -3352,9 +3299,9 @@ namespace CPORLib.PlanningModel
                 if (lAlwaysKnown == null || !lAlwaysKnown.Contains(p.Name))
                 {
                     if (bKnowWhether)
-                        cfEffects.AddOperand(new KnowWhetherPredicate(p.Negate()).Negate());
+                        cfEffects.AddOperand(Predicate.GenerateKnowWhetherPredicate(p.Negate()).Negate());
                     else
-                        cfEffects.AddOperand(new KnowPredicate(p.Negate()).Negate());
+                        cfEffects.AddOperand(Predicate.GenerateKnowPredicate(p.Negate()).Negate());
 
                 }
             }

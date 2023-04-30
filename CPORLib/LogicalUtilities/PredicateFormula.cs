@@ -121,6 +121,7 @@ namespace CPORLib.LogicalUtilities
                 GroundedPredicate gpred = ppred.Ground(dBindings);
                 return new PredicateFormula(gpred);
             }
+            /*
             if (Predicate is KnowPredicate)
             {
                 KnowPredicate kp = (KnowPredicate)Predicate;
@@ -131,6 +132,7 @@ namespace CPORLib.LogicalUtilities
             {
                 throw new NotImplementedException();
             }
+            */
             return this;
         }
         public override Formula PartiallyGround(Dictionary<Parameter, Constant> dBindings)
@@ -141,6 +143,7 @@ namespace CPORLib.LogicalUtilities
                 Predicate pGrounded = ppred.PartiallyGround(dBindings);
                 return new PredicateFormula(pGrounded);
             }
+            /*
             if (Predicate is KnowPredicate)
             {
                 throw new NotImplementedException();
@@ -149,6 +152,7 @@ namespace CPORLib.LogicalUtilities
             {
                 throw new NotImplementedException();
             }
+            */
             return this;
         }
 
@@ -478,9 +482,9 @@ namespace CPORLib.LogicalUtilities
             if (lAlwaysKnown.Contains(Predicate.Name))
                 return this;
             if (bKnowWhether)
-                return new PredicateFormula(new KnowWhetherPredicate(Predicate));
+                return new PredicateFormula(Predicate.GenerateKnowWhetherPredicate(Predicate));
             else
-                return new PredicateFormula(new KnowPredicate(Predicate));
+                return new PredicateFormula(Predicate.GenerateKnowPredicate(Predicate));
         }
 
         public override Formula ReduceConditions(IEnumerable<Predicate> lKnown)

@@ -12,6 +12,7 @@ using System.Linq;
 using System.Text;
 using static CPORLib.Tools.Options;
 using Action = CPORLib.PlanningModel.PlanningAction;
+using static Microsoft.SolverFoundation.Solvers.SerializationStatus;
 
 #if PYTHONNET
 using Python.Runtime;
@@ -151,7 +152,7 @@ namespace CPORLib.Algorithms
 
             if (lPlan == null)
             {
-                lPlan = Plan( pssCurrent, out sChosen);
+                lPlan = Plan( pssCurrent);
             }
 
             List<string> lFilteredActions = new List<string>();
@@ -254,7 +255,7 @@ namespace CPORLib.Algorithms
             return ManualSolve(dK,pK);
         }
 
-        protected List<string> Plan(PartiallySpecifiedState pssCurrent, out State sChosen)
+        protected List<string> Plan(PartiallySpecifiedState pssCurrent)
         {
             Debug.WriteLine("Started classical planning");
             List<string> lPlan = null;
@@ -263,22 +264,21 @@ namespace CPORLib.Algorithms
                 lPlan = GetImmediatePlan(pssCurrent);
                 if (lPlan != null)
                 {
-                    sChosen = null;
                     return lPlan;
                 }
             }
 
 
-            int cTags = 0;
-            MemoryStream msModels = null;
-            sChosen = pssCurrent.WriteTaggedDomainAndProblem( out cTags, out msModels);
+            //MemoryStream msModels = null;
+            //sChosen = pssCurrent.WriteTaggedDomainAndProblem( out cTags, out msModels);
 
+            pssCurrent.GetTaggedDomainAndProblem(DeadendStrategies.Lazy, out int cTags, out Domain dTagged, out Problem pTagged);
 
             MemoryStream msPlan = null;
 
             if (!WriteAllKVariations || cTags == 1)
             {
-                lPlan = RunPlanner(msModels, -1);
+                lPlan = RunPlanner(dTagged, pTagged, -1);
                 if (lPlan == null)
                 {
                     Debug.WriteLine("Classical planner failed");
@@ -348,6 +348,167 @@ namespace CPORLib.Algorithms
         }
 
 
+        private MemoryStream ToMemoryStream(Domain d, Problem p)
+        {
+            MemoryStream msModels = new MemoryStream();
+            BinaryWriter swModels = new BinaryWriter(msModels);
+
+            MemoryStream msDomain = d.WriteSimpleDomain();
+
+            msDomain.Position = 0;
+            BinaryReader sr = new BinaryReader(msDomain);
+            byte b = sr.ReadByte();
+            while (b >= 0)
+            {
+                swModels.Write(b);
+                if (sr.BaseStream.Position == sr.BaseStream.Length)
+                {
+                    break;
+                }
+                b = sr.ReadByte();
+            }
+            swModels.Write('\0');
+            swModels.Flush();
+
+
+            MemoryStream msProblem = p.WriteSimpleProblem(null);
+
+            msProblem.Position = 0;
+            sr = new BinaryReader(msProblem);
+            b = sr.ReadByte();
+            while (b >= 0)
+            {
+                swModels.Write(b);
+                if (sr.BaseStream.Position == sr.BaseStream.Length)
+                {
+                    break;
+                }
+                b = sr.ReadByte();
+            }
+            swModels.Write('\0');
+            //sr.Close();
+            swModels.Flush();
+
+            return msModels;
+        }
+
+
+        public List<string> RunPlanner(Domain domain, Problem problem, int iIndex)
+        {
+            if (InfoLevel > 1)
+                Console.WriteLine("Calling underlying classical planner");
+
+
+#if PYTHONNET
+            if (UPParser != null && UPClassicalPlanner != null)
+            {
+                using (Py.GIL())
+                {
+
+                    CPORPlanner.TraceListener.WriteLine("Starting python");
+
+
+                    MemoryStream msModel = ToMemoryStream(domain, problem);
+
+                    msModel.Position = 0;
+
+                    StreamReader sr = new StreamReader(msModel);
+
+                    CPORPlanner.TraceListener.WriteLine("Read string from stream");
+                    string s = sr.ReadToEnd();
+
+                    int idx = s.LastIndexOf("(define");
+                    string sModel = s.Substring(0, idx - 1).Replace('\0', ' ').Trim();
+                    string sProblem = s.Substring(idx).Replace('\0', ' ').Trim();
+                    sr.Close();
+
+                    /*
+                    StreamWriter swDomain = new StreamWriter("Kd.pddl");
+                    swDomain.Write(sModel);
+                    swDomain.Close();
+
+                    StreamWriter swProblem = new StreamWriter("Kp.pddl");
+                    swProblem.Write(sProblem);
+                    swProblem.Close();
+
+                    sModel = "Kd.pddl";
+                    sProblem = "Kp.pddl";
+                    */
+
+                    CPORPlanner.TraceListener.WriteLine("Converting string to pyobject");
+                    PyObject pysDomain = sModel.ToPython();
+                    PyObject pysProblem = sProblem.ToPython();
+
+                    CPORPlanner.TraceListener.WriteLine("Calling parser");
+
+
+                    PyObject oProblem = UPParser.InvokeMethod("parse_problem_string", pysDomain, pysProblem);
+                    //PyObject oProblem = UPParser.InvokeMethod("parse_problem", pysDomain, pysProblem);
+
+                    CPORPlanner.TraceListener.WriteLine("Parser done");
+
+                    dynamic oResult = UPClassicalPlanner.InvokeMethod("solve", oProblem);
+
+                    CPORPlanner.TraceListener.WriteLine("Planner done");
+
+                    if (oResult != null)
+                    {
+                        dynamic oPlan = oResult.plan;
+                        if (oPlan != null)
+                        {
+                            dynamic oActions = oPlan.actions;
+                            if (oActions != null)
+                            {
+                                List<string> lPlan = new List<string>();
+
+                                CPORPlanner.TraceListener.WriteLine("Plan: ");
+                                foreach (PyObject oAction in oActions)
+                                {
+                                    string sAction = Utilities.Replace(oAction.ToString(), new char[] { '(', ')', ',' }, ' ');
+                                    lPlan.Add(sAction.Trim());
+                                    CPORPlanner.TraceListener.WriteLine(sAction);
+                                }
+                                return lPlan;
+                            }
+                        }
+                    }
+
+
+
+                    return null;
+                }
+            }
+            else
+#endif
+            if (Options.Planner == Planners.LocalFSP)
+            {
+                ForwardSearchPlanner fsp = new ForwardSearchPlanner(domain, problem);
+                if (InfoLevel > 1)
+                    Console.WriteLine("Calling ForwardSearchPlanner");
+                List<string> lPlan = fsp.Plan();
+                if (InfoLevel > 1)
+                {
+                    Console.WriteLine("ForwardSearchPlanner done. Plan:");
+                    foreach (string s in lPlan)
+                    {
+                        Console.WriteLine(s);
+                    }
+                }
+                return lPlan;
+            }
+            else if (Options.Planner == Planners.FFCS)
+            {
+                if (InfoLevel > 1)
+                    Console.WriteLine("Calling FFCS");
+                FF ff = new FF(domain, problem);
+                List<string> lPlan = ff.Plan();
+                return lPlan;
+            }
+            else
+            {
+                throw new NotImplementedException();
+            }
+        }
 
 
         public List<string> RunPlanner(MemoryStream msModel, int iIndex)
@@ -465,7 +626,6 @@ namespace CPORLib.Algorithms
         }
         protected List<string> Plan(PartiallySpecifiedState pssCurrent, Predicate pObserve, out State sChosen)
         {
-           
             int cTags = 0;
 
             CompoundFormula cfGoal = new CompoundFormula("or");
@@ -635,55 +795,12 @@ namespace CPORLib.Algorithms
 
             cTags = dTags.Count;
 
-            MemoryStream msModels = new MemoryStream();
-            BinaryWriter swModels = new BinaryWriter(msModels);
-
             if (Options.Translation != Options.Translations.SDR)
                 throw new NotImplementedException();
 
-            MemoryStream msDomain = null, msProblem = null;
-            
+            domain = Problem.Domain.CreateTaggedDomain(dTags, Problem, null);
 
-            msDomain = Problem.Domain.WriteTaggedDomain(dTags, Problem, null);
-
-            msDomain.Position = 0;
-            BinaryReader sr = new BinaryReader(msDomain);
-            byte b = sr.ReadByte();
-            while (b >= 0)
-            {
-                swModels.Write(b);
-                if (sr.BaseStream.Position == sr.BaseStream.Length)
-                {
-                    break;
-                }
-                b = sr.ReadByte();
-            }
-            swModels.Write('\0');
-            swModels.Flush();
-            
-
-            msProblem = Problem.WriteTaggedProblem(dTags, lObserved, dTags.Values.First(), lStates.First().FunctionValues, dsStrategy); //the first tag is the real state
-            
-
-            msProblem.Position = 0;
-            sr = new BinaryReader(msProblem);
-            b = sr.ReadByte();
-            while (b >= 0)
-            {
-                swModels.Write(b);
-                if (sr.BaseStream.Position == sr.BaseStream.Length)
-                {
-                    break;
-                }
-                b = sr.ReadByte();
-            }
-            swModels.Write('\0');
-            //sr.Close();
-            swModels.Flush();
-
-
-            Parser parser = new Parser();
-            parser.ParseDomainAndProblem(msModels, out domain, out problem);
+            problem = Problem.CreateTaggedProblem(domain, dTags, lObserved, dTags.Values.First(), lStates.First().FunctionValues, dsStrategy); //the first tag is the real state
         }
 
         /*

@@ -1,4 +1,5 @@
-﻿using CPORLib.LogicalUtilities;
+﻿using CPORLib.FFCS;
+using CPORLib.LogicalUtilities;
 using CPORLib.Parsing;
 using CPORLib.Tools;
 using System;
@@ -2109,6 +2110,18 @@ namespace CPORLib.PlanningModel
                 pssCurrent = pssCurrent.m_sPredecessor;
             }
             return m_bsInitialBelief.WriteTaggedDomainAndProblem(this, lActions, out cTags, out msModels);
+        }
+
+        public void GetTaggedDomainAndProblem(Options.DeadendStrategies dsStrategy, out int cTags, out Domain dTagged, out Problem pTagged)
+        {
+            List<Action> lActions = new List<PlanningAction>();
+            PartiallySpecifiedState pssCurrent = this;
+            while (pssCurrent.m_sPredecessor != null)
+            {
+                lActions.Insert(0, pssCurrent.GeneratingAction);
+                pssCurrent = pssCurrent.m_sPredecessor;
+            }
+            m_bsInitialBelief.GetTaggedDomainAndProblem(this, lActions, dsStrategy, out cTags, out dTagged, out pTagged);
         }
 
         private State WriteTaggedDomainAndProblemDeadEnd(List<Action> lActions, List<Formula> lMaybeDeadends, DeadendStrategies dsStrategy, bool bPreconditionFailure, out int cTags, out MemoryStream msModels)

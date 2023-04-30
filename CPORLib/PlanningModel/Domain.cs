@@ -177,7 +177,7 @@ namespace CPORLib.PlanningModel
         public Constant GetConstant(string sName)
         {
             foreach (Constant c in Constants)
-                if (c.Name == sName)
+                if (c.Name.ToLower() == sName.ToLower())
                     return c;
             return null;
         }
@@ -294,12 +294,10 @@ namespace CPORLib.PlanningModel
                 dTagged.AddPredicate(p);
 
             List<Predicate> lAdditionalPredicates = new List<Predicate>();
-            List<PlanningAction> lAllActions = GetKnowledgeActions(dTags, lAdditionalPredicates);
+            List<PlanningAction> lAllActions = GetAllKnowledgeActions(dTags);
             foreach (PlanningAction a in lAllActions)
                 dTagged.AddAction(a);
 
-            foreach (Predicate p in lAdditionalPredicates)
-                dTagged.AddPredicate(p);
             
             List<PlanningAction> lReasoningActions = CreateReasoningActions(dTags, pCurrent, lDeadends);
             foreach (PlanningAction a in lReasoningActions)
@@ -565,7 +563,7 @@ namespace CPORLib.PlanningModel
                 }
                 else
                 {
-                    cfAnd.AddOperand(new KnowPredicate(p));
+                    cfAnd.AddOperand(Predicate.GenerateKnowPredicate(p));
                 }
             }
             sw.WriteLine(":precondition " + cfAnd);
@@ -590,7 +588,7 @@ namespace CPORLib.PlanningModel
         public void WriteKnowledgePredicate(StreamWriter sw, Predicate p)
         {
             if (!AlwaysKnown(p))
-                sw.Write(new KnowPredicate(p).ToString());
+                sw.Write(Predicate.GenerateKnowPredicate(p).ToString());
         }
         private void WriteKnowledgeEffects(StreamWriter sw, PlanningAction pa, List<Predicate> lKnow)
         {
@@ -634,7 +632,7 @@ namespace CPORLib.PlanningModel
 
                 foreach (Predicate p in a.NonDeterministicEffects)
                 {
-                    Predicate pKnow = new KnowPredicate(p);
+                    Predicate pKnow = Predicate.GenerateKnowPredicate(p);
                     cfAnd.AddOperand(pKnow.Negate());
                 }
                 aK.Effects = cfAnd.Simplify();
@@ -655,8 +653,8 @@ namespace CPORLib.PlanningModel
                     aK.Effects = new CompoundFormula("and");
                 aK.Observe = null;
                 Predicate pObserve = ((PredicateFormula)a.Observe).Predicate;
-                KnowPredicate kp = new KnowPredicate(pObserve);
-                KnowPredicate knp = new KnowPredicate(pObserve.Negate());
+                Predicate kp = Predicate.GenerateKnowPredicate(pObserve);
+                Predicate knp = Predicate.GenerateKnowPredicate(pObserve.Negate());
 
                 CompoundFormula cfPreconditions = new CompoundFormula("and");
                 cfPreconditions.AddOperand(kp.Negate());
@@ -1102,99 +1100,6 @@ namespace CPORLib.PlanningModel
             }
             return false;
         }
-
-        private PlanningAction GenerateTagMergeAction(ParametrizedPredicate pp, List<string> lIncludedTags, List<string> lExcludedTags, bool bValue)
-        {
-            string sName = "TagMerge-" + pp.Name;
-            foreach (string sTag in lIncludedTags)
-                sName += "-" + sTag;
-            if (bValue == true)
-                sName += "-T";
-            else
-                sName += "-F";
-            ParametrizedAction pa = new ParametrizedAction(sName);
-            foreach (Parameter param in pp.Parameters)
-                pa.AddParameter(param);
-            CompoundFormula cfAnd = new CompoundFormula("and");
-
-            foreach (string sTag in lIncludedTags)
-            {
-                ParametrizedPredicate ppKGivenT = (ParametrizedPredicate)pp.GenerateGiven(sTag);
-                foreach (Parameter p in ppKGivenT.Parameters)
-                    if (p.Type == Utilities.VALUE)
-                        p.Name = Utilities.VALUE_PARAMETER;
-
-                if (bValue == true)
-                    cfAnd.AddOperand(ppKGivenT);
-                else
-                    cfAnd.AddOperand(ppKGivenT.Negate());
-
-                if (sTag != lIncludedTags[0])
-                {
-                    Predicate pKNotT = Predicate.GenerateKNot(new Constant(Utilities.TAG, sTag), new Constant(Utilities.TAG, lIncludedTags[0]));
-                    cfAnd.AddOperand(pKNotT.Negate());
-                }
-            }
-            foreach (string sTag in lExcludedTags)
-            {
-                ParametrizedPredicate ppKGivenT = (ParametrizedPredicate)pp.GenerateGiven(sTag);
-                foreach (Parameter p in ppKGivenT.Parameters)
-                    if (p.Type == Utilities.VALUE)
-                        p.Name = Utilities.VALUE_PARAMETER;
-                Predicate pKNotT = Predicate.GenerateKNot(new Constant(Utilities.TAG, sTag), new Constant(Utilities.TAG, lIncludedTags[0]));
-                cfAnd.AddOperand(pKNotT);
-            }
-            if (Options.SplitConditionalEffects)
-                cfAnd.AddOperand(new GroundedPredicate("NotInAction"));
-            pa.Preconditions = cfAnd;
-            cfAnd = new CompoundFormula("and");
-            foreach (string sTag in lIncludedTags)
-            {
-                Predicate ppK = pp.GenerateKnowGiven(sTag, true);
-                cfAnd.AddOperand(ppK);
-            }
-
-            pa.SetEffects(cfAnd);
-            return pa;
-        }
-
-        private PlanningAction GenerateMergeActionBUGBUG(ParametrizedPredicate pp, Dictionary<string, List<Predicate>> dTags)
-        {
-            ParametrizedAction pa = new ParametrizedAction("Merge-" + pp.Name);
-            foreach (Parameter param in pp.Parameters)
-                pa.AddParameter(param);
-            Parameter pValue = new Parameter(Utilities.VALUE, Utilities.VALUE_PARAMETER);
-            pa.AddParameter(pValue);
-            CompoundFormula cfAnd = new CompoundFormula("and");
-
-            KnowPredicate ppK = new KnowPredicate(pp);
-            ppK.Parametrized = true;
-            cfAnd.AddOperand(ppK.Negate());//add ~know p to the preconditions - no point in activating merge when we know p
-
-            if (Options.SplitConditionalEffects)
-                cfAnd.AddOperand(new GroundedPredicate("NotInAction"));
-
-            foreach (string sTag in dTags.Keys)
-            {
-                CompoundFormula cfOr = new CompoundFormula("or");
-                ParametrizedPredicate ppKGivenT = new ParametrizedPredicate("KGiven" + pp.Name);
-                Predicate pKNotT = Predicate.GenerateKNot(new Constant(Utilities.TAG, sTag));
-                foreach (Parameter param in pp.Parameters)
-                    ppKGivenT.AddParameter(param);
-                ppKGivenT.AddParameter(new Constant(Utilities.TAG, sTag));
-                ppKGivenT.AddParameter(pValue);
-                cfOr.AddOperand(new PredicateFormula(ppKGivenT));
-                cfOr.AddOperand(new PredicateFormula(pKNotT));
-                cfAnd.AddOperand(cfOr);
-            }
-            pa.Preconditions = cfAnd;
-
-            throw new Exception("BUGBUG: if value is false for both cases, we still get true - not good");
-
-            cfAnd.AddOperand(ppK);
-            pa.SetEffects(cfAnd);
-            return pa;
-        }
         private PlanningAction GenerateMergeAction(ParametrizedPredicate pp, Dictionary<string, List<Predicate>> dTags, bool bTrue)
         {
             //BUGBUG;//move from (not (Kp)) (not (KNp)) to Up (for unknown p) - also in sensing actions
@@ -1210,10 +1115,10 @@ namespace CPORLib.PlanningModel
             }
             CompoundFormula cfAnd = new CompoundFormula("and");
 
-            KnowPredicate ppK = new KnowPredicate(pp);
-            KnowPredicate ppNK = new KnowPredicate(pp.Negate());
+            Predicate ppK = Predicate.GenerateKnowPredicate(pp);
+            Predicate ppNK = Predicate.GenerateKnowPredicate(pp.Negate());
             
-            ppK.Parametrized = true;
+            //ppK.Parametrized = true;
             cfAnd.AddOperand(ppK.Negate());//add ~know p to the preconditions - no point in activating merge when we know p
             cfAnd.AddOperand(ppNK.Negate());//add ~know ~p to the preconditions - no point in activating merge when we know p
 
@@ -1271,11 +1176,11 @@ namespace CPORLib.PlanningModel
             Predicate ppK = null;
             if (bKnowWhether)
             {
-                ppK = new KnowWhetherPredicate(pp);
+                ppK = Predicate.GenerateKnowWhetherPredicate(pp);
             }
             else
             {
-                ppK = new KnowPredicate(pp, bValue, false);
+                ppK = Predicate.GenerateKnowPredicate(pp, bValue);
             }
             cfAnd.AddOperand(ppK.Negate());//add ~know p to the preconditions - no point in activating merge when we know p
             foreach (string sTag in dTags.Keys)
@@ -1299,7 +1204,7 @@ namespace CPORLib.PlanningModel
             cfAnd = new CompoundFormula("and");
             cfAnd.AddOperand(ppK);
             if (!bKnowWhether && !d.AlwaysKnown(pp))
-                cfAnd.AddOperand(new KnowWhetherPredicate(pp));
+                cfAnd.AddOperand(Predicate.GenerateKnowWhetherPredicate(pp));
             pa.SetEffects(cfAnd);
             return pa;
         }
@@ -1317,11 +1222,11 @@ namespace CPORLib.PlanningModel
             Predicate ppK = null;
             if (bKnowWhether)
             {
-                ppK = new KnowWhetherPredicate(pp);
+                ppK = Predicate.GenerateKnowWhetherPredicate(pp);
             }
             else
             {
-                ppK = new KnowPredicate(pp, bValue, false);
+                ppK = Predicate.GenerateKnowPredicate(pp, bValue);
             }
             foreach (string sTag in dTags.Keys)
             {
@@ -1359,7 +1264,7 @@ namespace CPORLib.PlanningModel
                 pa.AddParameter(param);
 
             CompoundFormula cfAnd = new CompoundFormula("and");
-            Predicate ppK = new KnowPredicate(pp, bValue, false);
+            Predicate ppK = Predicate.GenerateKnowPredicate(pp, bValue);
 
             foreach (string sTag in dTags.Keys)
             {
@@ -1413,7 +1318,7 @@ namespace CPORLib.PlanningModel
                 cfAnd.AddOperand(new GroundedPredicate("NotInAction"));
 
 
-            KnowPredicate ppK = new KnowPredicate(pp, !bValue, false);
+            Predicate ppK = Predicate.GenerateKnowPredicate(pp, !bValue);
             cfAnd.AddOperand(ppKGivenT);
             cfAnd.AddOperand(ppK);
 
@@ -1464,7 +1369,7 @@ namespace CPORLib.PlanningModel
             foreach (Predicate p in lAllGoal)
             {
                 if (!AlwaysKnown(p))
-                    cfAnd.AddOperand(new KnowPredicate(p));
+                    cfAnd.AddOperand(Predicate.GenerateKnowPredicate(p));
             }
 
             pa.SetEffects(cfAnd);
@@ -1741,46 +1646,54 @@ namespace CPORLib.PlanningModel
 
             lTaggedPredicates.Add(Utilities.Observed);
 
-            foreach (Predicate p in Predicates)
+            foreach (Predicate pOrg in Predicates)
             {
                 List<Argument> lParams = new List<Argument>();
-                if (p is ParametrizedPredicate pp)
+                ParametrizedPredicate pp = null;
+                if (pOrg is ParametrizedPredicate)
+                {
+                    pp = (ParametrizedPredicate)pOrg;
                     lParams = new List<Argument>(pp.Parameters);
+                }
+                else
+                {
+                    pp = new ParametrizedPredicate(pOrg.Name);
+                }
 
-                lTaggedPredicates.Add(p);
+                lTaggedPredicates.Add(pp);
 
 
                 if (Options.RemoveConflictingConditionalEffects)
                 {
-                    Predicate pNot = p.Clone();
-                    pNot.Name = "Not-" + p.Name;
+                    Predicate pNot = pp.Clone();
+                    pNot.Name = "Not-" + pp.Name;
                     lTaggedPredicates.Add(pNot);
                 }
 
                 if (Options.SplitConditionalEffects)
                 {
-                    Predicate pAdd = p.Clone();
-                    pAdd.Name = p.Name + "-Add";
+                    Predicate pAdd = pp.Clone();
+                    pAdd.Name = pp.Name + "-Add";
                     lTaggedPredicates.Add(pAdd);
 
-                    Predicate pRemove = p.Clone();
-                    pRemove.Name = p.Name + "-Remove";
+                    Predicate pRemove = pp.Clone();
+                    pRemove.Name = pp.Name + "-Remove";
                     lTaggedPredicates.Add(pRemove);
                 }
 
-                if (!AlwaysKnown(p))
+                if (!AlwaysKnown(pp))
                 {
-                    Predicate pK = p.Clone();
-                    pK.Name = "K" + p.Name;
+                    Predicate pK = pp.Clone();
+                    pK.Name = "K" + pp.Name;
                     lTaggedPredicates.Add(pK);
 
-                    Predicate pKN = p.Clone();
-                    pKN.Name = "KN" + p.Name;
+                    Predicate pKN = pp.Clone();
+                    pKN.Name = "KN" + pp.Name;
                     lTaggedPredicates.Add(pKN);
 
                     if (Options.RemoveConflictingConditionalEffects)
                     {
-                        ParametrizedPredicate pNotK = new ParametrizedPredicate("Not-K" + p.Name);
+                        ParametrizedPredicate pNotK = new ParametrizedPredicate("Not-K" + pp.Name);
 
                         foreach (Argument param in lParams)
                             pNotK.AddParameter(param);
@@ -1794,7 +1707,7 @@ namespace CPORLib.PlanningModel
                         throw new NotImplementedException();
                     }
 
-                    ParametrizedPredicate ppGiven = new ParametrizedPredicate("KGiven" + p.Name);
+                    ParametrizedPredicate ppGiven = new ParametrizedPredicate("KGiven" + pp.Name);
                     foreach (Argument param in lParams)
                         ppGiven.AddParameter(param);
                     ppGiven.AddParameter(new Parameter(Utilities.TAG, Utilities.TAG_PARAMETER));
@@ -1805,7 +1718,7 @@ namespace CPORLib.PlanningModel
 
                     if (Options.RemoveConflictingConditionalEffects)
                     {
-                        ParametrizedPredicate ppNotGiven = new ParametrizedPredicate("Not-KGiven" + p.Name);
+                        ParametrizedPredicate ppNotGiven = new ParametrizedPredicate("Not-KGiven" + pp.Name);
                         foreach (Argument param in lParams)
                             ppNotGiven.AddParameter(param);
                         ppNotGiven.AddParameter(Utilities.VALUE_PARAMETER, Utilities.VALUE);

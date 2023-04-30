@@ -11,7 +11,7 @@ namespace CPORLib.LogicalUtilities
 
         public bool Negation
         {
-            get; protected set;
+            get; set;
         }
 
         public bool Cached { get; set; }
@@ -81,7 +81,7 @@ namespace CPORLib.LogicalUtilities
         public abstract Predicate GenerateKnowGiven(string sTag, bool bKnowWhether);
         public abstract Predicate GenerateGiven(string sTag);
 
-        public Predicate GenerateKnowGiven(string sTag)
+        public virtual Predicate GenerateKnowGiven(string sTag)
         {
             return GenerateKnowGiven(sTag, false);
         }
@@ -152,5 +152,26 @@ namespace CPORLib.LogicalUtilities
         }
 
         public abstract Predicate Clone();
+
+        public static Predicate GenerateKnowPredicate(Predicate p, bool bValue = true)
+        {
+            Predicate pClone = p.Clone();
+            if(p.Negation)
+            {
+                pClone.Negation = false;
+                bValue = false;
+            }
+            if (bValue)
+                pClone.Name = "K" + p.Name;
+            else
+                pClone.Name = "KN" + p.Name;
+            return pClone;
+        }
+        public static Predicate GenerateKnowWhetherPredicate(Predicate p)
+        {
+            Predicate pClone = p.Clone();
+            pClone.Name = "KW" + p.Name;
+            return pClone;
+        }
     }
 }

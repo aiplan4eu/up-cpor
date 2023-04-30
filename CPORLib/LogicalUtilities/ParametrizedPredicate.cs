@@ -207,27 +207,47 @@ namespace CPORLib.LogicalUtilities
             throw new NotImplementedException();
         }
 
-        public override Predicate GenerateKnowGiven(string sTag, bool bKnowWhether)
+        public override Predicate GenerateKnowGiven(string sTag, bool b)
         {
-            if (bKnowWhether)
-                throw new NotImplementedException("There should no longer be any Know Whether prediate");
+            if(b == true)
+                throw new NotImplementedException();
+
             ParametrizedPredicate pKGiven = null;
-            if (bKnowWhether)
-                pKGiven = new ParametrizedPredicate("KWGiven" + Name);
-            else
-                pKGiven = new ParametrizedPredicate("KGiven" + Name);
+
+            pKGiven = new ParametrizedPredicate("KGiven" + Name);
             foreach (Argument a in Parameters)
             {
                 pKGiven.AddParameter(a);
             }
-            pKGiven.AddParameter(new Parameter(Utilities.TAG, sTag));
-            if (!bKnowWhether)
+             pKGiven.AddParameter(new Constant(Utilities.TAG, sTag));
+
+
+            if (Negation)
+                pKGiven.AddParameter(new Constant(Utilities.VALUE, Utilities.FALSE_VALUE));
+            else
+                pKGiven.AddParameter(new Constant(Utilities.VALUE, Utilities.TRUE_VALUE));
+            
+            return pKGiven;
+        }
+
+        public override Predicate GenerateKnowGiven(string sTag)
+        {
+            ParametrizedPredicate pKGiven = null;
+
+            pKGiven = new ParametrizedPredicate("KGiven" + Name);
+            foreach (Argument a in Parameters)
             {
-                if (Negation)
-                    pKGiven.AddParameter(new Parameter(Utilities.VALUE, Utilities.FALSE_VALUE));
-                else
-                    pKGiven.AddParameter(new Parameter(Utilities.VALUE, Utilities.TRUE_VALUE));
+                pKGiven.AddParameter(a);
             }
+            
+            pKGiven.AddParameter(new Constant(Utilities.TAG, sTag));
+
+
+            if (Negation)
+                pKGiven.AddParameter(new Constant(Utilities.VALUE, Utilities.FALSE_VALUE));
+            else
+                pKGiven.AddParameter(new Constant(Utilities.VALUE, Utilities.TRUE_VALUE));
+            
             return pKGiven;
         }
         public override Predicate GenerateGiven(string sTag)

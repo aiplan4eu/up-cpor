@@ -63,8 +63,9 @@ namespace CPORLib.Parsing
 
         public Domain ParseDomain(MemoryStream msModel)
         {
+            msModel.Position = 0;
             StreamReader sr = new StreamReader(msModel);
-
+            
 
             CompoundExpression exp = (CompoundExpression)ToExpression(new StringStreamReader(sr));
             sr.Close();
@@ -143,21 +144,35 @@ namespace CPORLib.Parsing
             return ParseProblem(sProblemFile, "", d);
         }
 
+        public Problem ParseProblem(MemoryStream msProblem, Domain d)
+        {
+            msProblem.Position = 0;
+            StreamReader sr = new StreamReader(msProblem);
+            return ParseProblem(sr, d);
+        }
+
+        private Problem ParseProblem(StreamReader sr, Domain d)
+        {
+            CompoundExpression exp = (CompoundExpression)ToExpression(new StringStreamReader(sr));
+            sr.Close();
+
+            Problem p = ParseProblem(exp, "", d);
+
+            p.PrepareForPlanning();
+
+            return p;
+        }
+
         public Problem ParseProblem(string sProblemFile, string sDeadEndFile, Domain d)
         {
             Debug.WriteLine(sProblemFile);
             Debug.WriteLine(sDeadEndFile);
             StreamReader sr = new StreamReader(sProblemFile);
-            CompoundExpression exp = (CompoundExpression)ToExpression(new StringStreamReader(sr));
-            sr.Close();
-
-            Problem p = ParseProblem(exp, sDeadEndFile, d);
-
-            p.PrepareForPlanning();
-
-            return p;
-
+            
+            return ParseProblem(sr, d);
         }
+
+       
         private Problem ParseProblem(CompoundExpression exp, string sDeadEndFile, Domain d)
         {
             Problem p = null;
@@ -172,7 +187,7 @@ namespace CPORLib.Parsing
                 }
                 if (eSub.Type == ":domain")
                 {
-                    if (eSub.SubExpressions.First().ToString() != d.Name)
+                    if (eSub.SubExpressions.First().ToString().ToLower() != d.Name.ToLower())
                         throw new InvalidDataException("Domain and problem files don't match!");
                 }
                 if (eSub.Type == ":objects")
