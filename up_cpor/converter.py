@@ -24,6 +24,7 @@ from unified_planning.model import FNode, OperatorKind, Fluent, Effect, SensingA
 from unified_planning.plans import ActionInstance
 from unified_planning.plans.contingent_plan import ContingentPlanNode
 import unified_planning as up
+from unified_planning.shortcuts import Bool
 
 from typing import Dict
 
@@ -68,9 +69,15 @@ class UpCporConverter:
         return solver
 
     def SDRupdate(self, solver, observation):
+        orr_ob = observation
         if observation is not None:
-            if len(observation)>0 and not str(observation).split(': ')[1].replace('}', '') == 'false':
-                observation = str(observation).split(':')[0].replace('(', ' ').replace('{', '(')
+            if len(observation)>0:
+                full_observation = str(observation).split(': ')
+                observation = full_observation[0].replace('(', ' ').replace('{', '(')
+                if "on" in observation:
+                    observation = observation.replace(",", "")
+                if full_observation[1].replace('}', '') == 'false':
+                    observation = f"(not {observation})"
             else:
                 observation = None
         applied = solver.SetObservation(observation)
@@ -93,7 +100,7 @@ class UpCporConverter:
         str_action = str(action)
         str_action = str_action.replace(',', '').replace(')', '').replace('(', ' ')
         str_obser = simulator.Apply(str_action)
-        obser = self.__convert_string_to_observation(str_obser, problem)
+        obser = self.__convert_SDR_string_to_observation(str_obser, problem)
         return obser
 
     def SDRGoal(self, simulator):
@@ -258,4 +265,20 @@ class UpCporConverter:
             location = tuple(expr_manager.ObjectExp(problem.object(o_name)) for o_name in obs[1:])
             obresv = expr_manager.FluentExp(obse, location)
             return obresv
+        return None
+
+    def __convert_SDR_string_to_observation(self, string, problem):
+        if string is not None and string != 'None':
+            ob = string.replace(")", "").replace("(", "")
+            obs = ob.split(" ")
+            if obs[0] == "not":
+                obs.remove("not")
+                boolean = False
+            else:
+                boolean = True
+            expr_manager = problem.environment.expression_manager
+            obse = problem.fluent(obs[0])
+            location = tuple(expr_manager.ObjectExp(problem.object(o_name)) for o_name in obs[1:])
+            obresv = expr_manager.FluentExp(obse, location)
+            return {obresv: Bool(boolean)}
         return None

@@ -2,12 +2,14 @@ from unified_planning.io import PDDLReader
 import unified_planning.environment as environment
 from unified_planning.shortcuts import *
 
+from up_cpor.simulator import SDRSimulator
+
 if __name__ == "__main__":
 
     # Creating a PDDL reader
     reader = PDDLReader()
 
-    prob_arr = ['blocks2', 'blocks3', 'doors5', 'wumpus05']
+    prob_arr = ['blocks2', 'doors5', 'wumpus05']
 
     for prob in prob_arr:
         print(f"###########################Problem: {prob} start###########################")
@@ -18,8 +20,11 @@ if __name__ == "__main__":
         )
 
         env = environment.get_environment()
-        env.factory.add_engine('CPORPlanning', 'up_cpor.engine', 'CPORImpl')
+        env.factory.add_engine('SDRPlanning', 'up_cpor.engine', 'SDRImpl')
 
-        with OneshotPlanner(name='CPORPlanning') as planner:
-            result = planner.solve(problem)
-            print("%s returned: %s" % (planner.name, result.plan))
+        with ActionSelector(name='SDRPlanning', problem=problem) as solver:
+            simulatedEnv = SDRSimulator(problem)
+            while not simulatedEnv.is_goal_reached():
+                action = solver.get_action()
+                observation = simulatedEnv.apply(action)
+                solver.update(observation)
