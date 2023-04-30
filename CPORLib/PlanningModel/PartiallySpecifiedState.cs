@@ -57,6 +57,7 @@ namespace CPORLib.PlanningModel
 
         private Formula m_fObservation;
         private List<string> m_lHistory;
+        public List<string> History { get { return m_lHistory; } }
         public int ChildCount { get; private set; }
 
         public HashSet<Predicate> m_lOfflinePredicatesKnown;
@@ -2112,7 +2113,8 @@ namespace CPORLib.PlanningModel
             return m_bsInitialBelief.WriteTaggedDomainAndProblem(this, lActions, out cTags, out msModels);
         }
 
-        public void GetTaggedDomainAndProblem(Options.DeadendStrategies dsStrategy, out int cTags, out Domain dTagged, out Problem pTagged)
+        public void GetTaggedDomainAndProblem(Options.DeadendStrategies dsStrategy, bool bPreconditionFailure, out int cTags,
+            out Domain dTagged, out Problem pTagged)
         {
             List<Action> lActions = new List<PlanningAction>();
             PartiallySpecifiedState pssCurrent = this;
@@ -2121,7 +2123,7 @@ namespace CPORLib.PlanningModel
                 lActions.Insert(0, pssCurrent.GeneratingAction);
                 pssCurrent = pssCurrent.m_sPredecessor;
             }
-            m_bsInitialBelief.GetTaggedDomainAndProblem(this, lActions, dsStrategy, out cTags, out dTagged, out pTagged);
+            m_bsInitialBelief.GetTaggedDomainAndProblem(this, lActions, dsStrategy, bPreconditionFailure, out cTags, out dTagged, out pTagged);
         }
 
         private State WriteTaggedDomainAndProblemDeadEnd(List<Action> lActions, List<Formula> lMaybeDeadends, DeadendStrategies dsStrategy, bool bPreconditionFailure, out int cTags, out MemoryStream msModels)

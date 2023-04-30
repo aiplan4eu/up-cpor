@@ -82,7 +82,7 @@ namespace CPORLib.FFCS
          */
         public  Facts ginitial = null;
         public  int gnum_initial = 0;
-        public  Array2D<Fact> ginitial_predicate;
+        public  FactArray2D ginitial_predicate;
         public  int[] gnum_initial_predicate;
 
 

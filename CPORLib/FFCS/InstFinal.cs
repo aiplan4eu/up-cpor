@@ -23,11 +23,16 @@ namespace CPORLib.FFCS
 
         /* local globals for this part
          */
-
+        /*
         static Array2D<int> lpos = new Array2D<int>(MAX_PREDICATES);// new int[MAX_PREDICATES];
         static Array2D<int> lneg = new Array2D<int>(MAX_PREDICATES);// new int[MAX_PREDICATES];
         static Array2D<int> luse = new Array2D<int>(MAX_PREDICATES);// new int[MAX_PREDICATES];
         static Array2D<int> lindex = new Array2D<int>(MAX_PREDICATES);// new int[MAX_PREDICATES];
+        */
+        static IntArray2D lpos = new IntArray2D(MAX_PREDICATES);// new int[MAX_PREDICATES];
+        static IntArray2D lneg = new IntArray2D(MAX_PREDICATES);// new int[MAX_PREDICATES];
+        static IntArray2D luse = new IntArray2D(MAX_PREDICATES);// new int[MAX_PREDICATES];
+        static IntArray2D lindex = new IntArray2D(MAX_PREDICATES);// new int[MAX_PREDICATES];
 
         static int lp;
         static int[] largs = new int[MAX_VARS];
@@ -64,18 +69,20 @@ namespace CPORLib.FFCS
                     size *= FF.DP.gnum_constants;
                 }
 
-                lpos.Init(i,size);
-                lneg.Init(i, size);
-                luse.Init(i, size);
-                lindex.Init(i, size);
+                lpos.Init(i,size, 0);
+                lneg.Init(i, size, 1);
+                luse.Init(i, size, 0);
+                lindex.Init(i, size, -1);
 
+                /*
                 for (j = 0; j < size; j++)
                 {
                     lpos[i, j] = 0;
-                    lneg[i, j] = 1;/* all facts but initials are poss. negative */
+                    lneg[i, j] = 1;// all facts but initials are poss. negative 
                     luse[i, j] = 0;
                     lindex[i, j] = -1;
                 }
+                */
             }
 
             had_hard_template = new bool[FF.DP.gnum_hard_templates];// (bool*)calloc(Main.DP.FF.Search.gnum_Hard_templates, sizeof(bool));

@@ -1443,25 +1443,184 @@ namespace CPORLib.FFCS
             return ia;
         }
     }
-
+    /*
     public class Array2D<T>
     {
-        public T[][] Array;
+        public T[,] Array;
+
+        public static int MAX = 10000000;
 
         public T this[int i, int j]
         {
             get
             {
-                return Array[i][j];
+                return Array[i, j];
             }
             set
             {
-                //if (value is int x && x == -1)
-                //    Utilities.Write("*");
-                Array[i][j] = value;
+                //try
+                {
+                Array[i, j] = value;
+
+                }
+                //catch(Exception e)
+                {
+                    //Console.Write("*");
+                }
             }
         }
 
+        
+        public Array2D(int iSize)
+        {
+            Array = new T[iSize, MAX];
+        }
+
+        public void Init(int i, int iSize)
+        {
+            //Array[i] = new T[iSize];
+
+        }
+    }
+    */
+    
+    public class EfficientArrayMemory
+    {
+
+        public static Dictionary<int, List<Fact[]>> FactArrays = new Dictionary<int, List<Fact[]>>();
+        public static Dictionary<int, int> FactArrayCounters = new Dictionary<int, int>();
+        public static Dictionary<int, List<int[]>> IntArrays = new Dictionary<int, List<int[]>>();
+        public static Dictionary<int, int> IntArrayCounters = new Dictionary<int, int>();
+
+        public static void Reset()
+        {
+            Dictionary<int, int> dNew = new Dictionary<int, int>();
+            foreach (var p in FactArrayCounters)
+                dNew[p.Key] = 0;
+            FactArrayCounters = dNew;
+
+            dNew = new Dictionary<int, int>();
+            foreach (var p in IntArrayCounters)
+                dNew[p.Key] = 0;
+            IntArrayCounters = dNew;
+
+        }
+
+        public static int[] GetIntArray(int iSize)
+        {
+            if (!IntArrays.ContainsKey(iSize))
+            {
+                IntArrays[iSize] = new List<int[]>();
+                IntArrayCounters[iSize] = 0;
+            }
+            if (IntArrayCounters[iSize] == IntArrays[iSize].Count)
+            {
+                int[] aNew = new int[iSize];
+                IntArrays[iSize].Add(aNew);
+            }
+            int[] aReturn = IntArrays[iSize][IntArrayCounters[iSize]];
+            IntArrayCounters[iSize]++;
+            return aReturn;
+        }
+
+        public static Fact[] GetFactArray(int iSize)
+        {
+            if (!FactArrays.ContainsKey(iSize))
+            {
+                FactArrays[iSize] = new List<Fact[]>();
+                FactArrayCounters[iSize] = 0;
+            }
+            if (FactArrayCounters[iSize] == FactArrays[iSize].Count)
+            {
+                Fact[] aNew = new Fact[iSize];
+                FactArrays[iSize].Add(aNew);
+            }
+            Fact[] aReturn = FactArrays[iSize][FactArrayCounters[iSize]];
+            FactArrayCounters[iSize]++;
+            return aReturn;
+        }
+
+        public static void Clear()
+        {
+            FactArrays = new Dictionary<int, List<Fact[]>>();
+            FactArrayCounters = new Dictionary<int, int>();
+            IntArrays = new Dictionary<int, List<int[]>>();
+            IntArrayCounters = new Dictionary<int, int>();
+        }
+    }
+
+
+    public class FactArray2D : Array2D<Fact>
+    {
+        public FactArray2D(int iSize) : base(iSize) 
+        { 
+        }
+        public void Init(int i, int iSize)
+        {
+            Array[i] = EfficientArrayMemory.GetFactArray(iSize);
+            Initialized[i] = true;
+        }
+
+        public void Init(int i, int iSize, Fact tInit)
+        {
+            Array[i] = EfficientArrayMemory.GetFactArray(iSize);
+            Initialized[i] = false;
+            InitValue[i] = tInit;
+        }
+    }
+
+    public class IntArray2D : Array2D<int>
+    {
+        public IntArray2D(int iSize) : base(iSize)
+        {
+        }
+        public void Init(int i, int iSize)
+        {
+            Array[i] = EfficientArrayMemory.GetIntArray(iSize);
+            Initialized[i] = true;
+        }
+
+        public void Init(int i, int iSize, int tInit)
+        {
+            Array[i] = EfficientArrayMemory.GetIntArray(iSize);
+            Initialized[i] = false;
+            InitValue[i] = tInit;
+        }
+    }
+
+
+    public class Array2D<T>
+    {
+        public T[][] Array;
+
+        protected bool[] Initialized;
+        protected T[] InitValue;
+
+        public T this[int i, int j]
+        {
+            get
+            {
+
+                if (!Initialized[i])
+                    return InitValue[i];
+                return Array[i][j];
+
+            }
+            set
+            {
+
+                if (!Initialized[i])
+                {
+                    for (int k = 0; k < Array[i].Length; k++)
+                        Array[i][k] = InitValue[i];
+                    Initialized[i] = true;
+                }
+                Array[i][j] = value;
+
+            }
+        }
+
+        
         public T[] this[int i]
         {
             get
@@ -1470,23 +1629,30 @@ namespace CPORLib.FFCS
             }
             set
             {
-                //if (value is int x && x == -1)
-                //    Utilities.Write("*");
                 Array[i] = value;
             }
         }
-
-        public Array2D(int iSize)
+        
+        protected Array2D(int iSize)
         {
             Array = new T[iSize][];
+            InitValue = new T[iSize];
+            Initialized = new bool[iSize];
         }
 
         public void Init(int i, int iSize)
         {
             Array[i] = new T[iSize];
+            Initialized[i] = true;
+        }
 
+        public void Init(int i, int iSize, T tInit)
+        {
+            Array[i] = new T[iSize];
+            Initialized[i] = false;
+            InitValue[i] = tInit;
         }
     }
-
-
+    
+    
 }

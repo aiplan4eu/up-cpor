@@ -13,7 +13,7 @@ namespace CPORLib.PlanningModel
         public IEnumerable<Predicate> Predicates { get { return m_lPredicates; } }
         protected HashSet<Predicate> m_lPredicates;
 
-        protected HashSet<Predicate> m_lAlwaysTrue;
+        //protected HashSet<Predicate> m_lAlwaysTrue;
         protected HashSet<Predicate> m_lChangingPredicates;
 
         public List<Action> AvailableActions { get; protected set; }
@@ -34,7 +34,7 @@ namespace CPORLib.PlanningModel
             Problem = p;
             Predecessor = null;
             m_lPredicates = new HashSet<Predicate>();
-            m_lAlwaysTrue = new HashSet<Predicate>();
+            //m_lAlwaysTrue = new HashSet<Predicate>();
             m_lChangingPredicates = new HashSet<Predicate>();
             AvailableActions = new List<Action>();
             MaintainNegations = true;
@@ -55,6 +55,8 @@ namespace CPORLib.PlanningModel
             Predecessor = sPredecessor;
             m_lPredicates = new HashSet<Predicate>(sPredecessor.Predicates);
             m_lChangingPredicates = new HashSet<Predicate>(Predecessor.m_lChangingPredicates);
+
+            /*
             m_lAlwaysTrue = Predecessor.m_lAlwaysTrue;
 
             foreach (Predicate p in Problem.Known)
@@ -62,6 +64,7 @@ namespace CPORLib.PlanningModel
                 if (Problem.Domain.AlwaysConstant(p))
                     m_lAlwaysTrue.Add(p);
             }
+            */
 
             FunctionValues = new Dictionary<string, double>();
             foreach (KeyValuePair<string, double> p in sPredecessor.FunctionValues)
@@ -126,7 +129,9 @@ namespace CPORLib.PlanningModel
             if (!p.Negation)
             {
                 if (Problem.Domain.AlwaysConstant(p))
-                    m_lAlwaysTrue.Add(p);
+                {
+                    //m_lAlwaysTrue.Add(p);
+                }
                 else
                     m_lChangingPredicates.Add(p);
             }

@@ -57,7 +57,7 @@ namespace CPORLib.Algorithms
             {
                 string sAction = FutureActions[NextActionIndex];
                 bool bPreconditionsHold = CurrentState.IsApplicable(sAction);
-                Console.WriteLine("SDR: Checking applicability of action " + sAction +" : " + bPreconditionsHold);
+                //Console.WriteLine("SDR: Checking applicability of action " + sAction +" : " + bPreconditionsHold);
                 if (bPreconditionsHold)
                     return sAction;
                 else

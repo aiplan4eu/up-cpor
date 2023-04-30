@@ -107,8 +107,7 @@ namespace CPORLib
                     Console.WriteLine("Starting " + domain.Name);
                     while (!sim.GoalReached)
                     {
-                        if (idx == 39)
-                           Console.Write("*");
+                        
                         string sAction = sdr.GetAction();
                         if (sAction == null)
                             Console.Write("*");

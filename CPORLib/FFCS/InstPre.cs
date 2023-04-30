@@ -981,11 +981,11 @@ namespace CPORLib.FFCS
                     max = FF.DP.gnum_initial_predicate[p];
             }
             //FF.DP.ginitial_predicate = new Fact[FF.DP.gnum_predicates * 2, max];
-            FF.DP.ginitial_predicate = new Array2D<Fact>(FF.DP.gnum_predicates * 2);
+            FF.DP.ginitial_predicate = new FactArray2D(FF.DP.gnum_predicates * 2);
             for (i = 0; i < FF.DP.gnum_predicates; i++)
             {
                 //Main.DP.ginitial_predicate[i] = (Fact)calloc(Main.DP.gnum_initial_predicate[i], sizeof(Fact));
-                FF.DP.ginitial_predicate[i] = new Fact[max];
+                FF.DP.ginitial_predicate.Init(i, max);
                 FF.DP.gnum_initial_predicate[i] = 0;
             }
             FF.DP.ginitial = null;
@@ -2237,7 +2237,7 @@ namespace CPORLib.FFCS
                 m *= FF.DP.gtype_size[FF.DP.gpredicates_args_type[FF.DP.gnum_predicates,j]];
             }
             //already initialized in split_initial_state???
-            FF.DP.ginitial_predicate[FF.DP.gnum_predicates]= new Fact[m];
+            FF.DP.ginitial_predicate.Init(FF.DP.gnum_predicates, m);
             FF.DP.gnum_predicates++;
 
 
