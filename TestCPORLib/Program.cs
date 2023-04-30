@@ -61,7 +61,7 @@ public class Program
 
     public static void Main(string[] args)
     {
-        TestAll(false);
+        TestAll(true);
         //return;
 
         //TestClassicalFFCS();
