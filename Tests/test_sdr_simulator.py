@@ -9,7 +9,7 @@ if __name__ == "__main__":
     # Creating a PDDL reader
     reader = PDDLReader()
 
-    prob_arr = ['blocks2', 'blocks3', 'doors5', 'wumpus05']
+    prob_arr = ['blocks2', 'doors5', 'wumpus05']
 
     for prob in prob_arr:
         print(f"###########################Problem: {prob} start###########################")
