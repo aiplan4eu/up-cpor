@@ -1,8 +1,8 @@
 from unified_planning.io import PDDLReader
 import unified_planning.environment as environment
-from unified_planning.model.contingent.environment import SimulatedEnvironment
 from unified_planning.shortcuts import *
 
+from up_cpor.simulator import SDRSimulator
 
 if __name__ == "__main__":
 
@@ -26,9 +26,8 @@ if __name__ == "__main__":
         env.factory.add_engine('SDRPlanning', 'up_cpor.engine', 'SDRImpl')
 
         with ActionSelector(name='SDRPlanning', problem=problem) as solver:
-            simulatedEnv = SimulatedEnvironment(problem)
+            simulatedEnv = SDRSimulator(problem)
             while not simulatedEnv.is_goal_reached():
                 action = solver.get_action()
                 observation = simulatedEnv.apply(action)
                 solver.update(observation)
-
