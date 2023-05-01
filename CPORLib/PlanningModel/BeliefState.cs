@@ -1905,6 +1905,8 @@ namespace CPORLib.PlanningModel
 
         public List<List<Predicate>> ChosenStates = null;
 
+
+
         public void GetTaggedDomainAndProblem(PartiallySpecifiedState pssCurrent, List<Action> lAppliedActions, 
             Options.DeadendStrategies dsStrategy, bool bPreconditionFailure,
             out int cTags, out Domain dTagged, out Problem pTagged
@@ -1919,7 +1921,7 @@ namespace CPORLib.PlanningModel
             if (lChosen == null)
                 return;
 
-
+            //BUGBUG;//We should cache the states, try to avoid this useless repetition
             List<State> lStates = ApplyActions(lChosen, lAppliedActions);
 
             if(lStates.Count == 0)
@@ -1939,6 +1941,7 @@ namespace CPORLib.PlanningModel
             {
 
                 dTagged = Problem.Domain.CreateTaggedDomain(dTags, Problem, null);
+
             }
             else
                 throw new NotImplementedException();

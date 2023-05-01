@@ -42,8 +42,8 @@ namespace CPORLib.FFCS
 
         /* store the final "relevant facts"
          */
-        public  InitializedArray<Fact> grelevant_facts = new InitializedArray<Fact>(Constants.MAX_RELEVANT_FACTS);
-        public  int gnum_relevant_facts = 0;
+        public InitializedArray<Fact> grelevant_facts = new InitializedArray<Fact>(Constants.MAX_RELEVANT_FACTS);
+        public int gnum_relevant_facts = 0;
         public  int gnum_pp_facts = 0;
 
 
@@ -82,8 +82,9 @@ namespace CPORLib.FFCS
          */
         public  Facts ginitial = null;
         public  int gnum_initial = 0;
-        public  FactArray2D ginitial_predicate;
-        public  int[] gnum_initial_predicate;
+        //public FactArray2D ginitial_predicate;
+        public Array2D<Fact> ginitial_predicate;
+        public int[] gnum_initial_predicate;
 
 
 
