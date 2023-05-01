@@ -1,5 +1,6 @@
 from unified_planning.io import PDDLReader
 import unified_planning.environment as environment
+from unified_planning.engines.results import PlanGenerationResultStatus
 from unified_planning.shortcuts import *
 
 
@@ -23,8 +24,16 @@ if __name__ == "__main__":
 
         with OneshotPlanner(name='MetaCPORPlanning[tamer]') as planner:
             result = planner.solve(problem)
-            print("%s returned: %s" % (planner.name, result.plan))
+            if result.status == PlanGenerationResultStatus.SOLVED_SATISFICING:
+                print(f'{planner.name} found a valid plan!')
+                print(f'Success')
+            else:
+                print('No plan found!')
 
         with OneshotPlanner(name='MetaCPORPlanning[pyperplan]') as planner:
             result = planner.solve(problem)
-            print("%s returned: %s" % (planner.name, result.plan))
+            if result.status == PlanGenerationResultStatus.SOLVED_SATISFICING:
+                print(f'{planner.name} found a valid plan!')
+                print(f'Success')
+            else:
+                print('No plan found!')
