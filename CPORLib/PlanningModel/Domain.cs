@@ -214,7 +214,7 @@ namespace CPORLib.PlanningModel
 
 
         //know whether - no s_0
-        public MemoryStream WriteTaggedDomainNoState(Dictionary<string, List<Predicate>> dTags, Problem pCurrent)
+        public MemoryStream WriteTaggedDomainNoState(Dictionary<string, ISet<Predicate>> dTags, Problem pCurrent)
         {
             if (HasNonDeterministicActions() && Options.UseOptions)
             {
@@ -239,7 +239,7 @@ namespace CPORLib.PlanningModel
             sw.WriteLine();
             if (Options.SplitConditionalEffects)
             {
-                List<Predicate> lAdditionalPredicates = new List<Predicate>();
+                ISet<Predicate> lAdditionalPredicates = new HashSet<Predicate>();
                 List<PlanningAction> lAllActions = GetKnowledgeActionsNoState(sw, dTags, lAdditionalPredicates);
                 WriteTaggedPredicatesNoState(sw, lAdditionalPredicates);
                 foreach (PlanningAction aKnowWhether in lAllActions)
@@ -266,7 +266,7 @@ namespace CPORLib.PlanningModel
         }
 
 
-        public Domain CreateTaggedDomain(Dictionary<string, List<Predicate>> dTags, Problem pCurrent, List<Formula> lDeadends)
+        public Domain CreateTaggedDomain(Dictionary<string, ISet<Predicate>> dTags, Problem pCurrent, List<Formula> lDeadends)
         {
             if (HasNonDeterministicActions() && Options.UseOptions)
             {
@@ -310,7 +310,7 @@ namespace CPORLib.PlanningModel
         }
 
 
-        public MemoryStream WriteTaggedDomain(Dictionary<string, List<Predicate>> dTags, Problem pCurrent, List<Formula> lDeadends)
+        public MemoryStream WriteTaggedDomain(Dictionary<string, ISet<Predicate>> dTags, Problem pCurrent, List<Formula> lDeadends)
         {
             if (HasNonDeterministicActions() && Options.UseOptions)
             {
@@ -466,13 +466,13 @@ namespace CPORLib.PlanningModel
             return s;
         }
 
-        private void WriteAxiomsAction(StreamWriter sw, Dictionary<string, List<Predicate>> dTags)
+        private void WriteAxiomsAction(StreamWriter sw, Dictionary<string, ISet<Predicate>> dTags)
         {
             sw.WriteLine("(:action apply-axioms");
             sw.WriteLine("\t:precondition (not (axioms-applied))\n");
             sw.WriteLine("\t:effect (and (axioms-applied)\n");
 
-            HashSet<GroundedPredicate> lGrounded = GroundAllPredicates();
+            ISet<Predicate> lGrounded = GroundAllPredicates();
             foreach (GroundedPredicate pp in lGrounded)
             {
                 sw.WriteLine("\t\t" + GeneratePredicateAxiom(pp, "", ""));
@@ -494,10 +494,10 @@ namespace CPORLib.PlanningModel
         }
 
 
-        private void WriteAxiomsActions(StreamWriter sw, Dictionary<string, List<Predicate>> dTags)
+        private void WriteAxiomsActions(StreamWriter sw, Dictionary<string, ISet<Predicate>> dTags)
         {
 
-            HashSet<GroundedPredicate> lGrounded = GroundAllPredicates();
+            ISet<Predicate> lGrounded = GroundAllPredicates();
             foreach (GroundedPredicate gp in lGrounded)
             {
                 sw.WriteLine("(:action apply-axioms-" + gp.Name);
@@ -835,7 +835,7 @@ namespace CPORLib.PlanningModel
             sw.WriteLine();
         }
 
-        public List<PlanningAction> GetAllKnowledgeActions(Dictionary<string, List<Predicate>> dTags)
+        public List<PlanningAction> GetAllKnowledgeActions(Dictionary<string, ISet<Predicate>> dTags)
         {
             List<PlanningAction> lActions = new List<PlanningAction>();
             foreach (PlanningAction a in Actions)
@@ -857,7 +857,7 @@ namespace CPORLib.PlanningModel
             return lActions;
         }
 
-        private List<PlanningAction> GetKnowledgeActionsNoState(StreamWriter sw, Dictionary<string, List<Predicate>> dTags, List<Predicate> lAdditionalPredicates)
+        private List<PlanningAction> GetKnowledgeActionsNoState(StreamWriter sw, Dictionary<string, ISet<Predicate>> dTags, ISet<Predicate> lAdditionalPredicates)
         {
             List<PlanningAction> lAllActions = new List<PlanningAction>();
             lAdditionalPredicates.Add(new GroundedPredicate("NotInAction"));
@@ -880,7 +880,7 @@ namespace CPORLib.PlanningModel
 
 
 
-        private List<PlanningAction> GetKnowledgeActions(Dictionary<string, List<Predicate>> dTags, List<Predicate> lAdditionalPredicates)
+        private List<PlanningAction> GetKnowledgeActions(Dictionary<string, ISet<Predicate>> dTags, List<Predicate> lAdditionalPredicates)
         {
             List<PlanningAction> lAllActions = new List<PlanningAction>();
             lAdditionalPredicates.Add(new GroundedPredicate("NotInAction"));
@@ -905,7 +905,7 @@ namespace CPORLib.PlanningModel
 
 
 
-        private void WriteKnowledgeActionsNoState(StreamWriter sw, Dictionary<string, List<Predicate>> dTags)
+        private void WriteKnowledgeActionsNoState(StreamWriter sw, Dictionary<string, ISet<Predicate>> dTags)
         {
             int cTranslatedActions = 0;
             foreach (PlanningAction a in Actions)
@@ -932,7 +932,7 @@ namespace CPORLib.PlanningModel
 
 
         /*
-                private void WriteKnowledgeActionsNoState(StreamWriter sw, Dictionary<string, List<Predicate>> dTags)
+                private void WriteKnowledgeActionsNoState(StreamWriter sw, Dictionary<string, ISet<Predicate>> dTags)
                 {
                     int  cTranslatedActions = 0;
                     int cMaxTranslatedConditionalEffects = 0, cMaxOriginalConditionalEffects = 0;
@@ -970,7 +970,7 @@ namespace CPORLib.PlanningModel
                 }
         */
 
-        private void WriteKnowledgeActions(StreamWriter sw, Dictionary<string, List<Predicate>> dTags, List<Formula> lDeadends)
+        private void WriteKnowledgeActions(StreamWriter sw, Dictionary<string, ISet<Predicate>> dTags, List<Formula> lDeadends)
         {
             foreach (PlanningAction a in Actions)
             {
@@ -1022,7 +1022,7 @@ namespace CPORLib.PlanningModel
         }
 
 
-        private List<PlanningAction> CreateReasoningActions(Dictionary<string, List<Predicate>> dTags, Problem pCurrent, List<Formula> lDeadends)
+        private List<PlanningAction> CreateReasoningActions(Dictionary<string, ISet<Predicate>> dTags, Problem pCurrent, List<Formula> lDeadends)
         {
             List<PlanningAction> lReasoningActions = new List<PlanningAction>();
             //write merges and TAG refutation
@@ -1054,7 +1054,7 @@ namespace CPORLib.PlanningModel
         }
 
 
-        private void WriteReasoningActions(StreamWriter sw, Dictionary<string, List<Predicate>> dTags, Problem pCurrent, List<Formula> lDeadends)
+        private void WriteReasoningActions(StreamWriter sw, Dictionary<string, ISet<Predicate>> dTags, Problem pCurrent, List<Formula> lDeadends)
         {
             //write merges andUtilities.TAG refutation
             foreach (Predicate p in Predicates)
@@ -1089,7 +1089,7 @@ namespace CPORLib.PlanningModel
             {
                 if (a.Observe != null)
                 {
-                    HashSet<Predicate> lObservables = a.Observe.GetAllPredicates();
+                    ISet<Predicate> lObservables = a.Observe.GetAllPredicates();
                     foreach (Predicate p in lObservables)
                     {
                         if (p.Name == pp.Name)
@@ -1100,7 +1100,7 @@ namespace CPORLib.PlanningModel
             }
             return false;
         }
-        private PlanningAction GenerateMergeAction(ParametrizedPredicate pp, Dictionary<string, List<Predicate>> dTags, bool bTrue)
+        private PlanningAction GenerateMergeAction(ParametrizedPredicate pp, Dictionary<string, ISet<Predicate>> dTags, bool bTrue)
         {
             //BUGBUG;//move from (not (Kp)) (not (KNp)) to Up (for unknown p) - also in sensing actions
             string sName = "Merge-" + pp.Name + "-";
@@ -1153,7 +1153,7 @@ namespace CPORLib.PlanningModel
         }
 
 
-        private PlanningAction GenerateKnowMergeAction(ParametrizedPredicate pp, Domain d, Dictionary<string, List<Predicate>> dTags, bool bValue, bool bKnowWhether)
+        private PlanningAction GenerateKnowMergeAction(ParametrizedPredicate pp, Domain d, Dictionary<string, ISet<Predicate>> dTags, bool bValue, bool bKnowWhether)
         {
             ParametrizedAction pa = null;
             string sName = "";
@@ -1209,7 +1209,7 @@ namespace CPORLib.PlanningModel
             return pa;
         }
 
-        private PlanningAction GenerateKnowUnMergeAction(ParametrizedPredicate pp, Dictionary<string, List<Predicate>> dTags, bool bValue, bool bKnowWhether)
+        private PlanningAction GenerateKnowUnMergeAction(ParametrizedPredicate pp, Dictionary<string, ISet<Predicate>> dTags, bool bValue, bool bKnowWhether)
         {
             ParametrizedAction pa = null;
             if (bKnowWhether)
@@ -1252,7 +1252,7 @@ namespace CPORLib.PlanningModel
             return pa;
         }
 
-        private PlanningAction GenerateKnowUnMergeAction(ParametrizedPredicate pp, Dictionary<string, List<Predicate>> dTags, bool bValue)
+        private PlanningAction GenerateKnowUnMergeAction(ParametrizedPredicate pp, Dictionary<string, ISet<Predicate>> dTags, bool bValue)
         {
             string sName = "UnMerge-K-" + pp.Name;
             if (bValue)
@@ -1365,7 +1365,7 @@ namespace CPORLib.PlanningModel
             cfAnd = new CompoundFormula("and");
             cfAnd.AddOperand(fGoal);
 
-            HashSet<Predicate> lAllGoal = fGoal.GetAllPredicates();
+            ISet<Predicate> lAllGoal = fGoal.GetAllPredicates();
             foreach (Predicate p in lAllGoal)
             {
                 if (!AlwaysKnown(p))
@@ -1589,7 +1589,7 @@ namespace CPORLib.PlanningModel
         }
 */
 
-        private void WriteTaggedPredicatesNoState(StreamWriter sw, List<Predicate> lAdditinalPredicates)
+        private void WriteTaggedPredicatesNoState(StreamWriter sw, ISet<Predicate> lAdditinalPredicates)
         {
             sw.WriteLine("(:predicates");
             if (lAdditinalPredicates == null)
@@ -1872,7 +1872,7 @@ namespace CPORLib.PlanningModel
             if (Options.RemoveConflictingConditionalEffects)
             {
                 sw.WriteLine("(axioms-applied)");
-                HashSet<GroundedPredicate> lGrounded = GroundAllPredicates();
+                ISet<Predicate> lGrounded = GroundAllPredicates();
                 foreach (GroundedPredicate gp in lGrounded)
                 {
                     sw.Write("(axioms-applied-" + gp.Name);
@@ -1961,11 +1961,11 @@ namespace CPORLib.PlanningModel
             sw.WriteLine(")");
         }
 
-        private List<Constant> CreateTaggedConstants(Dictionary<string, List<Predicate>> dTags)
+        private List<Constant> CreateTaggedConstants(Dictionary<string, ISet<Predicate>> dTags)
         {
             List<Constant> lConstants = new List<Constant>(Constants);
          
-            foreach (KeyValuePair<string, List<Predicate>> p in dTags)
+            foreach (KeyValuePair<string, ISet<Predicate>> p in dTags)
             {
                 lConstants.Add(new Constant(Utilities.TAG, p.Key));
             }
@@ -1976,12 +1976,12 @@ namespace CPORLib.PlanningModel
         }
 
 
-        private void WriteConstants(StreamWriter sw, Dictionary<string, List<Predicate>> dTags)
+        private void WriteConstants(StreamWriter sw, Dictionary<string, ISet<Predicate>> dTags)
         {
             sw.WriteLine("(:constants");
             foreach (Constant c in Constants)
                 sw.WriteLine(" " + c.FullString());
-            foreach (KeyValuePair<string, List<Predicate>> p in dTags)
+            foreach (KeyValuePair<string, ISet<Predicate>> p in dTags)
             {
                 sw.Write(" " + p.Key + " - " + Utilities.TAG + " ;");
                 foreach (Predicate pred in p.Value)
@@ -2100,7 +2100,7 @@ namespace CPORLib.PlanningModel
             }
             return dBindings;
         }
-        public PlanningAction GroundActionByName(string[] asAction, IEnumerable<Predicate> lPredicates, bool bContainsNegations)
+        public PlanningAction GroundActionByName(string[] asAction, ISet<Predicate> lPredicates, bool bContainsNegations)
         {
             string sActionName = asAction[0];
             PlanningAction a = GetActionByName(sActionName);
@@ -2162,7 +2162,7 @@ namespace CPORLib.PlanningModel
             return aGrounded;
         }
 
-        public void GroundPredicate(ParametrizedPredicate pp, Dictionary<Parameter, Constant> dBindings, List<Argument> lRemaining, HashSet<GroundedPredicate> lGrounded)
+        public void GroundPredicate(ParametrizedPredicate pp, Dictionary<Parameter, Constant> dBindings, List<Argument> lRemaining, HashSet<Predicate> lGrounded)
         {
             if (lRemaining.Count == 0)
             {
@@ -2194,14 +2194,14 @@ namespace CPORLib.PlanningModel
                 }
             }
         }
-        public HashSet<GroundedPredicate> GroundAllPredicates()
+        public ISet<Predicate> GroundAllPredicates()
         {
             HashSet<string> lExcludePredicateNames = new HashSet<string>();
             return GroundAllPredicates(lExcludePredicateNames);
         }
-        public HashSet<GroundedPredicate> GroundAllPredicates(HashSet<string> lExcludePredicateNames)
+        public ISet<Predicate> GroundAllPredicates(HashSet<string> lExcludePredicateNames)
         {
-            HashSet<GroundedPredicate> lGrounded = new HashSet<GroundedPredicate>();
+            HashSet<Predicate> lGrounded = new HashSet<Predicate>();
             foreach (Predicate p in Predicates)
             {
                 if (!lExcludePredicateNames.Contains(p.Name))
@@ -2219,7 +2219,7 @@ namespace CPORLib.PlanningModel
             return lGrounded;
         }
 
-        public List<PlanningAction> GroundAllActions(List<PlanningAction> lActions, IEnumerable<Predicate> lPredicates, bool bContainsNegations, bool bCheckConsistency)
+        public List<PlanningAction> GroundAllActions(List<PlanningAction> lActions, ISet<Predicate> lPredicates, bool bContainsNegations, bool bCheckConsistency)
         {
             List<PlanningAction> lGrounded = new List<PlanningAction>();
             Dictionary<string, Constant> dBindings = new Dictionary<string, Constant>();
@@ -2260,7 +2260,7 @@ namespace CPORLib.PlanningModel
 
 
 
-        public List<PlanningAction> GroundAllActions(IEnumerable<Predicate> lPredicates, bool bContainsNegations)
+        public List<PlanningAction> GroundAllActions(ISet<Predicate> lPredicates, bool bContainsNegations)
         {
             return GroundAllActions(Actions, lPredicates, bContainsNegations, true);
         }
@@ -2429,7 +2429,7 @@ namespace CPORLib.PlanningModel
 
 
 
-        public List<PlanningAction> GroundAllActuationActions(IEnumerable<Predicate> lPredicates, bool bContainsNegations)
+        public List<PlanningAction> GroundAllActuationActions(ISet<Predicate> lPredicates, bool bContainsNegations)
         {
             List<PlanningAction> lGrounded = new List<PlanningAction>();
             Dictionary<Parameter, Constant> dBindings = new Dictionary<Parameter, Constant>();
@@ -2467,7 +2467,7 @@ namespace CPORLib.PlanningModel
         }
 
 
-        public List<PlanningAction> GroundAllObservationActions(IEnumerable<Predicate> lPredicates, bool bContainsNegations)
+        public List<PlanningAction> GroundAllObservationActions(ISet<Predicate> lPredicates, bool bContainsNegations)
         {
             List<PlanningAction> lGrounded = new List<PlanningAction>();
             Dictionary<Parameter, Constant> dBindings = new Dictionary<Parameter, Constant>();
@@ -2522,7 +2522,7 @@ namespace CPORLib.PlanningModel
 
         private void GroundAction(ParametrizedAction pa, List<Constant> lConstants,
             List<Parameter> lToBind, Dictionary<Parameter, Constant> dBindings,
-            List<PlanningAction> lGrounded, IEnumerable<Predicate> lPredicates, bool bContainsNegations, bool bCheckConsistency)
+            List<PlanningAction> lGrounded, ISet<Predicate> lPredicates, bool bContainsNegations, bool bCheckConsistency)
         {
             Formula fGroundedPreconditions = null;
             if (lToBind.Count > 0)
@@ -2561,8 +2561,8 @@ namespace CPORLib.PlanningModel
                         aGrounded.SetEffects(pa.Effects.Ground(dBindings));
                     if (pa.Observe != null)
                         aGrounded.Observe = pa.Observe.Ground(dBindings);
-                    if ((pa.Preconditions == null || !aGrounded.Preconditions.IsFalse(new List<Predicate>())) &&
-                        (aGrounded.Effects == null || !aGrounded.Effects.IsFalse(new List<Predicate>())))
+                    if ((pa.Preconditions == null || !aGrounded.Preconditions.IsFalse(new HashSet<Predicate>())) &&
+                        (aGrounded.Effects == null || !aGrounded.Effects.IsFalse(new HashSet<Predicate>())))
                         lGrounded.Add(aGrounded);
                 }
             }
@@ -2570,7 +2570,7 @@ namespace CPORLib.PlanningModel
 
         private void GroundAction(ParametrizedAction pa, List<Constant> lConstants,
             List<Parameter> lToBind,
-            List<PlanningAction> lGrounded, IEnumerable<Predicate> lPredicates, bool bContainsNegations, bool bCheckConsistency)
+            List<PlanningAction> lGrounded, ISet<Predicate> lPredicates, bool bContainsNegations, bool bCheckConsistency)
         {
             Formula fGroundedPreconditions = null;
             List<Predicate> lPre = new List<Predicate>();
@@ -2592,8 +2592,8 @@ namespace CPORLib.PlanningModel
                         aGrounded.SetEffects(pa.Effects.Ground(dBindings));
                     if (pa.Observe != null)
                         aGrounded.Observe = pa.Observe.Ground(dBindings);
-                    if ((pa.Preconditions == null || !aGrounded.Preconditions.IsFalse(new List<Predicate>())) &&
-                        (aGrounded.Effects == null || !aGrounded.Effects.IsFalse(new List<Predicate>())))
+                    if ((pa.Preconditions == null || !aGrounded.Preconditions.IsFalse(new HashSet<Predicate>())) &&
+                        (aGrounded.Effects == null || !aGrounded.Effects.IsFalse(new HashSet<Predicate>())))
                         lGrounded.Add(aGrounded);
                 }
             }
@@ -2626,7 +2626,7 @@ namespace CPORLib.PlanningModel
 
 
         private void FindValidBindings(List<Parameter> lToBind, List<Dictionary<Parameter, Constant>> lBindings, Dictionary<Parameter, Constant> dBinding,
-            List<Predicate> lPreconditions, IEnumerable<Predicate> lPredicates, bool bContainsNegations)
+            List<Predicate> lPreconditions, ISet<Predicate> lPredicates, bool bContainsNegations)
         {
             if (lToBind.Count == 0 || lPreconditions.Count == 0)
             {
@@ -2696,7 +2696,7 @@ namespace CPORLib.PlanningModel
         }
 
 
-        private List<Dictionary<Parameter, Constant>> FindValidBindings(List<Parameter> lToBind, List<Predicate> lPreconditions, IEnumerable<Predicate> lPredicates, bool bContainsNegations)
+        private List<Dictionary<Parameter, Constant>> FindValidBindings(List<Parameter> lToBind, List<Predicate> lPreconditions, ISet<Predicate> lPredicates, bool bContainsNegations)
         {
             List<Dictionary<Parameter, Constant>> lBindings = new List<Dictionary<Parameter, Constant>>();
             Dictionary<Parameter, Constant> dBinding = new Dictionary<Parameter, Constant>();
@@ -2721,7 +2721,7 @@ namespace CPORLib.PlanningModel
 
         private void GroundAction(ParametrizedAction pa, List<Constant> lConstants,
             List<Predicate> lToBind, Dictionary<Parameter, Constant> dBindings,
-            List<PlanningAction> lGrounded, IEnumerable<Predicate> lPredicates, bool bContainsNegations, bool bCheckConsistency)
+            List<PlanningAction> lGrounded, ISet<Predicate> lPredicates, bool bContainsNegations, bool bCheckConsistency)
         {
             if (lToBind.Count > 0)
             {
@@ -2863,7 +2863,7 @@ namespace CPORLib.PlanningModel
         {
             if (a.Effects == null)
                 return true;
-            HashSet<Predicate> lApplicableEffects = a.GetApplicableEffects(lGroundedPredicates, false).GetAllPredicates();
+            ISet<Predicate> lApplicableEffects = a.GetApplicableEffects(lGroundedPredicates, false).GetAllPredicates();
             foreach (GroundedPredicate gp in lApplicableEffects)
             {
                 if (gp == Utilities.FALSE_PREDICATE)
@@ -3040,7 +3040,7 @@ namespace CPORLib.PlanningModel
                     }
                     if (a.Observe != null)
                     {
-                        HashSet<Predicate> lPredicates = a.Observe.GetAllPredicates();
+                        ISet<Predicate> lPredicates = a.Observe.GetAllPredicates();
                         foreach (Predicate p in lPredicates)
                         {
                             if (m_lAlwaysKnown.Contains(p.Name))
@@ -3382,147 +3382,6 @@ namespace CPORLib.PlanningModel
             Actions = lFiltered;
         }
 
-        public Dictionary<Predicate, HashSet<Predicate>> IdentifyInvariants(List<PlanningAction> lActions)
-        {
-            Dictionary<Predicate, HashSet<Predicate>> dCandidateMutex = new Dictionary<Predicate, HashSet<Predicate>>();
-            Dictionary<Predicate, HashSet<Predicate>> dMutex = new Dictionary<Predicate, HashSet<Predicate>>();
-            Dictionary<Predicate, HashSet<Predicate>> dNotMutex = new Dictionary<Predicate, HashSet<Predicate>>();
-            foreach (PlanningAction a in lActions)
-            {
-                HashSet<Predicate> lPreconditions = a.Preconditions.GetAllPredicates();
-                HashSet<Predicate> lEffects = a.GetMandatoryEffects();
-                foreach (Predicate p in lEffects)
-                {
-                    if (p.Negation == false)
-                    {
-                        foreach (Predicate pTag in lEffects)
-                        {
-                            if (!pTag.Equals(p) && pTag.Negation == false)
-                            {
-                                if (!dNotMutex.ContainsKey(p))
-                                    dNotMutex[p] = new HashSet<Predicate>();
-                                dNotMutex[p].Add(pTag);
-                                if (!dNotMutex.ContainsKey(pTag))
-                                    dNotMutex[pTag] = new HashSet<Predicate>();
-                                dNotMutex[p].Add(p);
-                            }
-                        }
-                    }
-                }
-                foreach (Predicate p in lPreconditions)
-                {
-                    Predicate pNegate = p.Negate();
-                    if (lEffects.Contains(pNegate))
-                    {
-                        HashSet<Predicate> lCandidates = new HashSet<Predicate>();
-                        foreach (Predicate pTag in lEffects)
-                        {
-                            //if (pTag.Name == p.Name && pTag.Negation == p.Negation && !pTag.Equals(p))
-                            if (p.Similarity(pTag) > 0)
-                            {
-                                lCandidates.Add(pTag);
-                                //if (p.ToString() == "(in-stack B2 S0)" || pTag.ToString() == "(clear B0 S0)")
-                                //    Debug.Write("*");
-
-                            }
-                        }
-                        if (!dCandidateMutex.ContainsKey(p))
-                            dCandidateMutex[p] = lCandidates;
-                        else
-                            dCandidateMutex[p].UnionWith(lCandidates);
-                    }
-
-                }
-
-            }
-            foreach (PlanningAction a in lActions)
-            {
-                List<Predicate> lEffects = new List<Predicate>(a.GetMandatoryEffects());
-                for (int i = 0; i < lEffects.Count; i++)
-                {
-                    for (int j = i + 1; j < lEffects.Count; j++)
-                    {
-                        if (dCandidateMutex.ContainsKey(lEffects[i]))
-                            dCandidateMutex[lEffects[i]].Remove(lEffects[j]);
-                        if (dCandidateMutex.ContainsKey(lEffects[j]))
-                            dCandidateMutex[lEffects[j]].Remove(lEffects[i]);
-                    }
-                }
-
-            }
-            foreach (Predicate p in dCandidateMutex.Keys)
-            {
-                dMutex[p] = new HashSet<Predicate>();
-                foreach (Predicate pTag in dCandidateMutex[p])
-                {
-                    if (dCandidateMutex[pTag].Contains(p))
-                        dMutex[p].Add(pTag);
-                }
-
-            }
-            List<HashSet<Predicate>> lMutexClosure = new List<HashSet<Predicate>>();
-            foreach (Predicate p in dMutex.Keys)
-            {
-                foreach (Predicate pMutex in dMutex[p])
-                {
-                    HashSet<Predicate> hsMutex = new HashSet<Predicate>();
-                    hsMutex.Add(p);
-                    hsMutex.Add(pMutex);
-                    Dictionary<Argument, HashSet<Predicate>> dInvariants = FindInvariantGroups(p, hsMutex);
-
-                    foreach (KeyValuePair<Argument, HashSet<Predicate>> pair in dInvariants)
-                    {
-                        if (pair.Value.Count > 1)
-                        {
-                            HashSet<Predicate> hsClosure = new HashSet<Predicate>(pair.Value);
-                            IdentifyMutexClosure(p, pair.Key, pMutex, dMutex, dNotMutex, hsClosure);
-                            //                            if (p.Name == "in-stack" || pMutex.Name == "in-stack")
-                            //                                Debug.Write("*");
-                            lMutexClosure.Add(hsClosure);
-                        }
-                    }
-                }
-            }
-            /*
-            foreach (Predicate p in dMutex.Keys)
-            {
-                HashSet<Predicate> hsMutex = dMutex[p];
-                Dictionary<Argument, HashSet<Predicate>> dInvariants = FindInvariantGroups(p, hsMutex);
-
-                foreach (KeyValuePair<Argument, HashSet<Predicate>> pair in dInvariants)
-                {
-                    HashSet<Predicate> hsClosure = new HashSet<Predicate>(pair.Value);
-                    hsClosure.Add(p);
-                    foreach (Predicate pTag in pair.Value)
-                    {
-                        IdentifyMutexClosure(p, pair.Key, pTag, dMutex, hsClosure);
-                    }
-                    lMutexClosure.Add(hsClosure);
-                }
-            }
-            */
-            Dictionary<Predicate, HashSet<Predicate>> dMutexClosure = new Dictionary<Predicate, HashSet<Predicate>>();
-            foreach (HashSet<Predicate> hsClosure in lMutexClosure)
-            {
-                List<Predicate> lClosure = new List<Predicate>(hsClosure);
-                for (int i = 0; i < lClosure.Count; i++)
-                {
-                    if (!dMutexClosure.ContainsKey(lClosure[i]))
-                        dMutexClosure[lClosure[i]] = new HashSet<Predicate>();
-                    for (int j = i + 1; j < hsClosure.Count; j++)
-                    {
-                        if (!dMutexClosure.ContainsKey(lClosure[j]))
-                            dMutexClosure[lClosure[j]] = new HashSet<Predicate>();
-                        dMutexClosure[lClosure[i]].Add(lClosure[j]);
-                        dMutexClosure[lClosure[j]].Add(lClosure[i]);
-                    }
-                }
-            }
-
-            return dMutexClosure;
-        }
-
-
         public class Pair<T>
         {
             public T T1 { get; private set; }
@@ -3549,123 +3408,6 @@ namespace CPORLib.PlanningModel
                     m_iHash = T1.GetHashCode() + T2.GetHashCode();
                 return m_iHash;
             }
-        }
-
-        public Dictionary<Predicate, HashSet<Predicate>> IdentifyInvariantsGraphplan(List<PlanningAction> lActions)
-        {
-
-            HashSet<Pair<PlanningAction>> hsActionMutex = new HashSet<Pair<PlanningAction>>();
-            HashSet<Pair<Predicate>> hsPropositionMutex = new HashSet<Pair<Predicate>>();
-            Dictionary<Predicate, HashSet<PlanningAction>> dMapEffectsToActions = new Dictionary<Predicate, HashSet<PlanningAction>>();
-            for (int iAction = 0; iAction < lActions.Count; iAction++)
-            {
-                PlanningAction a = lActions[iAction];
-                HashSet<Predicate> lPreconditions = a.Preconditions.GetAllPredicates();
-                HashSet<Predicate> lEffects = a.GetMandatoryEffects();
-                for (int iOtherAction = iAction + 1; iOtherAction < lActions.Count; iOtherAction++)
-                {
-                    PlanningAction aOther = lActions[iOtherAction];
-                    HashSet<Predicate> lOtherPreconditions = aOther.Preconditions.GetAllPredicates();
-                    HashSet<Predicate> lOtherEffects = aOther.GetMandatoryEffects();
-                    bool bMutex = false;
-                    foreach (Predicate p in lPreconditions)
-                    {
-                        Predicate pNegate = p.Negate();
-                        if (lOtherPreconditions.Contains(pNegate))
-                        {
-                            bMutex = true;
-                            break;
-                        }
-                    }
-                    if (!bMutex)
-                    {
-                        foreach (Predicate p in lEffects)
-                        {
-                            Predicate pNegate = p.Negate();
-                            if (lOtherPreconditions.Contains(pNegate) || lOtherEffects.Contains(pNegate))
-                            {
-                                bMutex = true;
-                                break;
-                            }
-                        }
-                    }
-                    if (!bMutex)
-                    {
-                        foreach (Predicate p in lOtherEffects)
-                        {
-                            Predicate pNegate = p.Negate();
-                            if (lPreconditions.Contains(pNegate))
-                            {
-                                bMutex = true;
-                                break;
-                            }
-                        }
-                    }
-                    if (bMutex)
-                        hsActionMutex.Add(new Pair<PlanningAction>(a, aOther));
-                }
-            }
-            return null;
-        }
-
-        private HashSet<Argument> FindInvariants(Predicate p, HashSet<Predicate> hsMutex)
-        {
-            HashSet<Argument> hsInvariants = new HashSet<Argument>();
-            if (p is GroundedPredicate)
-            {
-                GroundedPredicate gpGrounded = (GroundedPredicate)p;
-                for (int i = 0; i < gpGrounded.Constants.Count; i++)
-                {
-                    Constant c = gpGrounded.Constants[i];
-                    bool bInAll = true;
-                    foreach (GroundedPredicate gp in hsMutex)
-                    {
-                        if (!gp.Constants[i].Equals(c))
-                        {
-                            bInAll = false;
-                            break;
-                        }
-                    }
-                    if (bInAll)
-                        hsInvariants.Add(c);
-                }
-            }
-            return hsInvariants;
-        }
-
-        private Dictionary<Argument, HashSet<Predicate>> FindInvariantGroups(Predicate p, HashSet<Predicate> hsMutex)
-        {
-            Dictionary<Argument, HashSet<Predicate>> dInvariantGroups = new Dictionary<Argument, HashSet<Predicate>>();
-            if (p is GroundedPredicate)
-            {
-                GroundedPredicate gpGrounded = (GroundedPredicate)p;
-                for (int i = 0; i < gpGrounded.Constants.Count; i++)
-                {
-                    HashSet<Predicate> hsInvariants = new HashSet<Predicate>();
-                    Constant c = gpGrounded.Constants[i];
-                    foreach (GroundedPredicate gp in hsMutex)
-                    {
-                        if (gp.Name == p.Name)
-                        {
-                            if (gp.Constants[i].Equals(c))
-                            {
-                                hsInvariants.Add(gp);
-                            }
-                        }
-                        else
-                        {
-                            if (gp.Constants.Contains(c))
-                            {
-                                hsInvariants.Add(gp);
-                            }
-
-                        }
-                    }
-                    if (hsInvariants.Count > 0)
-                        dInvariantGroups[c] = hsInvariants;
-                }
-            }
-            return dInvariantGroups;
         }
 
         private void IdentifyMutexClosure(Predicate pOrg, Argument aInvariant, Predicate pCurrent, Dictionary<Predicate, HashSet<Predicate>> dMutex, Dictionary<Predicate, HashSet<Predicate>> dNotMutex, HashSet<Predicate> hsClosure)

@@ -1411,6 +1411,10 @@ namespace CPORLib.FFCS
         {
             get
             {
+                if (Array[i] == null)
+                {
+                    Array[i] = new T();
+                }
                 return Array[i];
             }
             set
@@ -1426,8 +1430,10 @@ namespace CPORLib.FFCS
         public InitializedArray(int iSize)
         {
             Array = new T[iSize];
+            /*
             for (int j = 0; j < iSize; j++)
                 Array[j] = new T();
+            */
         }
 
         public static implicit operator T[](InitializedArray<T> a)

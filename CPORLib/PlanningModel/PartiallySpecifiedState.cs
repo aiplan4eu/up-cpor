@@ -19,10 +19,10 @@ namespace CPORLib.PlanningModel
         public HashSet<Predicate> mayChanged = null;
         public Dictionary<GroundedPredicate, Formula> regressionFormula = null;
         public int countOfActionFromRoot = 0;
-        public IEnumerable<Predicate> Observed { get { return m_lObserved; } }
-        public IEnumerable<Predicate> Hidden { get { return m_lHidden; } }
-        public HashSet<Predicate> m_lObserved;
-        protected HashSet<Predicate> m_lHidden;
+        public GenericArraySet<Predicate> Observed { get { return m_lObserved; } }
+        public GenericArraySet<Predicate> Hidden { get { return m_lHidden; } }
+        public GenericArraySet<Predicate> m_lObserved;
+        protected GenericArraySet<Predicate> m_lHidden;
         public List<Action> AvailableActions { get; protected set; }
         private PartiallySpecifiedState m_sPredecessor;
 
@@ -60,8 +60,11 @@ namespace CPORLib.PlanningModel
         public List<string> History { get { return m_lHistory; } }
         public int ChildCount { get; private set; }
 
-        public HashSet<Predicate> m_lOfflinePredicatesKnown;
-        public HashSet<Predicate> m_lOfflinePredicatesUnknown;
+        //public HashSet<Predicate> m_lOfflinePredicatesKnown;
+        public GenericArraySet<Predicate> m_lOfflinePredicatesKnown;
+        //public HashSet<Predicate> m_lOfflinePredicatesUnknown;
+        public GenericArraySet<Predicate> m_lOfflinePredicatesUnknown;
+
         public Dictionary<GroundedPredicate, List<HashSet<GroundedPredicate>>> m_dRequiredObservationsForReasoning;
 
         public bool MishapType { get; set; }
@@ -101,7 +104,7 @@ namespace CPORLib.PlanningModel
             ChildCount = original.ChildCount;
             if (original.m_lObserved != null)
             {
-                m_lObserved = new HashSet<Predicate>();
+                m_lObserved = new GenericArraySet<Predicate>();
                 foreach (Predicate p in original.m_lObserved)
                 {
                     m_lObserved.Add(p);
@@ -112,7 +115,7 @@ namespace CPORLib.PlanningModel
 
             if (original.m_lHidden != null)
             {
-                m_lHidden = new HashSet<Predicate>();
+                m_lHidden = new GenericArraySet<Predicate>();
                 foreach (Predicate p in original.m_lHidden)
                 {
                     m_lHidden.Add(p);
@@ -282,13 +285,13 @@ namespace CPORLib.PlanningModel
 
             Problem = bs.Problem;
             m_sPredecessor = null;
-            m_lObserved = new HashSet<Predicate>(bs.Observed);
+            m_lObserved = new GenericArraySet<Predicate>(bs.Observed);
             AvailableActions = new List<Action>();
             UnderlyingEnvironmentState = bs.UnderlyingEnvironmentState;
             m_bsInitialBelief = bs;
             ChildCount = 0;
 
-            m_lHidden = new HashSet<Predicate>();
+            m_lHidden = new GenericArraySet<Predicate>();
             foreach (CompoundFormula cf in bs.Hidden)
             {
                 HashSet<Predicate> lCurrent = new HashSet<Predicate>();
@@ -346,8 +349,8 @@ namespace CPORLib.PlanningModel
             m_sPredecessor = sPredecessor;
 
             GeneratingAction = aGeneratingAction;
-            m_lObserved = new HashSet<Predicate>(sPredecessor.Observed);
-            m_lHidden = new HashSet<Predicate>(sPredecessor.m_lHidden);
+            m_lObserved = new GenericArraySet<Predicate>(sPredecessor.Observed);
+            m_lHidden = new GenericArraySet<Predicate>(sPredecessor.m_lHidden);
             //ForgetPotentialEffects();//Should not be done here, only in the "apply"
 
             FunctionValues = new Dictionary<string, double>();
@@ -1555,7 +1558,7 @@ namespace CPORLib.PlanningModel
 
         private void RemoveDuplicateObserved(HashSet<Predicate> hObservedAtNextStep)
         {
-            HashSet<Predicate> hsFiltered = new HashSet<Predicate>();
+            GenericArraySet<Predicate> hsFiltered = new GenericArraySet<Predicate>();
             foreach (Predicate p in Observed)
             {
                 if (!hObservedAtNextStep.Contains(p))
@@ -1585,7 +1588,7 @@ namespace CPORLib.PlanningModel
                 List<CompoundFormula> lAddsP = new List<CompoundFormula>(), lRemovesP = new List<CompoundFormula>();
                 foreach (CompoundFormula cf in GeneratingAction.GetConditions())
                 {
-                    HashSet<Predicate> lEffects = cf.Operands[1].GetAllPredicates();
+                    ISet<Predicate> lEffects = cf.Operands[1].GetAllPredicates();
                     if (lEffects.Contains(pHidden))
                     {
                         lAddsP.Add(cf);
@@ -1603,7 +1606,7 @@ namespace CPORLib.PlanningModel
                 }
                 if (lRemovesP.Count > 0)
                 {
-                    List<Predicate> lObserved = new List<Predicate>();
+                    ISet<Predicate> lObserved = new HashSet<Predicate>();
                     lObserved.Add(pHidden);
                     foreach (CompoundFormula cf in lRemovesP)
                     {
@@ -2194,8 +2197,8 @@ namespace CPORLib.PlanningModel
                 //maybe already intialized due to an identical closed state
                 if (m_lOfflinePredicatesKnown == null)
                 {
-                    m_lOfflinePredicatesKnown = new HashSet<Predicate>();
-                    m_lOfflinePredicatesUnknown = new HashSet<Predicate>();
+                    m_lOfflinePredicatesKnown = new GenericArraySet<Predicate>();
+                    m_lOfflinePredicatesUnknown = new GenericArraySet<Predicate>();
                     //m_dRequiredObservationsForReasoning = new Dictionary<GroundedPredicate, List<HashSet<GroundedPredicate>>>();
                 }
 
@@ -2203,7 +2206,8 @@ namespace CPORLib.PlanningModel
                 //    Debug.WriteLine("*");
                 if (hsDeadEndList != null)
                 {
-                    m_lOfflinePredicatesKnown = hsDeadEndList;
+                    foreach (Predicate p in hsDeadEndList)
+                        m_lOfflinePredicatesKnown.Add(p);
                     Plan.DeadEnd = true;
 
                 }
@@ -2212,7 +2216,8 @@ namespace CPORLib.PlanningModel
                     if (IsGoalState())
                     {
                         Plan.Goal = true;
-                        m_lOfflinePredicatesKnown = Problem.Goal.GetAllPredicates();
+                        
+                        m_lOfflinePredicatesKnown = new GenericArraySet<Predicate>(Problem.Goal.GetAllPredicates());
                     }
                 }
 
@@ -2286,8 +2291,8 @@ namespace CPORLib.PlanningModel
             if (m_lOfflinePredicatesKnown == null)
             {
                 bChanged = true;
-                m_lOfflinePredicatesKnown = new HashSet<Predicate>();
-                m_lOfflinePredicatesUnknown = new HashSet<Predicate>();
+                m_lOfflinePredicatesKnown = new GenericArraySet<Predicate>();
+                m_lOfflinePredicatesUnknown = new GenericArraySet<Predicate>();
             }
 
             Action a = null;
@@ -2318,8 +2323,8 @@ namespace CPORLib.PlanningModel
                 if (psParent.m_lOfflinePredicatesUnknown == null)
                 {
                     bChanged = true;
-                    psParent.m_lOfflinePredicatesUnknown = new HashSet<Predicate>(m_lOfflinePredicatesUnknown);
-                    psParent.m_lOfflinePredicatesKnown = new HashSet<Predicate>();
+                    psParent.m_lOfflinePredicatesUnknown = new GenericArraySet<Predicate>(m_lOfflinePredicatesUnknown);
+                    psParent.m_lOfflinePredicatesKnown = new GenericArraySet<Predicate>();
                 }
                 HashSet<Predicate> lMandatoryEffects = a.GetMandatoryEffects();
                 foreach (Predicate p in m_lOfflinePredicatesKnown)
@@ -2334,7 +2339,7 @@ namespace CPORLib.PlanningModel
                         }
                     }
                 }
-                HashSet<Predicate> hsPreconditions = new HashSet<Predicate>();
+                ISet<Predicate> hsPreconditions = new HashSet<Predicate>();
                 if (a.Preconditions != null)
                     hsPreconditions = a.Preconditions.GetAllPredicates();
 
@@ -2401,7 +2406,7 @@ namespace CPORLib.PlanningModel
 
                     if (psParent.m_lOfflinePredicatesUnknown == null)
                     {
-                        psParent.m_lOfflinePredicatesUnknown = new HashSet<Predicate>(psParent.m_pssFirstChild.m_lOfflinePredicatesUnknown);
+                        psParent.m_lOfflinePredicatesUnknown = new GenericArraySet<Predicate>(psParent.m_pssFirstChild.m_lOfflinePredicatesUnknown);
                         bChanged = true;
                     }
                     psParent.m_lOfflinePredicatesUnknown.UnionWith(m_lOfflinePredicatesUnknown);
@@ -2409,7 +2414,7 @@ namespace CPORLib.PlanningModel
                         bChanged = true;
 
                     if (psParent.m_lOfflinePredicatesKnown == null)
-                        psParent.m_lOfflinePredicatesKnown = new HashSet<Predicate>();
+                        psParent.m_lOfflinePredicatesKnown = new GenericArraySet<Predicate>();
 
                     HashSet<Predicate> hsAllRelevantPredicates = new HashSet<Predicate>(m_lOfflinePredicatesKnown);
                     hsAllRelevantPredicates.UnionWith(psParent.m_pssFirstChild.m_lOfflinePredicatesKnown);
@@ -2476,8 +2481,8 @@ namespace CPORLib.PlanningModel
             if (psCurrent.m_lOfflinePredicatesKnown == null)
             {
                 bChanged = true;
-                psCurrent.m_lOfflinePredicatesKnown = new HashSet<Predicate>();
-                psCurrent.m_lOfflinePredicatesUnknown = new HashSet<Predicate>();
+                psCurrent.m_lOfflinePredicatesKnown = new GenericArraySet<Predicate>();
+                psCurrent.m_lOfflinePredicatesUnknown = new GenericArraySet<Predicate>();
             }
 
             /*
@@ -2539,8 +2544,8 @@ namespace CPORLib.PlanningModel
                     if (psParent.m_lOfflinePredicatesUnknown == null)
                     {
                         bChanged = true;
-                        psParent.m_lOfflinePredicatesUnknown = new HashSet<Predicate>(psCurrent.m_lOfflinePredicatesUnknown);
-                        psParent.m_lOfflinePredicatesKnown = new HashSet<Predicate>();
+                        psParent.m_lOfflinePredicatesUnknown = new GenericArraySet<Predicate>(psCurrent.m_lOfflinePredicatesUnknown);
+                        psParent.m_lOfflinePredicatesKnown = new GenericArraySet<Predicate>();
                     }
                     HashSet<Predicate> lMandatoryEffects = a.GetMandatoryEffects();
                     foreach (Predicate p in psCurrent.m_lOfflinePredicatesKnown)
@@ -2555,7 +2560,7 @@ namespace CPORLib.PlanningModel
                             }
                         }
                     }
-                    HashSet<Predicate> hsPreconditions = new HashSet<Predicate>();
+                    ISet<Predicate> hsPreconditions = new HashSet<Predicate>();
                     if (a.Preconditions != null)
                         hsPreconditions = a.Preconditions.GetAllPredicates();
 
@@ -2622,7 +2627,7 @@ namespace CPORLib.PlanningModel
 
                         if (psParent.m_lOfflinePredicatesUnknown == null)
                         {
-                            psParent.m_lOfflinePredicatesUnknown = new HashSet<Predicate>(psParent.m_pssFirstChild.m_lOfflinePredicatesUnknown);
+                            psParent.m_lOfflinePredicatesUnknown = new GenericArraySet<Predicate>(psParent.m_pssFirstChild.m_lOfflinePredicatesUnknown);
                             bChanged = true;
                         }
                         psParent.m_lOfflinePredicatesUnknown.UnionWith(psCurrent.m_lOfflinePredicatesUnknown);
@@ -2630,7 +2635,7 @@ namespace CPORLib.PlanningModel
                             bChanged = true;
 
                         if (psParent.m_lOfflinePredicatesKnown == null)
-                            psParent.m_lOfflinePredicatesKnown = new HashSet<Predicate>();
+                            psParent.m_lOfflinePredicatesKnown = new GenericArraySet<Predicate>();
 
                         HashSet<Predicate> hsAllRelevantPredicates = new HashSet<Predicate>(psCurrent.m_lOfflinePredicatesKnown);
                         hsAllRelevantPredicates.UnionWith(psParent.m_pssFirstChild.m_lOfflinePredicatesKnown);
@@ -2718,8 +2723,8 @@ namespace CPORLib.PlanningModel
             if (m_lOfflinePredicatesKnown == null)
             {
                 bChanged = true;
-                m_lOfflinePredicatesKnown = new HashSet<Predicate>();
-                m_lOfflinePredicatesUnknown = new HashSet<Predicate>();
+                m_lOfflinePredicatesKnown = new GenericArraySet<Predicate>();
+                m_lOfflinePredicatesUnknown = new GenericArraySet<Predicate>();
                 //m_dRequiredObservationsForReasoning = new Dictionary<GroundedPredicate, List<HashSet<GroundedPredicate>>>();
             }
 
@@ -2753,8 +2758,8 @@ namespace CPORLib.PlanningModel
                 if (psParent.m_lOfflinePredicatesUnknown == null)
                 {
                     bChanged = true;
-                    psParent.m_lOfflinePredicatesUnknown = new HashSet<Predicate>(m_lOfflinePredicatesUnknown);
-                    psParent.m_lOfflinePredicatesKnown = new HashSet<Predicate>();
+                    psParent.m_lOfflinePredicatesUnknown = new GenericArraySet<Predicate>(m_lOfflinePredicatesUnknown);
+                    psParent.m_lOfflinePredicatesKnown = new GenericArraySet<Predicate>();
                 }
                 HashSet<Predicate> lMandatoryEffects = a.GetMandatoryEffects();
                 foreach (Predicate p in m_lOfflinePredicatesKnown)
@@ -2769,7 +2774,7 @@ namespace CPORLib.PlanningModel
                         }
                     }
                 }
-                HashSet<Predicate> hsPreconditions = new HashSet<Predicate>();
+                ISet<Predicate> hsPreconditions = new HashSet<Predicate>();
                 if (a.Preconditions != null)
                     hsPreconditions = a.Preconditions.GetAllPredicates();
 
@@ -2829,7 +2834,7 @@ namespace CPORLib.PlanningModel
 
                 if (psParent.m_lOfflinePredicatesUnknown == null)
                 {
-                    psParent.m_lOfflinePredicatesUnknown = new HashSet<Predicate>(psParent.m_pssFirstChild.m_lOfflinePredicatesUnknown);
+                    psParent.m_lOfflinePredicatesUnknown = new GenericArraySet<Predicate>(psParent.m_pssFirstChild.m_lOfflinePredicatesUnknown);
                     bChanged = true;
                 }
                 psParent.m_lOfflinePredicatesUnknown.UnionWith(m_lOfflinePredicatesUnknown);
@@ -2837,7 +2842,7 @@ namespace CPORLib.PlanningModel
                     bChanged = true;
 
                 if (psParent.m_lOfflinePredicatesKnown == null)
-                    psParent.m_lOfflinePredicatesKnown = new HashSet<Predicate>();
+                    psParent.m_lOfflinePredicatesKnown = new GenericArraySet<Predicate>();
 
                 HashSet<Predicate> hsAllRelevantPredicates = new HashSet<Predicate>(m_lOfflinePredicatesKnown);
                 hsAllRelevantPredicates.UnionWith(psParent.m_pssFirstChild.m_lOfflinePredicatesKnown);
@@ -3032,16 +3037,16 @@ namespace CPORLib.PlanningModel
         }
 
 
-        public HashSet<Predicate> GetRelevantVariables(HashSet<Predicate> hsUnknown)
+        public ISet<Predicate> GetRelevantVariables(ISet<Predicate> hsUnknown)
         {
-            HashSet<Predicate> hsRelevant = new HashSet<Predicate>();
+            ISet<Predicate> hsRelevant = new HashSet<Predicate>();
             List<CompoundFormula> lHidden = new List<CompoundFormula>(m_bsInitialBelief.Hidden);
             for (int i = 0; i < lHidden.Count; i++)
             {
                 CompoundFormula cf = lHidden[i];
                 if (cf != null)
                 {
-                    HashSet<Predicate> hsPredicates = cf.GetAllPredicates();
+                    ISet<Predicate> hsPredicates = cf.GetAllPredicates();
                     foreach (Predicate p in hsPredicates)
                     {
                         if (!Problem.Domain.Observable(p))
@@ -3101,7 +3106,7 @@ namespace CPORLib.PlanningModel
             {
                 bool bKnownContained = pssClosed.m_lOfflinePredicatesKnown == null ||
                     pssClosed.m_lOfflinePredicatesKnown.Count == 0 ||
-                    pssClosed.m_lOfflinePredicatesKnown.IsSubsetOf(Observed);
+                    pssClosed.m_lOfflinePredicatesKnown.IsSubsetOf(m_lObserved);
                 if (bKnownContained && pssClosed.m_lOfflinePredicatesUnknown.Count == 0)
                 {
 
@@ -3117,7 +3122,7 @@ namespace CPORLib.PlanningModel
 
                 bool bUnknownContained = pssClosed.m_lOfflinePredicatesUnknown == null ||
                     pssClosed.m_lOfflinePredicatesUnknown.Count == 0 ||
-                    pssClosed.m_lOfflinePredicatesUnknown.IsSubsetOf(Hidden);
+                    pssClosed.m_lOfflinePredicatesUnknown.IsSubsetOf(m_lHidden);
 
                 if (bKnownContained && bUnknownContained)
                 {
@@ -3155,7 +3160,7 @@ namespace CPORLib.PlanningModel
             {
                 foreach (PartiallySpecifiedState pssClosed in dc)
                 {
-                    bool bKnownContained = pssClosed.m_lOfflinePredicatesKnown.Count == 0 || pssClosed.m_lOfflinePredicatesKnown.IsSubsetOf(Observed);
+                    bool bKnownContained = pssClosed.m_lOfflinePredicatesKnown.Count == 0 || pssClosed.m_lOfflinePredicatesKnown.IsSubsetOf(m_lObserved);
                     if (bKnownContained)
                         continue;//because we don't want the exact same - otherwise IsClosed would have identify it
                     /* probably will never happen
@@ -3180,7 +3185,7 @@ namespace CPORLib.PlanningModel
                             Debug.Write("*");
                     }
                     */
-                    bool bUnknownContained = pssClosed.m_lOfflinePredicatesUnknown.Count == 0 || pssClosed.m_lOfflinePredicatesUnknown.IsSubsetOf(Hidden);
+                    bool bUnknownContained = pssClosed.m_lOfflinePredicatesUnknown.Count == 0 || pssClosed.m_lOfflinePredicatesUnknown.IsSubsetOf(m_lHidden);
                     if (!bUnknownContained)
                         continue;
                     bool bHiddenKnownContained = true;

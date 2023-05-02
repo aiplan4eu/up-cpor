@@ -5,6 +5,13 @@ namespace CPORLib.LogicalUtilities
     public class GroundedPredicateFactory
     {
         private static Dictionary<string, GroundedPredicate> AllGrounded = new Dictionary<string, GroundedPredicate>();
+        private static int Count = 0;
+
+        public static void Reset()
+        {
+            AllGrounded = new Dictionary<string, GroundedPredicate>();
+            Count = 0;
+        }
 
         public static GroundedPredicate Get(string sName, List<Argument> lParameters, Dictionary<Parameter, Constant> dBindings, bool bNegation)
         {
@@ -43,9 +50,11 @@ namespace CPORLib.LogicalUtilities
             string sNotFullName = GetString(sName, lParameters, dBindings, !bNegation);
             gp.Cached = true;
             AllGrounded[sFullName] = gp;
+            Count++;
             GroundedPredicate gpNot = (GroundedPredicate)gp.Negate();
             gpNot.Cached = true;
             AllGrounded[sNotFullName] = gpNot;
+            Count++;
         }
     }
 }

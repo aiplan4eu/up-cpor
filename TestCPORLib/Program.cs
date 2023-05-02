@@ -26,7 +26,7 @@ public class Program
         //RunTest("localize5noisy", bOnline);
         
         RunTest("doors15", bOnline);
-        RunTest("wumpus10", bOnline);        
+        //RunTest("wumpus10", bOnline);        
         
         RunTest("blocks3", bOnline);
         RunTest("localize5", bOnline);

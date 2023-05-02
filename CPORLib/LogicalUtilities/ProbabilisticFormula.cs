@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using CPORLib.PlanningModel;
+using CPORLib.Tools;
 
 namespace CPORLib.LogicalUtilities
 {
@@ -35,17 +36,17 @@ namespace CPORLib.LogicalUtilities
             return s;
         }
 
-        public override bool IsTrueDeleteRelaxation(IEnumerable<Predicate> lKnown)
+        public override bool IsTrueDeleteRelaxation(ISet<Predicate> lKnown)
         {
             return false;
         }
 
-        public override bool IsTrue(IEnumerable<Predicate> lKnown, bool bContainsNegations)
+        public override bool IsTrue(ISet<Predicate> lKnown, bool bContainsNegations)
         {
             return false;
         }
 
-        public override bool IsFalse(IEnumerable<Predicate> lKnown, bool bContainsNegations)
+        public override bool IsFalse(ISet<Predicate> lKnown, bool bContainsNegations)
         {
             return false;
         }
@@ -71,13 +72,13 @@ namespace CPORLib.LogicalUtilities
             throw new NotImplementedException();
         }
 
-        public override void GetAllPredicates(HashSet<Predicate> lPredicates)
+        public override void GetAllPredicates(ISet<Predicate> lPredicates)
         {
             foreach (Formula f in Options)
                 f.GetAllPredicates(lPredicates);
         }
 
-        public override void GetAllEffectPredicates(HashSet<Predicate> lConditionalPredicates, HashSet<Predicate> lNonConditionalPredicates)
+        public override void GetAllEffectPredicates(ISet<Predicate> lConditionalPredicates, ISet<Predicate> lNonConditionalPredicates)
         {
             foreach (Formula f in Options)
                 f.GetAllEffectPredicates(lConditionalPredicates, lNonConditionalPredicates);
@@ -100,7 +101,7 @@ namespace CPORLib.LogicalUtilities
             return pf;
         }
 
-        public override bool ContainedIn(IEnumerable<Predicate> lPredicates, bool bContainsNegations)
+        public override bool ContainedIn(ISet<Predicate> lPredicates, bool bContainsNegations)
         {
             throw new NotImplementedException();
         }
@@ -129,7 +130,7 @@ namespace CPORLib.LogicalUtilities
             return pf;
         }
 
-        public override Formula Regress(PlanningAction a, IEnumerable<Predicate> lObserved)
+        public override Formula Regress(PlanningAction a, ISet<Predicate> lObserved)
         {
             throw new NotImplementedException();
         }
@@ -139,7 +140,7 @@ namespace CPORLib.LogicalUtilities
             throw new NotImplementedException();
         }
 
-        public override Formula Reduce(IEnumerable<Predicate> lKnown)
+        public override Formula Reduce(ISet<Predicate> lKnown)
         {
             ProbabilisticFormula pf = new ProbabilisticFormula();
             for (int i = 0; i < Options.Count; i++)
@@ -183,12 +184,12 @@ namespace CPORLib.LogicalUtilities
             throw new NotImplementedException();
         }
 
-        public override Formula RemoveImpossibleOptions(IEnumerable<Predicate> lObserved)
+        public override Formula RemoveImpossibleOptions(ISet<Predicate> lObserved)
         {
             throw new NotImplementedException();
         }
 
-        public override Formula ApplyKnown(IEnumerable<Predicate> lKnown)
+        public override Formula ApplyKnown(ISet<Predicate> lKnown)
         {
             throw new NotImplementedException();
         }
@@ -211,7 +212,7 @@ namespace CPORLib.LogicalUtilities
             throw new NotImplementedException();
         }
 
-        public override Formula ReduceConditions(IEnumerable<Predicate> lKnown)
+        public override Formula ReduceConditions(ISet<Predicate> lKnown)
         {
             throw new NotImplementedException();
         }

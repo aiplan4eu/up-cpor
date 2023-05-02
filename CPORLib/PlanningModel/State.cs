@@ -10,10 +10,11 @@ namespace CPORLib.PlanningModel
 {
     public class State
     {
-        public IEnumerable<Predicate> Predicates { get { return m_lPredicates; } }
-        protected HashSet<Predicate> m_lPredicates;
+        public ISet<Predicate> Predicates { get { return new UnifiedSet<Predicate>(m_lAlwaysTrue,m_lChangingPredicates); } }
+        
+        //protected HashSet<Predicate> m_lPredicates;
 
-        //protected HashSet<Predicate> m_lAlwaysTrue;
+        protected HashSet<Predicate> m_lAlwaysTrue;
         protected HashSet<Predicate> m_lChangingPredicates;
 
         public List<Action> AvailableActions { get; protected set; }
@@ -33,8 +34,8 @@ namespace CPORLib.PlanningModel
         {
             Problem = p;
             Predecessor = null;
-            m_lPredicates = new HashSet<Predicate>();
-            //m_lAlwaysTrue = new HashSet<Predicate>();
+            //m_lPredicates = new HashSet<Predicate>();
+            m_lAlwaysTrue = new HashSet<Predicate>();
             m_lChangingPredicates = new HashSet<Predicate>();
             AvailableActions = new List<Action>();
             MaintainNegations = true;
@@ -53,18 +54,13 @@ namespace CPORLib.PlanningModel
             : this(sPredecessor.Problem)
         {
             Predecessor = sPredecessor;
-            m_lPredicates = new HashSet<Predicate>(sPredecessor.Predicates);
+            //m_lPredicates = new HashSet<Predicate>(sPredecessor.m_lPredicates);
             m_lChangingPredicates = new HashSet<Predicate>(Predecessor.m_lChangingPredicates);
 
-            /*
+            
             m_lAlwaysTrue = Predecessor.m_lAlwaysTrue;
 
-            foreach (Predicate p in Problem.Known)
-            {
-                if (Problem.Domain.AlwaysConstant(p))
-                    m_lAlwaysTrue.Add(p);
-            }
-            */
+            
 
             FunctionValues = new Dictionary<string, double>();
             foreach (KeyValuePair<string, double> p in sPredecessor.FunctionValues)
@@ -115,26 +111,22 @@ namespace CPORLib.PlanningModel
 
         public void RemovePredicate(Predicate p)
         {
-            m_lPredicates.Remove(p);
+            //m_lPredicates.Remove(p);
             m_lChangingPredicates.Remove(p);
         }
 
         public void AddPredicate(Predicate p)
         {
-            if (m_lPredicates.Contains(p))
+            if (!MaintainNegations && p.Negation)
                 return;
-
-            m_lPredicates.Add(p);
-
-            if (!p.Negation)
+            //m_lPredicates.Add(p);
+            if (Problem.Domain.AlwaysConstant(p))
             {
-                if (Problem.Domain.AlwaysConstant(p))
-                {
-                    //m_lAlwaysTrue.Add(p);
-                }
-                else
-                    m_lChangingPredicates.Add(p);
+                m_lAlwaysTrue.Add(p);
             }
+            else
+                m_lChangingPredicates.Add(p);
+            
         }
 
         public override bool Equals(object obj)
@@ -142,7 +134,7 @@ namespace CPORLib.PlanningModel
             if (obj is State)
             {
                 State s = (State)obj;
-                if (s.m_lPredicates.Count != m_lPredicates.Count)
+                if (s.m_lChangingPredicates.Count != m_lChangingPredicates.Count)
                     return false;
 
                 if (s.GetHashCode() != GetHashCode())
@@ -159,11 +151,13 @@ namespace CPORLib.PlanningModel
         }
         public virtual void GroundAllActions()
         {
-            AvailableActions = Problem.Domain.GroundAllActions(m_lPredicates, MaintainNegations);
+            ISet<Predicate> all = new UnifiedSet<Predicate>(m_lAlwaysTrue, m_lChangingPredicates);
+            AvailableActions = Problem.Domain.GroundAllActions(all, MaintainNegations);
         }
         public bool Contains(Formula f)
         {
-            return f.ContainedIn(m_lPredicates, false);
+            ISet<Predicate> all = new UnifiedSet<Predicate>(m_lAlwaysTrue, m_lChangingPredicates);
+            return f.ContainedIn(all, false);
         }
         public virtual State Clone()
         {
@@ -199,7 +193,12 @@ namespace CPORLib.PlanningModel
             //Debug.WriteLine("Executing " + a.Name);
             if (a is ParametrizedAction)
                 return null;
-            if (a.Preconditions != null && !a.Preconditions.IsTrue(m_lPredicates, MaintainNegations))
+            ISet<Predicate> all = new UnifiedSet<Predicate>(m_lAlwaysTrue, m_lChangingPredicates);
+
+            //if (m_lPredicates.Count != all.Count)
+            //    Console.Write("*");
+
+            if (a.Preconditions != null && !a.Preconditions.IsTrue(all, MaintainNegations))
                 return null;
 
             State sNew = Clone();
@@ -417,6 +416,27 @@ namespace CPORLib.PlanningModel
         public void RemoveNegativePredicates()
         {
             HashSet<Predicate> lFiltered = new HashSet<Predicate>();
+            foreach (Predicate pObserved in m_lChangingPredicates)
+            {
+                if (pObserved.Negation == false)
+                {
+                    lFiltered.Add(pObserved);
+                }
+            }
+            m_lChangingPredicates = lFiltered;
+
+            lFiltered = new HashSet<Predicate>();
+            foreach (Predicate pObserved in m_lAlwaysTrue)
+            {
+                if (pObserved.Negation == false)
+                {
+                    lFiltered.Add(pObserved);
+                }
+            }
+            m_lAlwaysTrue = lFiltered;
+
+            /*
+            lFiltered = new HashSet<Predicate>();
             foreach (Predicate pObserved in m_lPredicates)
             {
                 if (pObserved.Negation == false)
@@ -425,6 +445,7 @@ namespace CPORLib.PlanningModel
                 }
             }
             m_lPredicates = lFiltered;
+            */
             MaintainNegations = false;
         }
 
