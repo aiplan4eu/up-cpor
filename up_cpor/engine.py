@@ -54,6 +54,8 @@ SDRCredits = Credits('SDR',
 class CPORImpl(Engine, OneshotPlannerMixin):
 
     def __init__(self, bOnline = False, **options):
+        up.engines.Engine.__init__(self)
+        up.engines.mixins.OneshotPlannerMixin.__init__(self)
         self.bOnline = bOnline
         self._skip_checks = False
         self.cnv = UpCporConverter()
@@ -86,7 +88,12 @@ class CPORImpl(Engine, OneshotPlannerMixin):
     def get_credits(**kwargs) -> Optional["Credits"]:
         return CPORCredits
 
-    def _solve(self, problem: AbstractProblem) -> 'PlanGenerationResult':
+    def _solve(self,
+               problem: AbstractProblem,
+               heuristic: Optional[Callable[["up.model.state.State"], Optional[float]]] = None,
+               timeout: Optional[float] = None,
+               output_stream: Optional[IO[str]] = None,
+               ) -> 'PlanGenerationResult':
 
         assert isinstance(problem, ContingentProblem)
 
