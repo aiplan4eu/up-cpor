@@ -981,7 +981,7 @@ namespace CPORLib.FFCS
                     max = FF.DP.gnum_initial_predicate[p];
             }
             //FF.DP.ginitial_predicate = new Fact[FF.DP.gnum_predicates * 2, max];
-            FF.DP.ginitial_predicate = new FactArray2D(FF.DP.gnum_predicates * 2);
+            FF.DP.ginitial_predicate = new Array2D<Fact>(FF.DP.gnum_predicates * 2);
             for (i = 0; i < FF.DP.gnum_predicates; i++)
             {
                 //Main.DP.ginitial_predicate[i] = (Fact)calloc(Main.DP.gnum_initial_predicate[i], sizeof(Fact));

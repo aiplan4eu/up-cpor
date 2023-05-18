@@ -199,7 +199,7 @@ namespace CPORLib.PlanningModel
             return lSplit;
         }
 
-        public Formula GetApplicableEffects(IEnumerable<Predicate> lPredicates, bool bContainsNegations)
+        public Formula GetApplicableEffects(ISet<Predicate> lPredicates, bool bContainsNegations)
         {
             List<CompoundFormula> lConditions = new List<CompoundFormula>();
             List<Formula> lObligatory = new List<Formula>();
@@ -239,7 +239,7 @@ namespace CPORLib.PlanningModel
         }
 
 
-        public void GetApplicableEffects(IEnumerable<Predicate> lPredicates, HashSet<Predicate> lAddEffects, HashSet<Predicate> lRemoveEffects, bool bContainsNegations)
+        public void GetApplicableEffects(ISet<Predicate> lPredicates, HashSet<Predicate> lAddEffects, HashSet<Predicate> lRemoveEffects, bool bContainsNegations)
         {
             List<CompoundFormula> lConditions = new List<CompoundFormula>();
             List<Formula> lObligatory = new List<Formula>();
@@ -417,7 +417,7 @@ namespace CPORLib.PlanningModel
             return lEffects;
         }
 
-        public HashSet<Predicate> GetApplicableEffects(IEnumerable<Predicate> lPredicates, bool bContainsNegations, Dictionary<Predicate, Formula> dEffectPreconditions)
+        public HashSet<Predicate> GetApplicableEffects(ISet<Predicate> lPredicates, bool bContainsNegations, Dictionary<Predicate, Formula> dEffectPreconditions)
         {
             HashSet<Predicate> lEffects = new HashSet<Predicate>();
             List<CompoundFormula> lConditions = new List<CompoundFormula>();
@@ -499,7 +499,7 @@ namespace CPORLib.PlanningModel
             return aNew;
         }
 
-        public PlanningAction NonConditionalObservationTranslation(Dictionary<string, List<Predicate>> dTags, List<string> lAlwaysKnown, bool bTrue)
+        public PlanningAction NonConditionalObservationTranslation(Dictionary<string, ISet<Predicate>> dTags, List<string> lAlwaysKnown, bool bTrue)
         {
             PlanningAction aNew = Clone();
             
@@ -602,7 +602,7 @@ namespace CPORLib.PlanningModel
             return aNew;
         }
 
-        public List<PlanningAction> KnowWhetherTagObservationTranslation(Dictionary<string, List<Predicate>> dTags, Domain d)
+        public List<PlanningAction> KnowWhetherTagObservationTranslation(Dictionary<string, ISet<Predicate>> dTags, Domain d)
         {
             List<PlanningAction> lCompiled = new List<PlanningAction>();
             //foreach(string sTag in dTags.Keys)
@@ -616,7 +616,7 @@ namespace CPORLib.PlanningModel
             }
             return lCompiled;
         }
-        public List<PlanningAction> TagObservationTranslationNoState(Dictionary<string, List<Predicate>> dTags, Domain d)
+        public List<PlanningAction> TagObservationTranslationNoState(Dictionary<string, ISet<Predicate>> dTags, Domain d)
         {
             List<PlanningAction> lCompiled = new List<PlanningAction>();
             if (Options.Translation == Options.Translations.MPSRTags)
@@ -637,7 +637,7 @@ namespace CPORLib.PlanningModel
             return lCompiled;
         }
 
-        public PlanningAction KnowWhetherTagObservationTranslation(Dictionary<string, List<Predicate>> dTags, Domain d, string sActionTag)
+        public PlanningAction KnowWhetherTagObservationTranslation(Dictionary<string, ISet<Predicate>> dTags, Domain d, string sActionTag)
         {
             string sName = Name + "-KW-" + sActionTag;
             ParametrizedAction aNew = new ParametrizedAction(sName);
@@ -694,7 +694,7 @@ namespace CPORLib.PlanningModel
         }
 
 
-        public PlanningAction KnowWhetherTagObservationTranslation(Dictionary<string, List<Predicate>> dTags, Domain d, List<string> lIncludedTags, List<string> lExcludedTags)
+        public PlanningAction KnowWhetherTagObservationTranslation(Dictionary<string, ISet<Predicate>> dTags, Domain d, List<string> lIncludedTags, List<string> lExcludedTags)
         {
             string sName = Name + "-KW";
             foreach (string sTag in lIncludedTags)
@@ -728,7 +728,7 @@ namespace CPORLib.PlanningModel
         }
 
 
-        public PlanningAction TagObservationTranslationNoState(Dictionary<string, List<Predicate>> dTags, Domain d, List<string> lIncludedTags, List<string> lExcludedTags)
+        public PlanningAction TagObservationTranslationNoState(Dictionary<string, ISet<Predicate>> dTags, Domain d, List<string> lIncludedTags, List<string> lExcludedTags)
         {
             string sName = Name;
             foreach (string sTag in lIncludedTags)
@@ -822,7 +822,7 @@ namespace CPORLib.PlanningModel
             return aNew;
         }
 
-        public PlanningAction AddTaggedConditions(Dictionary<string, List<Predicate>> dTags, List<string> lAlwaysKnown)
+        public PlanningAction AddTaggedConditions(Dictionary<string, ISet<Predicate>> dTags, List<string> lAlwaysKnown)
         {
             PlanningAction aNew = Clone();
             List<CompoundFormula> lConditions = new List<CompoundFormula>();
@@ -910,7 +910,7 @@ namespace CPORLib.PlanningModel
         }
 
 
-        public List<PlanningAction> KnowCompilationSplitConditions(Dictionary<string, List<Predicate>> dTags, List<string> lAlwaysKnown, List<Predicate> lAdditionalPredicates)
+        public List<PlanningAction> KnowCompilationSplitConditions(Dictionary<string, ISet<Predicate>> dTags, List<string> lAlwaysKnown, List<Predicate> lAdditionalPredicates)
         {
             List<PlanningAction> lActions = new List<PlanningAction>();
 
@@ -1138,7 +1138,7 @@ namespace CPORLib.PlanningModel
 
         
 
-        public PlanningAction KnowCompilation(Dictionary<string, List<Predicate>> dTags, Domain d)
+        public PlanningAction KnowCompilation(Dictionary<string, ISet<Predicate>> dTags, Domain d)
         {
             PlanningAction aNew = Clone();
             aNew.Name = Name + "-K";
@@ -1247,7 +1247,7 @@ namespace CPORLib.PlanningModel
         }
 
 
-        public PlanningAction KnowWhetherCompilation(Dictionary<string, List<Predicate>> dTags, Domain d)
+        public PlanningAction KnowWhetherCompilation(Dictionary<string, ISet<Predicate>> dTags, Domain d)
         {
             PlanningAction aNew = Clone();
             aNew.Name = Name + "-KW";
@@ -1455,7 +1455,7 @@ namespace CPORLib.PlanningModel
             return aNew;
         }
 
-        public CompoundFormula GetKnowWhetherPreconditions(Dictionary<string, List<Predicate>> dTags, Domain d, List<string> lIncludedTags, List<string> lExcludedTags)
+        public CompoundFormula GetKnowWhetherPreconditions(Dictionary<string, ISet<Predicate>> dTags, Domain d, List<string> lIncludedTags, List<string> lExcludedTags)
         {
             CompoundFormula cfKWPreconditions = new CompoundFormula("and");
             HashSet<Predicate> lKnowPreconditions = new HashSet<Predicate>();
@@ -1509,13 +1509,13 @@ namespace CPORLib.PlanningModel
         }
 
         //this implementation requires ~Knot between all include tags, and Knot between every include and every exclude tags
-        public CompoundFormula GetPreconditionsNoState(Dictionary<string, List<Predicate>> dTags, Domain d, List<string> lIncludedTags, List<string> lExcludedTags)
+        public CompoundFormula GetPreconditionsNoState(Dictionary<string, ISet<Predicate>> dTags, Domain d, List<string> lIncludedTags, List<string> lExcludedTags)
         {
             CompoundFormula cfPreconditions = new CompoundFormula("and");
             if (Preconditions != null)
             {
 
-                HashSet<Predicate> lKnowPreconditions = Preconditions.GetAllPredicates();
+                ISet<Predicate> lKnowPreconditions = Preconditions.GetAllPredicates();
                 foreach (Predicate p in lKnowPreconditions)
                 {
                     if (d.AlwaysKnown(p) && d.AlwaysConstant(p))
@@ -1565,7 +1565,7 @@ namespace CPORLib.PlanningModel
         }
         /*
          *
-                public CompoundFormula GetPreconditionsNoState(Dictionary<string, List<Predicate>> dTags, Domain d, List<string> lIncludedTags, List<string> lExcludedTags)
+                public CompoundFormula GetPreconditionsNoState(Dictionary<string, ISet<Predicate>> dTags, Domain d, List<string> lIncludedTags, List<string> lExcludedTags)
                 {
                     CompoundFormula cfPreconditions = new CompoundFormula("and");
                     HashSet<Predicate> lKnowPreconditions = new HashSet<Predicate>();
@@ -1621,7 +1621,7 @@ namespace CPORLib.PlanningModel
 
 
         */
-        public CompoundFormula GetKnowWhetherPreconditions(Dictionary<string, List<Predicate>> dTags, Domain d, string sActionTag)
+        public CompoundFormula GetKnowWhetherPreconditions(Dictionary<string, ISet<Predicate>> dTags, Domain d, string sActionTag)
         {
             Argument pTag = new Constant(Utilities.TAG, sActionTag);
             CompoundFormula cfKWPreconditions = new CompoundFormula("and");
@@ -1676,7 +1676,7 @@ namespace CPORLib.PlanningModel
             return null;
         }
 
-        public List<PlanningAction> KnowWhetherTagCompilation(Dictionary<string, List<Predicate>> dTags, Domain d)
+        public List<PlanningAction> KnowWhetherTagCompilation(Dictionary<string, ISet<Predicate>> dTags, Domain d)
         {
             List<PlanningAction> lCompiled = new List<PlanningAction>();
             /*
@@ -1691,7 +1691,7 @@ namespace CPORLib.PlanningModel
             }
             return lCompiled;
         }
-        public List<PlanningAction> KnowWhetherTagCompilation(Dictionary<string, List<Predicate>> dTags, Domain d, List<Predicate> lAdditionalPredicates)
+        public List<PlanningAction> KnowWhetherTagCompilation(Dictionary<string, ISet<Predicate>> dTags, Domain d, ISet<Predicate> lAdditionalPredicates)
         {
             List<PlanningAction> lCompiled = new List<PlanningAction>();
             /*
@@ -1706,7 +1706,7 @@ namespace CPORLib.PlanningModel
             }
             return lCompiled;
         }
-        public List<PlanningAction> TagCompilationNoState(Dictionary<string, List<Predicate>> dTags, Domain d, List<Predicate> lAdditionalPredicates)
+        public List<PlanningAction> TagCompilationNoState(Dictionary<string, ISet<Predicate>> dTags, Domain d, ISet<Predicate> lAdditionalPredicates)
         {
             List<PlanningAction> lCompiled = new List<PlanningAction>();
             if (Options.Translation == Options.Translations.MPSRTags)
@@ -1752,8 +1752,8 @@ namespace CPORLib.PlanningModel
         }
 
 
-        public List<PlanningAction> KnowWhetherTagCompilationSplitConditions(Dictionary<string, List<Predicate>> dTags, Domain d, List<string> lIncludedTags,
-            List<string> lExcludedTags, List<Predicate> lAdditionalPredicates)
+        public List<PlanningAction> KnowWhetherTagCompilationSplitConditions(Dictionary<string, ISet<Predicate>> dTags, Domain d, List<string> lIncludedTags,
+            List<string> lExcludedTags, ISet<Predicate> lAdditionalPredicates)
         {
             string sName = Name + "-KW";
             foreach (string sTag in lIncludedTags)
@@ -1844,7 +1844,7 @@ namespace CPORLib.PlanningModel
                 foreach (CompoundFormula cfCondition in lConditions)
                 {
                     CompoundFormula cfK = null, cfAnd = null;
-                    HashSet<Predicate> lConditionEffects = cfCondition.Operands[1].GetAllPredicates();
+                    ISet<Predicate> lConditionEffects = cfCondition.Operands[1].GetAllPredicates();
                     cfAnd = new CompoundFormula("and");
 
                     foreach (string sTag in lIncludedTags)
@@ -1891,7 +1891,7 @@ namespace CPORLib.PlanningModel
         }
 
 
-        public List<PlanningAction> SplitConditions(List<Predicate> lAdditionalPredicates)
+        public List<PlanningAction> SplitConditions(ISet<Predicate> lAdditionalPredicates)
         {
             List<PlanningAction> lActions = new List<PlanningAction>();
 
@@ -2019,8 +2019,8 @@ namespace CPORLib.PlanningModel
         }
 
 
-        public List<PlanningAction> TagCompilationSplitConditionsNoState(Dictionary<string, List<Predicate>> dTags, Domain d, List<string> lIncludedTags,
-            List<string> lExcludedTags, List<Predicate> lAdditionalPredicates)
+        public List<PlanningAction> TagCompilationSplitConditionsNoState(Dictionary<string, ISet<Predicate>> dTags, Domain d, List<string> lIncludedTags,
+            List<string> lExcludedTags, ISet<Predicate> lAdditionalPredicates)
         {
             string sName = Name;
             foreach (string sTag in lIncludedTags)
@@ -2078,7 +2078,7 @@ namespace CPORLib.PlanningModel
                 foreach (CompoundFormula cfCondition in lConditions)
                 {
                     CompoundFormula cfK = null, cfAnd = null;
-                    HashSet<Predicate> lConditionEffects = cfCondition.Operands[1].GetAllPredicates();
+                    ISet<Predicate> lConditionEffects = cfCondition.Operands[1].GetAllPredicates();
                     cfAnd = new CompoundFormula("and");
 
                     foreach (string sTag in lIncludedTags)
@@ -2112,7 +2112,7 @@ namespace CPORLib.PlanningModel
 
 
 
-        public PlanningAction KnowWhetherTagCompilation(Dictionary<string, List<Predicate>> dTags, Domain d, List<string> lIncludedTags, List<string> lExcludedTags)
+        public PlanningAction KnowWhetherTagCompilation(Dictionary<string, ISet<Predicate>> dTags, Domain d, List<string> lIncludedTags, List<string> lExcludedTags)
         {
             string sName = Name + "-KW";
             foreach (string sTag in lIncludedTags)
@@ -2175,7 +2175,7 @@ namespace CPORLib.PlanningModel
                 foreach (CompoundFormula cfCondition in lConditions)
                 {
                     CompoundFormula cfK = null, cfAnd = null;
-                    HashSet<Predicate> lConditionEffects = cfCondition.Operands[1].GetAllPredicates();
+                    ISet<Predicate> lConditionEffects = cfCondition.Operands[1].GetAllPredicates();
                     cfAnd = new CompoundFormula("and");
 
                     foreach (string sTag in lIncludedTags)
@@ -2243,7 +2243,7 @@ namespace CPORLib.PlanningModel
         }
 
 
-        public PlanningAction KnowWhetherTagCompilation(Dictionary<string, List<Predicate>> dTags, Domain d, string sActionTag)
+        public PlanningAction KnowWhetherTagCompilation(Dictionary<string, ISet<Predicate>> dTags, Domain d, string sActionTag)
         {
             string sName = Name + "-KW-" + sActionTag;
             ParametrizedAction aNew = new ParametrizedAction(sName);
@@ -2311,7 +2311,7 @@ namespace CPORLib.PlanningModel
                 foreach (CompoundFormula cfCondition in lConditions)
                 {
                     CompoundFormula cfK = null, cfAnd = null;
-                    HashSet<Predicate> lConditionEffects = cfCondition.Operands[1].GetAllPredicates();
+                    ISet<Predicate> lConditionEffects = cfCondition.Operands[1].GetAllPredicates();
                     cfAnd = new CompoundFormula("and");
                     /*
                     //since this action is done only for a part of the states, you lose all information in the effects
@@ -2380,7 +2380,7 @@ namespace CPORLib.PlanningModel
             return aNew;
         }
 
-        public List<PlanningAction> AddTaggedNonDeterministicConditionsAgentChoice(Dictionary<string, List<Predicate>> dTags, List<string> lAlwaysKnown)
+        public List<PlanningAction> AddTaggedNonDeterministicConditionsAgentChoice(Dictionary<string, ISet<Predicate>> dTags, List<string> lAlwaysKnown)
         {
             PlanningAction aNew = Clone();
             List<CompoundFormula> lConditions = new List<CompoundFormula>();
@@ -2475,13 +2475,13 @@ namespace CPORLib.PlanningModel
             return lOptionalActions;
         }
 
-        public List<PlanningAction> AddTaggedNonDeterministicConditions(Dictionary<string, List<Predicate>> dTags, List<string> lAlwaysKnown)
+        public List<PlanningAction> AddTaggedNonDeterministicConditions(Dictionary<string, ISet<Predicate>> dTags, List<string> lAlwaysKnown)
         {
             //return AddTaggedNonDeterministicConditionsStochasticChoice(dTags, lAlwaysKnown, Utilities.TIME_STEPS);
             return AddTaggedNonDeterministicConditionsAgentChoice(dTags, lAlwaysKnown);
         }
 
-        public List<PlanningAction> AddTaggedNonDeterministicConditionsStochasticChoice(Dictionary<string, List<Predicate>> dTags, List<string> lAlwaysKnown, int cTimeSteps)
+        public List<PlanningAction> AddTaggedNonDeterministicConditionsStochasticChoice(Dictionary<string, ISet<Predicate>> dTags, List<string> lAlwaysKnown, int cTimeSteps)
         {
             PlanningAction aNew = Clone();
             List<CompoundFormula> lConditions = new List<CompoundFormula>();
@@ -2610,7 +2610,7 @@ namespace CPORLib.PlanningModel
         }
 
 
-        public List<PlanningAction> SplitTaggedConditions(Dictionary<string, List<Predicate>> dTags, List<string> lAlwaysKnown)
+        public List<PlanningAction> SplitTaggedConditions(Dictionary<string, ISet<Predicate>> dTags, List<string> lAlwaysKnown)
         {
             List<PlanningAction> lSplitted = new List<PlanningAction>();
 
@@ -3361,7 +3361,7 @@ namespace CPORLib.PlanningModel
             {
                 foreach (CompoundFormula cf in lConditions)
                 {
-                    HashSet<Predicate> lConditionEffects = cf.Operands[1].GetAllPredicates();
+                    ISet<Predicate> lConditionEffects = cf.Operands[1].GetAllPredicates();
                     if (lConditionEffects.Contains(p))
                     {
                         HashSet<Predicate> lCondition = new HashSet<Predicate>(lPreconditions);
@@ -3388,7 +3388,7 @@ namespace CPORLib.PlanningModel
             Dictionary<Predicate, List<CompoundFormula>> dEffects = new Dictionary<Predicate, List<CompoundFormula>>();
             foreach (CompoundFormula cfCondition in lConditions)
             {
-                HashSet<Predicate> lPredicates = cfCondition.Operands[1].GetAllPredicates();
+                ISet<Predicate> lPredicates = cfCondition.Operands[1].GetAllPredicates();
                 foreach (Predicate p in lPredicates)
                 {
                     if (!dEffects.ContainsKey(p))
@@ -3542,7 +3542,7 @@ namespace CPORLib.PlanningModel
 
 
         /*
-        public void RemoveImpossibleOptions(IEnumerable<Predicate> lBefore, IEnumerable<Predicate> lAfter)
+        public void RemoveImpossibleOptions(ISet<Predicate> lBefore, ISet<Predicate> lAfter)
         {
             //incorrect - need to have both the state prior to the action and the state after the action. 
             if(Effects is CompoundFormula)
@@ -3550,12 +3550,12 @@ namespace CPORLib.PlanningModel
         }
          * */
 
-        public void IdentifyActivatedOptions(IEnumerable<Predicate> lBefore, IEnumerable<Predicate> lAfter)
+        public void IdentifyActivatedOptions(ISet<Predicate> lBefore, ISet<Predicate> lAfter)
         {
             //throw new NotImplementedException();
         }
 
-        public PlanningAction ApplyOffline(IEnumerable<Predicate> lKnown)
+        public PlanningAction ApplyOffline(ISet<Predicate> lKnown)
         {
             if (Effects == null)
                 return this;
@@ -3563,7 +3563,7 @@ namespace CPORLib.PlanningModel
             return null;
         }
 
-        public PlanningAction ApplyObserved(IEnumerable<Predicate> lKnown)
+        public PlanningAction ApplyObserved(ISet<Predicate> lKnown)
         {
             if (Effects == null)
                 return this;
@@ -3697,7 +3697,7 @@ namespace CPORLib.PlanningModel
                 Dictionary<Predicate, List<Formula>> d = new Dictionary<Predicate, List<Formula>>();
                 foreach (CompoundFormula cfCondition in GetConditions())
                 {
-                    HashSet<Predicate> lPredicates = cfCondition.Operands[1].GetAllPredicates();
+                    ISet<Predicate> lPredicates = cfCondition.Operands[1].GetAllPredicates();
                     foreach (Predicate p in lPredicates)
                     {
                         if (!d.ContainsKey(p))

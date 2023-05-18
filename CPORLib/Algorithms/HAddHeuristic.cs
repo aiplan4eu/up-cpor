@@ -58,11 +58,11 @@ namespace CPORLib.Algorithms
 
         public double ComputeHAdd(State s)
         {
-            HashSet<GroundedPredicate> hsAll = new HashSet<GroundedPredicate>();
+            HashSet<Predicate> hsAll = new HashSet<Predicate>();
             foreach (GroundedPredicate gp in s.Predicates)
                 hsAll.Add(gp);
-            List<HashSet<GroundedPredicate>> lLevels = new List<HashSet<GroundedPredicate>>();
-            lLevels.Add(new HashSet<GroundedPredicate>(hsAll));
+            List<HashSet<Predicate>> lLevels = new List<HashSet<Predicate>>();
+            lLevels.Add(new HashSet<Predicate>(hsAll));
             int cLevels = 0;
             bool bDone = false;
             Dictionary<GroundedPredicate,int> dGoalCosts= new Dictionary<GroundedPredicate,int>();
@@ -92,11 +92,11 @@ namespace CPORLib.Algorithms
                         }
                     }
                 }
-                HashSet<GroundedPredicate> hsNextLevel = new HashSet<GroundedPredicate>();
+                HashSet<Predicate> hsNextLevel = new HashSet<Predicate>();
                 foreach(int iAction in hsActions)
                 {
                     Action a = GroundedActuationActions[iAction];
-                    HashSet<Predicate> hsPreconditions = a.Preconditions.GetAllPredicates();
+                    ISet<Predicate> hsPreconditions = a.Preconditions.GetAllPredicates();
 
                     bool bContainsAll = true;
                     foreach(GroundedPredicate gp in hsPreconditions)

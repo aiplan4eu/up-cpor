@@ -129,6 +129,7 @@ namespace CPORLib
             }
             else
             {
+                //Options.SDR_OBS = true;
                 CPORPlanner cpor = new CPORPlanner(domain, problem);
                 cpor.InfoLevel = 1;
                 ConditionalPlanTreeNode n = cpor.OfflinePlanning();

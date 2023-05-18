@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using CPORLib.PlanningModel;
+using CPORLib.Tools;
 
 namespace CPORLib.LogicalUtilities
 {
@@ -14,28 +15,28 @@ namespace CPORLib.LogicalUtilities
             ID = FormulaCount++;
         }
 
-        public abstract bool IsTrue(IEnumerable<Predicate> lKnown, bool bContainsNegations);
-        public abstract bool IsFalse(IEnumerable<Predicate> lKnown, bool bContainsNegations);
+        public abstract bool IsTrue(ISet<Predicate> lKnown, bool bContainsNegations);
+        public abstract bool IsFalse(ISet<Predicate> lKnown, bool bContainsNegations);
 
-        public abstract bool IsTrueDeleteRelaxation(IEnumerable<Predicate> lKnown);
-        public bool IsTrue(IEnumerable<Predicate> lKnown)
+        public abstract bool IsTrueDeleteRelaxation(ISet<Predicate> lKnown);
+        public bool IsTrue(ISet<Predicate> lKnown)
         {
             return IsTrue(lKnown, true);
         }
-        public bool IsFalse(IEnumerable<Predicate> lKnown)
+        public bool IsFalse(ISet<Predicate> lKnown)
         {
             return IsFalse(lKnown, true);
         }
         public abstract Formula Ground(Dictionary<Parameter, Constant> dBindings);
         public abstract Formula PartiallyGround(Dictionary<Parameter, Constant> dBindings);
         public abstract Formula Negate();
-        public abstract void GetAllPredicates(HashSet<Predicate> lPredicates);
-        public abstract void GetAllEffectPredicates(HashSet<Predicate> lConditionalPredicates, HashSet<Predicate> lNonConditionalPredicates);
+        public abstract void GetAllPredicates(ISet<Predicate> lPredicates);
+        public abstract void GetAllEffectPredicates(ISet<Predicate> lConditionalPredicates, ISet<Predicate> lNonConditionalPredicates);
         public abstract Formula ToCNF();
 
-        public HashSet<Predicate> GetAllPredicates()
+        public ISet<Predicate> GetAllPredicates()
         {
-            HashSet<Predicate> lPredicates = new HashSet<Predicate>();
+            ISet<Predicate> lPredicates = new HashSet<Predicate>();
             GetAllPredicates(lPredicates);
             return lPredicates;
         }
@@ -44,15 +45,15 @@ namespace CPORLib.LogicalUtilities
 
         public abstract Formula Clone();
 
-        public abstract bool ContainedIn(IEnumerable<Predicate> lPredicates, bool bContainsNegations);
+        public abstract bool ContainedIn(ISet<Predicate> lPredicates, bool bContainsNegations);
         public abstract Formula Replace(Formula fOrg, Formula fNew);
         public abstract Formula Replace(Dictionary<Formula, Formula> dTranslations);
         public abstract Formula Simplify();
 
-        public abstract Formula Regress(PlanningAction a, IEnumerable<Predicate> lObserved);
+        public abstract Formula Regress(PlanningAction a, ISet<Predicate> lObserved);
         public abstract Formula Regress(PlanningAction a);
 
-        public abstract Formula Reduce(IEnumerable<Predicate> lKnown);
+        public abstract Formula Reduce(ISet<Predicate> lKnown);
 
         public override int GetHashCode()
         {
@@ -79,9 +80,9 @@ namespace CPORLib.LogicalUtilities
 
         public abstract Formula ReplaceNegativeEffectsInCondition();
 
-        public abstract Formula RemoveImpossibleOptions(IEnumerable<Predicate> lObserved);
+        public abstract Formula RemoveImpossibleOptions(ISet<Predicate> lObserved);
 
-        public abstract Formula ApplyKnown(IEnumerable<Predicate> lKnown);
+        public abstract Formula ApplyKnown(ISet<Predicate> lKnown);
 
         public abstract List<Predicate> GetNonDeterministicEffects();
         public abstract void GetNonDeterministicOptions(List<CompoundFormula> lOptions);
@@ -90,7 +91,7 @@ namespace CPORLib.LogicalUtilities
 
         public abstract Formula GetKnowledgeFormula(List<string> lAlwaysKnown, bool bKnowWhether);
 
-        public abstract Formula ReduceConditions(IEnumerable<Predicate> lKnown);
+        public abstract Formula ReduceConditions(ISet<Predicate> lKnown);
 
         public abstract Formula RemoveNegations();
     }

@@ -1411,6 +1411,10 @@ namespace CPORLib.FFCS
         {
             get
             {
+                if (Array[i] == null)
+                {
+                    Array[i] = new T();
+                }
                 return Array[i];
             }
             set
@@ -1426,8 +1430,10 @@ namespace CPORLib.FFCS
         public InitializedArray(int iSize)
         {
             Array = new T[iSize];
+            /*
             for (int j = 0; j < iSize; j++)
                 Array[j] = new T();
+            */
         }
 
         public static implicit operator T[](InitializedArray<T> a)
@@ -1483,7 +1489,7 @@ namespace CPORLib.FFCS
         }
     }
     */
-    
+    /*
     public class EfficientArrayMemory
     {
 
@@ -1503,7 +1509,6 @@ namespace CPORLib.FFCS
             foreach (var p in IntArrayCounters)
                 dNew[p.Key] = 0;
             IntArrayCounters = dNew;
-
         }
 
         public static int[] GetIntArray(int iSize)
@@ -1588,7 +1593,6 @@ namespace CPORLib.FFCS
         }
     }
 
-
     public class Array2D<T>
     {
         public T[][] Array;
@@ -1596,15 +1600,17 @@ namespace CPORLib.FFCS
         protected bool[] Initialized;
         protected T[] InitValue;
 
+        public HashSet<int>[] AccessMonitor;
+
         public T this[int i, int j]
         {
             get
             {
+                AccessMonitor[i].Add(j);
 
                 if (!Initialized[i])
                     return InitValue[i];
                 return Array[i][j];
-
             }
             set
             {
@@ -1620,7 +1626,7 @@ namespace CPORLib.FFCS
             }
         }
 
-        
+
         public T[] this[int i]
         {
             get
@@ -1632,12 +1638,16 @@ namespace CPORLib.FFCS
                 Array[i] = value;
             }
         }
-        
+
         protected Array2D(int iSize)
         {
             Array = new T[iSize][];
             InitValue = new T[iSize];
             Initialized = new bool[iSize];
+
+            AccessMonitor = new HashSet<int>[iSize];
+            for (int i = 0; i < iSize; i++)
+                AccessMonitor[i] = new HashSet<int>();
         }
 
         public void Init(int i, int iSize)
@@ -1653,6 +1663,113 @@ namespace CPORLib.FFCS
             InitValue[i] = tInit;
         }
     }
+*/
+
+    public class Array2D<T>
+    {
+        public GenericArray<T>[] Array;
+
+
+        public T this[int i, int j]
+        {
+            get
+            {
+                return Array[i].Get(j);
+            }
+            set
+            {
+                Array[i].Set(j, value);
+
+            }
+        }
+
+        
+        public Array2D(int iSize)
+        {
+            Array = new GenericArray<T>[iSize];
+        }
+
+        public void Init(int i, int iSize)
+        {
+            if (iSize < 1000)
+                Array[i] = new DenseArray<T>(iSize);
+            else
+                Array[i] = new SparseArray<T>(iSize);
+        }
+
+        public void Init(int i, int iSize, T tInit)
+        {
+            if (iSize < 1000)
+                Array[i] = new DenseArray<T>(iSize);
+            else
+                Array[i] = new SparseArray<T>(iSize, tInit);
+        }
+    }
     
+
+    public abstract class GenericArray<T> 
+    {
+        public abstract T Get(int i);
+        public abstract void Set(int i, T t);
+    }
+    public class DenseArray<T> : GenericArray<T>
+    {
+        private T[] Values;
+
+        public override T Get(int i)
+        {
+            return Values[i];
+        }
+        public override void Set(int i, T t)
+        {
+            Values[i] = t;
+        }
+
+        public DenseArray(int iSize)
+        {
+            Values = new T[iSize];
+        }
+        public DenseArray(int iSize, T tInit)
+        {
+            Values = new T[iSize];
+            for (int i = 0; i < iSize; i++)
+                Values[i] = tInit;
+        }
+    }
+
+    public class SparseArray<T> : GenericArray<T>
+    {
+        private int Size;
+        private Dictionary<int, T> Values;
+        private T InitValue;
+
+        public override T Get(int i)
+        {
+            if (i < 0 || i >= Size)
+                throw new IndexOutOfRangeException();
+
+            if (Values.TryGetValue(i, out T t))
+                return t;
+            return InitValue;
+        }
+        public override void Set(int i, T t)
+        {
+            if (i < 0 || i >= Size)
+                throw new IndexOutOfRangeException();
+            Values[i] = t;
+        }
+
+        public SparseArray(int iSize)
+        {
+            Size = iSize;
+        }
+        public SparseArray(int iSize, T vInit)
+        {
+            Size = iSize;
+            Values = new Dictionary<int, T>();
+            InitValue = vInit;
+        }
+
+    }
     
 }

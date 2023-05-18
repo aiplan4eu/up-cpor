@@ -2,6 +2,7 @@
 using CPORLib.LogicalUtilities;
 using CPORLib.Parsing;
 using CPORLib.Tools;
+using Microsoft.SolverFoundation.Services;
 using Microsoft.SolverFoundation.Solvers;
 using System;
 using System.Collections.Generic;
@@ -17,7 +18,7 @@ namespace CPORLib.PlanningModel
 {
     public class BeliefState
     {
-        public IEnumerable<Predicate> Observed { get { return m_lObserved; } }
+        public ISet<Predicate> Observed { get { return m_lObserved; } }
         public List<CompoundFormula> Hidden { get { return m_lHiddenFormulas; } }
         public HashSet<Predicate> Unknown { get; private set; }
         private List<CompoundFormula> m_lHiddenFormulas;
@@ -36,9 +37,9 @@ namespace CPORLib.PlanningModel
         private BeliefState m_sPredecessor;
         public Problem Problem { get; private set; }
         public State UnderlyingEnvironmentState { get; set; }
-        private List<List<Predicate>> m_lCurrentTags;
-        private List<Predicate> m_lProblematicTag;
-        private List<List<Predicate>> m_lDeadendTags;
+        private List<ISet<Predicate>> m_lCurrentTags;
+        private ISet<Predicate> m_lProblematicTag;
+        private List<ISet<Predicate>> m_lDeadendTags;
         public bool MaintainProblematicTag { get; set; }
         public string OutputType { get { return "SAS"; } }
 
@@ -75,7 +76,7 @@ namespace CPORLib.PlanningModel
                 FunctionValues[sFunction] = 0.0;
             }
 
-            m_lDeadendTags = new List<List<Predicate>>();
+            m_lDeadendTags = new List<ISet<Predicate>>();
 
             bsCOUNT++;
             ID = bsCOUNT;
@@ -111,9 +112,9 @@ namespace CPORLib.PlanningModel
             m_cfCNFHiddenState = sToCopy.m_cfCNFHiddenState;
 
             if (sToCopy.m_lDeadendTags != null)
-                m_lDeadendTags = new List<List<Predicate>>(sToCopy.m_lDeadendTags);
+                m_lDeadendTags = new List<ISet<Predicate>>(sToCopy.m_lDeadendTags);
             if (sToCopy.m_lCurrentTags != null)
-                m_lCurrentTags = new List<List<Predicate>>(sToCopy.m_lCurrentTags);
+                m_lCurrentTags = new List<ISet<Predicate>>(sToCopy.m_lCurrentTags);
 
 
             
@@ -254,7 +255,7 @@ namespace CPORLib.PlanningModel
                 bValid = ApplyUnitPropogation(lHidden, lAssignment);
                 if (bValid && MaintainProblematicTag && bCheckingActionPreconditions)
                 {
-                    m_lProblematicTag = new List<Predicate>();
+                    m_lProblematicTag = new HashSet<Predicate>();
                     foreach (Predicate p in lAssignment)
                         m_lProblematicTag.Add(p);
                 }
@@ -265,7 +266,7 @@ namespace CPORLib.PlanningModel
                 if (lPredicates.Count > 0)
                 {
                     HashSet<int> lIndexes = new HashSet<int>();
-                    List<Predicate> lKnown = new List<Predicate>();
+                    HashSet<Predicate> lKnown = new HashSet<Predicate>();
                     foreach (PredicateFormula pf in lPredicates)
                     {
                         if (m_dMapPredicatesToFormulas.ContainsKey((GroundedPredicate)pf.Predicate.Canonical()))
@@ -289,7 +290,7 @@ namespace CPORLib.PlanningModel
                         List<Formula> lHidden = new List<Formula>(m_lHiddenFormulas);
                         lHidden.AddRange(lFormulas);
                         lHidden.AddRange(lPredicates);
-                        List<List<Predicate>> lConsistentAssignments = RunSatSolver(lHidden, 1);
+                        List<ISet<Predicate>> lConsistentAssignments = RunSatSolver(lHidden, 1);
                         bValid = lConsistentAssignments.Count > 0;
                         if (MaintainProblematicTag && bCheckingActionPreconditions)
                             m_lProblematicTag = null;
@@ -316,7 +317,7 @@ namespace CPORLib.PlanningModel
                 foreach (GroundedPredicate gp in Observed)
                     lHidden.Add(new PredicateFormula(gp));
                 lHidden.AddRange(lPredicates);
-                List<List<Predicate>> lConsistentAssignments = RunSatSolver(lHidden, 1);
+                List<ISet<Predicate>> lConsistentAssignments = RunSatSolver(lHidden, 1);
                 bValid = lConsistentAssignments.Count > 0;
                 if (MaintainProblematicTag)
                     m_lProblematicTag = null;
@@ -351,11 +352,11 @@ namespace CPORLib.PlanningModel
             if (MaintainProblematicTag && bCheckingActionPreconditions && bValid)
             {
                 //filter the problematic tag
-                List<Predicate> lFiltered = new List<Predicate>();
+                ISet<Predicate> lFiltered = new HashSet<Predicate>();
                 Formula fCurrent = fOriginal, fReduced = null;
                 foreach (Predicate p in m_lProblematicTag)
                 {
-                    List<Predicate> lAssignment = new List<Predicate>();
+                    HashSet<Predicate> lAssignment = new HashSet<Predicate>();
                     lAssignment.Add(p);
                     fReduced = fCurrent.Reduce(lAssignment);
                     if (!fReduced.Equals(fCurrent))
@@ -481,7 +482,7 @@ namespace CPORLib.PlanningModel
 
         private bool Contains(CompoundFormula cf)
         {
-            HashSet<Predicate> lPredicates = cf.GetAllPredicates();
+            ISet<Predicate> lPredicates = cf.GetAllPredicates();
             Predicate pCanonical = null;
             foreach (Predicate p in lPredicates)
             {
@@ -545,7 +546,7 @@ namespace CPORLib.PlanningModel
             {
                 bLearnedNewPredicate = true;
                 HashSet<int> lIndexes = new HashSet<int>();
-                List<Predicate> lKnown = new List<Predicate>();
+                HashSet<Predicate> lKnown = new HashSet<Predicate>();
                 foreach (PredicateFormula pf in lLearnedPredicates)
                 {
                     GroundedPredicate p = (GroundedPredicate)pf.Predicate.Canonical();
@@ -799,7 +800,7 @@ namespace CPORLib.PlanningModel
             EfficientFormula ef = new EfficientFormula(cf.Operator);
             ef.OriginalFormula = cf;
             m_lEfficientHidden.Add(ef);
-            HashSet<Predicate> lHidden = cf.GetAllPredicates();
+            ISet<Predicate> lHidden = cf.GetAllPredicates();
             foreach (Predicate p in lHidden)
             {
                 GroundedPredicate pCanonical = (GroundedPredicate)p.Canonical();
@@ -967,7 +968,7 @@ namespace CPORLib.PlanningModel
         public State ChooseState(bool bRemoveNegativePredicates)
         {
             State s = new State(Problem);
-            List<Predicate> lAssignment = null;
+            ISet<Predicate> lAssignment = null;
             Debug.Write("Choosing hidden variables ");
             while (lAssignment == null)
             {
@@ -999,7 +1000,7 @@ namespace CPORLib.PlanningModel
                     throw new NotImplementedException();
                 else
                 {
-                    List<Predicate> lAssignment = null;
+                    ISet<Predicate> lAssignment = null;
                     Debug.Write("Choosing hidden variables ");
                     while (lAssignment == null)
                     {
@@ -1010,8 +1011,8 @@ namespace CPORLib.PlanningModel
                             if (idx >= Problem.DeadEndList.Count)
                                 Console.Write("*");
                             Formula f = Problem.DeadEndList[idx];
-                            HashSet<Predicate> hsDeadendPredicates = f.GetAllPredicates();
-                            List<Predicate> lDeadendPredicates = new List<Predicate>(hsDeadendPredicates);
+                            ISet<Predicate> hsDeadendPredicates = f.GetAllPredicates();
+                            ISet<Predicate> lDeadendPredicates = new HashSet<Predicate>(hsDeadendPredicates);
                             lAssignment = ChooseHiddenPredicatesForDeadendDetection(m_lHiddenFormulas, lDeadendPredicates, false);
                         }
                         else
@@ -1069,7 +1070,7 @@ namespace CPORLib.PlanningModel
             }
         }
 
-        private List<CompoundFormula> Reduce(List<CompoundFormula> lHidden, List<Predicate> lAssignment, List<Predicate> lUnknown)
+        private List<CompoundFormula> Reduce(List<CompoundFormula> lHidden, ISet<Predicate> lAssignment, ISet<Predicate> lUnknown)
         {
             List<CompoundFormula> lReduced = new List<CompoundFormula>();
             bool bAssignmentChanged = false;
@@ -1142,7 +1143,7 @@ namespace CPORLib.PlanningModel
                 return lReduced;
         }
 
-        private List<CompoundFormula> AddAssignment(List<CompoundFormula> lHidden, List<Predicate> lAssignment, List<Predicate> lUnknown, Predicate pAssignment)
+        private List<CompoundFormula> AddAssignment(List<CompoundFormula> lHidden, ISet<Predicate> lAssignment, ISet<Predicate> lUnknown, Predicate pAssignment)
         {
             if (lAssignment.Contains(pAssignment.Negate()))
                 return null;
@@ -1150,28 +1151,29 @@ namespace CPORLib.PlanningModel
             lAssignment.Add(pAssignment);
             return Reduce(lHidden, lAssignment, lUnknown);
         }
-        private List<Predicate> ChooseHiddenPredicatesIII()
+        
+        private T ElementAt<T>(ISet<T> set, int index)
         {
-            HashSet<Predicate> lAllPredicates = new HashSet<Predicate>();
-            foreach (Formula f in m_lHiddenFormulas)
-                f.GetAllPredicates(lAllPredicates);
-            List<Predicate> lCanonicalPredicates = new List<Predicate>();
-            foreach (Predicate p in lAllPredicates)
-                if (!p.Negation)
-                    lCanonicalPredicates.Add(p);
-            return ChooseHiddenPredicates(new List<Predicate>(), lCanonicalPredicates, 0);
+            foreach(T t in set)
+            {
+                if(index == 0)
+                    return t;
+                index--;
+
+            }
+            return default(T);
         }
 
-        private List<Predicate> ChooseHiddenPredicates(List<Predicate> lAssignment, List<Predicate> lUnknown, int iCurrent)
+        private ISet<Predicate> ChooseHiddenPredicates(ISet<Predicate> lAssignment, ISet<Predicate> lUnknown, int iCurrent)
         {
             if (iCurrent == lUnknown.Count)
                 return lAssignment;
-            Predicate pCurrent = lUnknown[iCurrent];
+            Predicate pCurrent = ElementAt<Predicate>(lUnknown, iCurrent);
             bool bValid = true;
             if (RandomGenerator.NextDouble() < 0.5)
                 pCurrent = pCurrent.Negate();
             lAssignment.Add(pCurrent);
-            List<Predicate> lFullAssignment = null;
+            ISet<Predicate> lFullAssignment = null;
             //trying p
             foreach (CompoundFormula cfHidden in m_lHiddenFormulas)
             {
@@ -1225,59 +1227,14 @@ namespace CPORLib.PlanningModel
             return lClean;
         }
 
-        private List<Predicate> ChooseHiddenPredicates(List<CompoundFormula> lHidden, bool bCheatUsingAt)
+        private ISet<Predicate> ChooseHiddenPredicates(List<CompoundFormula> lHidden, bool bCheatUsingAt)
         {
             return ChooseHiddenPredicates(lHidden, null, bCheatUsingAt);
         }
-        private List<Predicate> ChooseHiddenPredicatesForDeadendDetection(List<CompoundFormula> lHidden, List<Predicate> lDeadendPredicates, bool bPreconditionFailure)
+        private ISet<Predicate> ChooseHiddenPredicatesForDeadendDetection(List<CompoundFormula> lHidden, ISet<Predicate> lDeadendPredicates, bool bPreconditionFailure)
         {
             HashSet<Predicate> lAllPredicates = new HashSet<Predicate>();
-            /*
-            HashSet<Predicate> lOneoffPredicates = new HashSet<Predicate>();
-            List<CompoundFormula> lOneOfs = new List<CompoundFormula>();
-
-
-            foreach (CompoundFormula f in lHidden)
-            {
-                if (f != null)
-                {
-                    if (f.IsSimpleOneOf())
-                    {
-                        lOneOfs.Add(f);
-                        f.GetAllPredicates(lOneoffPredicates);
-                    }
-                    else
-                        f.GetAllPredicates(lAllPredicates);
-                }
-            }
-            
-            List<Predicate> lCanonicalPredicates = new List<Predicate>();
-            List<Predicate> lCanonicalOneofPredicates = new List<Predicate>();
-            foreach (Predicate p in lAllPredicates)
-            {
-                Predicate pCanonical = p.Canonical();
-                if (!lCanonicalPredicates.Contains(pCanonical))
-                    lCanonicalPredicates.Add(pCanonical);
-
-            }
-            foreach (Predicate p in lOneoffPredicates)
-            {
-                Predicate pCanonical = p.Canonical();
-                if (!lCanonicalOneofPredicates.Contains(pCanonical))
-                    lCanonicalOneofPredicates.Add(pCanonical);
-
-            }
-
-            List<Predicate> lToAssign = new List<Predicate>();
-            foreach (Predicate p in lCanonicalOneofPredicates)
-                if (!lToAssign.Contains(p))
-                    lToAssign.Add(p);
-            foreach (Predicate p in lCanonicalPredicates)
-                if (!lToAssign.Contains(p))
-                    lToAssign.Add(p);
-            */
-
-
+ 
             foreach (CompoundFormula f in lHidden)
             {
                 if (f != null)
@@ -1292,7 +1249,7 @@ namespace CPORLib.PlanningModel
                 lToAssign.Add(p.Canonical());
             }
 
-            List<Predicate> lInitialAssignment = new List<Predicate>();
+            ISet<Predicate> lInitialAssignment = new HashSet<Predicate>();
             foreach (Predicate pDeadend in lDeadendPredicates)
             {
                 lToAssign.Remove(pDeadend.Canonical());
@@ -1303,13 +1260,13 @@ namespace CPORLib.PlanningModel
 
             //ApplySimpleOneOfs(lOneOfs, lInitialAssignment, lCanonicalPredicates);
 
-            List<Predicate> lAssignment = null;
-            lAssignment = ChooseHiddenPredicatesForDeadendDetection(lHidden, lInitialAssignment, lToAssign.ToList(), lDeadendPredicates, bPreconditionFailure);
+            ISet<Predicate> lAssignment = null;
+            lAssignment = ChooseHiddenPredicatesForDeadendDetection(lHidden, lInitialAssignment, lToAssign, lDeadendPredicates, bPreconditionFailure);
             return lAssignment;
         }
 
 
-        private List<Predicate> GetHiddenPredicates(List<CompoundFormula> lHidden)
+        private ISet<Predicate> GetHiddenPredicates(List<CompoundFormula> lHidden)
         {
             HashSet<Predicate> lAllPredicates = new HashSet<Predicate>();
             HashSet<Predicate> lOneoffPredicates = new HashSet<Predicate>();
@@ -1348,7 +1305,7 @@ namespace CPORLib.PlanningModel
                 lCanonicalPredicates = Permute(lCanonicalPredicates);
                 lCanonicalOneofPredicates = Permute(lCanonicalOneofPredicates);
             }
-            List<Predicate> lToAssign = new List<Predicate>();
+            ISet<Predicate> lToAssign = new HashSet<Predicate>();
             foreach (Predicate p in lCanonicalOneofPredicates)
                 if (!Problem.Domain.AlwaysKnown(p) && !lToAssign.Contains(p))
                     lToAssign.Add(p);
@@ -1358,17 +1315,17 @@ namespace CPORLib.PlanningModel
             return lToAssign;
         }
 
-        private List<Predicate> ChooseHiddenPredicates(List<CompoundFormula> lHidden, List<List<Predicate>> lCurrentAssignments, bool bCheatUsingAt)
+        private ISet<Predicate> ChooseHiddenPredicates(List<CompoundFormula> lHidden, List<ISet<Predicate>> lCurrentAssignments, bool bCheatUsingAt)
         {
-            List<Predicate> lToAssign = GetHiddenPredicates(lHidden);
+            ISet<Predicate> lToAssign = GetHiddenPredicates(lHidden);
 
-            List<Predicate> lInitialAssignment = new List<Predicate>();
+            HashSet<Predicate> lInitialAssignment = new HashSet<Predicate>();
             if (false && bCheatUsingAt)
                 CheatUsingAtPredicate(lToAssign, lInitialAssignment);
 
             //ApplySimpleOneOfs(lOneOfs, lInitialAssignment, lCanonicalPredicates);
 
-            List<Predicate> lAssignment = null;
+            ISet<Predicate> lAssignment = null;
             if (lCurrentAssignments == null)
                 lAssignment = ChooseHiddenPredicates(lHidden, lInitialAssignment, lToAssign);
             else
@@ -1445,7 +1402,7 @@ namespace CPORLib.PlanningModel
             }
         }
 
-        private void CheatUsingAtPredicate(List<Predicate> lCanonicalPredicates, List<Predicate> lInitialAssignment)
+        private void CheatUsingAtPredicate(ISet<Predicate> lCanonicalPredicates, ISet<Predicate> lInitialAssignment)
         {
             List<Predicate> lValidAt = new List<Predicate>();
             foreach (Predicate p in lCanonicalPredicates)
@@ -1477,7 +1434,7 @@ namespace CPORLib.PlanningModel
             return lPermutation;
         }
 
-        private Predicate GetNonDiversePredicate(List<Predicate> lUnknown, List<List<Predicate>> lCurrentAssignments, out bool bAllTrue, out bool bAllFalse)
+        private Predicate GetNonDiversePredicate(ISet<Predicate> lUnknown, List<ISet<Predicate>> lCurrentAssignments, out bool bAllTrue, out bool bAllFalse)
         {
             bAllTrue = true;
             bAllFalse = true;
@@ -1486,7 +1443,7 @@ namespace CPORLib.PlanningModel
             {
                 bAllTrue = false;//choosing true first is better in some domains
                 bAllFalse = false;//but not in others...
-                return lUnknown[0];//the order of the variables is already randomized - might as well return the first one. This is important because oneofs appear first.
+                return lUnknown.First();//the order of the variables is already randomized - might as well return the first one. This is important because oneofs appear first.
                 //return lUnknown[RandomGenerator.Next(lUnknown.Count)]; the order of the variables is already randomized - miFF.Search.gHt as well return the first one. This is important because oneofs appear first.
             }
             List<Predicate>[] alPredicates = new List<Predicate>[3];
@@ -1497,7 +1454,7 @@ namespace CPORLib.PlanningModel
             {
                 bAllTrue = true;
                 bAllFalse = true;
-                foreach (List<Predicate> lAssignment in lCurrentAssignments)
+                foreach (ISet<Predicate> lAssignment in lCurrentAssignments)
                 {
                     if (lAssignment.Contains(p))
                         bAllFalse = false;
@@ -1538,7 +1495,7 @@ namespace CPORLib.PlanningModel
             }
             return lUnknown.First();
         }
-        private List<Predicate> SimpleChooseHiddenPredicates(List<Formula> lHidden, HashSet<Predicate> lAssignment, List<Predicate> lUnknown, List<List<Predicate>> lCurrentAssignments, bool random)
+        private ISet<Predicate> SimpleChooseHiddenPredicates(List<Formula> lHidden, HashSet<Predicate> lAssignment, ISet<Predicate> lUnknown, List<ISet<Predicate>> lCurrentAssignments, bool random)
         {
             while (lUnknown.Count > 0)
             {
@@ -1560,10 +1517,10 @@ namespace CPORLib.PlanningModel
                 foreach (Predicate p in lAssignment)
                     lUnknown.Remove(p.Canonical());
             }
-            return new List<Predicate>(lAssignment);
+            return new HashSet<Predicate>(lAssignment);
         }
 
-        private List<Predicate> ChooseHiddenPredicates(List<CompoundFormula> lHidden, List<Predicate> lAssignment, List<Predicate> lUnknown, List<List<Predicate>> lCurrentAssignments)
+        private ISet<Predicate> ChooseHiddenPredicates(List<CompoundFormula> lHidden, ISet<Predicate> lAssignment, ISet<Predicate> lUnknown, List<ISet<Predicate>> lCurrentAssignments)
         {
             if (lHidden == null)
                 return null;
@@ -1578,48 +1535,48 @@ namespace CPORLib.PlanningModel
             {
                 pCurrent = pCurrent.Negate();
             }
-            List<Predicate> lNewHidden = new List<Predicate>(lUnknown);
-            List<Predicate> lNewAssignment = new List<Predicate>(lAssignment);
+            ISet<Predicate> lNewHidden = new HashSet<Predicate>(lUnknown);
+            ISet<Predicate> lNewAssignment = new HashSet<Predicate>(lAssignment);
             List<CompoundFormula> lReduced = AddAssignment(lHidden, lNewAssignment, lNewHidden, pCurrent);
-            List<Predicate> lFullAssignment = ChooseHiddenPredicates(lReduced, lNewAssignment, lNewHidden, lCurrentAssignments);
+            ISet<Predicate> lFullAssignment = ChooseHiddenPredicates(lReduced, lNewAssignment, lNewHidden, lCurrentAssignments);
             if (lFullAssignment != null)
                 return lFullAssignment;
-            lNewHidden = new List<Predicate>(lUnknown);
-            lNewAssignment = new List<Predicate>(lAssignment);
+            lNewHidden = new HashSet<Predicate>(lUnknown);
+            lNewAssignment = new HashSet<Predicate>(lAssignment);
             lReduced = AddAssignment(lHidden, lNewAssignment, lNewHidden, pCurrent.Negate());
             lFullAssignment = ChooseHiddenPredicates(lReduced, lNewAssignment, lNewHidden, lCurrentAssignments);
             return lFullAssignment;
         }
         //random
-        private List<Predicate> ChooseHiddenPredicates(List<CompoundFormula> lHidden, List<Predicate> lAssignment, List<Predicate> lUnknown, bool bRandomAssignment = true)
+        private ISet<Predicate> ChooseHiddenPredicates(List<CompoundFormula> lHidden, ISet<Predicate> lAssignment, ISet<Predicate> lUnknown, bool bRandomAssignment = true)
         {
             if (lHidden == null)
                 return null;
             if (lUnknown.Count == 0)
                 return lAssignment;//BUGBUG - does not work - need to check why!!
-            List<Predicate> lFullAssignment = null;
+            ISet<Predicate> lFullAssignment = null;
             Predicate pCurrent = lUnknown.First();
             lUnknown.Remove(pCurrent);
             if (/*bRandomAssignment && */!Options.ComputeCompletePlanTree)
                 if (RandomGenerator.NextDouble() < 0.5)
                     pCurrent = pCurrent.Negate();
-            List<Predicate> lNewHidden = new List<Predicate>(lUnknown);
-            List<Predicate> lNewAssignment = new List<Predicate>(lAssignment);
+            ISet<Predicate> lNewHidden = new HashSet<Predicate>(lUnknown);
+            ISet<Predicate> lNewAssignment = new HashSet<Predicate>(lAssignment);
             List<CompoundFormula> lReduced = AddAssignment(lHidden, lNewAssignment, lNewHidden, pCurrent);
             if (lReduced != null)
                 lFullAssignment = ChooseHiddenPredicates(lReduced, lNewAssignment, lNewHidden, bRandomAssignment);
             if (lFullAssignment != null)
                 return lFullAssignment;
-            lNewHidden = new List<Predicate>(lUnknown);
-            lNewAssignment = new List<Predicate>(lAssignment);
+            lNewHidden = new HashSet<Predicate>(lUnknown);
+            lNewAssignment = new HashSet<Predicate>(lAssignment);
             lReduced = AddAssignment(lHidden, lNewAssignment, lNewHidden, pCurrent.Negate());
             lFullAssignment = ChooseHiddenPredicates(lReduced, lNewAssignment, lNewHidden, bRandomAssignment);
             return lFullAssignment;
         }
-        private List<Predicate> ChooseHiddenPredicatesForDeadendDetection(List<CompoundFormula> lHidden, List<Predicate> lAssignment, List<Predicate> lUnknown, List<Predicate> lDeadendPredicates, bool bPreconditionFailure)
+        private ISet<Predicate> ChooseHiddenPredicatesForDeadendDetection(List<CompoundFormula> lHidden, ISet<Predicate> lAssignment, ISet<Predicate> lUnknown, ISet<Predicate> lDeadendPredicates, bool bPreconditionFailure)
         {
-            List<Predicate> lNewHidden = new List<Predicate>(lUnknown);
-            List<Predicate> lNewAssignment = new List<Predicate>(lAssignment);
+            ISet<Predicate> lNewHidden = new HashSet<Predicate>(lUnknown);
+            ISet<Predicate> lNewAssignment = new HashSet<Predicate>(lAssignment);
             List<CompoundFormula> lReduced = new List<CompoundFormula>();
             foreach (CompoundFormula cf in lHidden)
                 if (cf != null)
@@ -1633,11 +1590,11 @@ namespace CPORLib.PlanningModel
             {
                 if (m_lProblematicTag != null)
                 {
-                    List<Predicate> lAssignmentWithProblematic = new List<Predicate>(lNewAssignment);
-                    List<Predicate> lAssignmentWithOppositeProblematic = new List<Predicate>(lNewAssignment);
+                    ISet<Predicate> lAssignmentWithProblematic = new HashSet<Predicate>(lNewAssignment);
+                    ISet<Predicate> lAssignmentWithOppositeProblematic = new HashSet<Predicate>(lNewAssignment);
                     List<CompoundFormula> lReducedWithProblematic = lHidden;
                     List<CompoundFormula> lReducedWithOppositeProblematic = lHidden;
-                    List<Predicate> lOppositeProblematicTag = new List<Predicate>();
+                    ISet<Predicate> lOppositeProblematicTag = new HashSet<Predicate>();
 
                     bool bProblematicTagConflictsWithDeadend = false;
                     bool bOppositeProblematicTagConflictsWithDeadend = false;
@@ -1674,35 +1631,16 @@ namespace CPORLib.PlanningModel
                         m_lProblematicTag = null;
                         Debug.WriteLine("*");
                     }
-
-                    /*
-                    if (!bProblematicTagConflictsWithDeadend)
-                    {
-                        lReduced = lReducedWithProblematic;
-                        lNewAssignment = lAssignmentWithProblematic;
-                        m_lProblematicTag = lOppositeProblematicTag;
-                    }
-                    else if (!bOppositeProblematicTagConflictsWithDeadend)
-                    {
-                        lReduced = lReducedWithOppositeProblematic;
-                        lNewAssignment = lAssignmentWithOppositeProblematic;
-                    }
-                    else
-                    {
-                        m_lProblematicTag = null;
-                        Debug.WriteLine("*");
-                    }
-                    */
                 }
             }
 
-            List<Predicate> lFullAssignment = ChooseHiddenPredicates(lReduced, lNewAssignment, lNewHidden, bPreconditionFailure);
+            ISet<Predicate> lFullAssignment = ChooseHiddenPredicates(lReduced, lNewAssignment, lNewHidden, bPreconditionFailure);
             if (lFullAssignment == null)
                 throw new NotImplementedException();
             return lFullAssignment;
         }
 
-        private List<Formula> FindObligatory(List<Predicate> lAssignment, List<Formula> lOptional)
+        private List<Formula> FindObligatory(ISet<Predicate> lAssignment, List<Formula> lOptional)
         {
             List<Formula> lObligatory = new List<Formula>();
             foreach (Formula f in lOptional)
@@ -1713,7 +1651,7 @@ namespace CPORLib.PlanningModel
             return lObligatory;
         }
 
-        private bool SelectAtLeastOne(List<Predicate> lAssignment, List<Formula> lOptional)
+        private bool SelectAtLeastOne(ISet<Predicate> lAssignment, List<Formula> lOptional)
         {
             List<Formula> lConsistent = RemoveInconsistencies(lAssignment, lOptional);
             if (lConsistent.Count == 0)
@@ -1756,69 +1694,7 @@ namespace CPORLib.PlanningModel
         }
 
 
-        private bool SelectOneOf(List<Predicate> lAssignment, List<Formula> lOptional)
-        {
-            List<Formula> lConsistent = RemoveInconsistencies(lAssignment, lOptional);
-            if (lConsistent.Count == 0)
-                return false;
-            List<Formula> lObligatory = FindObligatory(lAssignment, lConsistent);
-            if (lObligatory.Count > 1)
-                return false;
-            int iRandomIndex = RandomGenerator.Next(lConsistent.Count);
-            if (lObligatory.Count == 1)
-                iRandomIndex = lConsistent.IndexOf(lObligatory[0]);
-            Formula f = lConsistent[iRandomIndex];
-            if (f is PredicateFormula)
-                lAssignment.Add(((PredicateFormula)f).Predicate);
-            else
-            {
-                CompoundFormula cf = (CompoundFormula)f;
-                if (cf.Operator == "or")
-                {
-                    bool bSuccess = SelectAtLeastOne(lAssignment, cf.Operands);
-                    if (!bSuccess)
-                        return false;
-                }
-                else
-                    throw new NotImplementedException("Need to implement behavior for compound formulas.");
-            }
-            lConsistent.RemoveAt(iRandomIndex);
-            foreach (Formula fOther in lConsistent)
-            {
-                if (fOther is PredicateFormula)
-                {
-                    Predicate cpNegate = ((PredicateFormula)fOther).Predicate.Negate();
-                    lAssignment.Add(cpNegate);
-                }
-                else
-                {
-                    CompoundFormula cf = (CompoundFormula)fOther;
-                    if (cf.Operator == "or")//must make all sub-forumlas false
-                    {
-                        foreach (Formula fSub in cf.Operands)
-                        {
-                            if (fSub is PredicateFormula)
-                            {
-                                Predicate p = ((PredicateFormula)fSub).Predicate.Negate();
-                                lAssignment.Add(p);
-                            }
-                            else
-                            {
-                                throw new NotImplementedException();
-                            }
-                        }
-
-                    }
-                    else
-                    {
-                        throw new NotImplementedException();
-                    }
-                }
-            }
-            return true;
-        }
-
-        private List<Formula> RemoveInconsistencies(List<Predicate> lAssignment, List<Formula> lOptional)
+        private List<Formula> RemoveInconsistencies(ISet<Predicate> lAssignment, List<Formula> lOptional)
         {
             List<Formula> lConsistent = new List<Formula>();
             foreach (Formula f in lOptional)
@@ -1835,10 +1711,10 @@ namespace CPORLib.PlanningModel
             return Contains(Problem.Goal);
         }
 
-        private List<State> ApplyActions(List<List<Predicate>> lChosen, List<Action> lActions)
+        private List<State> ApplyActions(List<ISet<Predicate>> lChosen, List<Action> lActions)
         {
             List<State> lCurrent = new List<State>();
-            foreach (List<Predicate> lState in lChosen)
+            foreach (ISet<Predicate> lState in lChosen)
             {
                 State s = new State(Problem);
                 foreach (Predicate p in lState)
@@ -1868,7 +1744,7 @@ namespace CPORLib.PlanningModel
 
         public State WriteTaggedDomainAndProblem(CompoundFormula cfGoal, List<Action> lAppliedActions, out int cTags, out MemoryStream msModels)
         {
-            List<List<Predicate>> lChosen = ChooseStateSet();
+            List<ISet<Predicate>> lChosen = ChooseStateSet();
             List<State> lStates = ApplyActions(lChosen, lAppliedActions);
 
             msModels = null;
@@ -1896,14 +1772,16 @@ namespace CPORLib.PlanningModel
 
             if (Options.ConsiderStateNegations)
             {
-                List<List<Predicate>> lAllOthers = new List<List<Predicate>>();
+                List<ISet<Predicate>> lAllOthers = new List<ISet<Predicate>>();
                 lAllOthers.Add(GetNonAppearingPredicates(lChosen));
                 lStates.AddRange(ApplyActions(lAllOthers, lAppliedActions));
             }
             return WriteTaggedDomainAndProblem(cfGoal, lStates, DeadendStrategies.Lazy, out cTags, out msModels);
         }
 
-        public List<List<Predicate>> ChosenStates = null;
+        public List<ISet<Predicate>> ChosenStates = null;
+
+
 
         public void GetTaggedDomainAndProblem(PartiallySpecifiedState pssCurrent, List<Action> lAppliedActions, 
             Options.DeadendStrategies dsStrategy, bool bPreconditionFailure,
@@ -1911,7 +1789,7 @@ namespace CPORLib.PlanningModel
             )
         {
             cTags = 0;
-            List<List<Predicate>> lChosen = ChooseStateSet();
+            List<ISet<Predicate>> lChosen = ChooseStateSet();
             ChosenStates = lChosen;
 
             dTagged = null;
@@ -1919,7 +1797,7 @@ namespace CPORLib.PlanningModel
             if (lChosen == null)
                 return;
 
-
+            //BUGBUG;//We should cache the states, try to avoid this useless repetition
             List<State> lStates = ApplyActions(lChosen, lAppliedActions);
 
             if(lStates.Count == 0)
@@ -1931,7 +1809,7 @@ namespace CPORLib.PlanningModel
             }
 
             HashSet<Predicate> lObserved = new HashSet<Predicate>();
-            Dictionary<string, List<Predicate>> dTags = GetTags(lStates, lObserved);
+            Dictionary<string, ISet<Predicate>> dTags = GetTags(lStates, lObserved);
 
             cTags = dTags.Count;
 
@@ -1939,6 +1817,7 @@ namespace CPORLib.PlanningModel
             {
 
                 dTagged = Problem.Domain.CreateTaggedDomain(dTags, Problem, null);
+
             }
             else
                 throw new NotImplementedException();
@@ -1958,7 +1837,7 @@ namespace CPORLib.PlanningModel
         {
             msModels = null;
             cTags = 0;
-            List<List<Predicate>> lChosen = ChooseStateSet();
+            List<ISet<Predicate>> lChosen = ChooseStateSet();
             ChosenStates = lChosen;
 
             if (lChosen == null)
@@ -1990,7 +1869,7 @@ namespace CPORLib.PlanningModel
 
             if (Options.ConsiderStateNegations)
             {
-                List<List<Predicate>> lAllOthers = new List<List<Predicate>>();
+                List<ISet<Predicate>> lAllOthers = new List<ISet<Predicate>>();
                 lAllOthers.Add(GetNonAppearingPredicates(lChosen));
                 lStates.AddRange(ApplyActions(lAllOthers, lAppliedActions));
             }
@@ -2002,9 +1881,9 @@ namespace CPORLib.PlanningModel
         public State WriteTaggedDomainAndProblemDeadEnd(PartiallySpecifiedState pssCurrent, List<Action> lAppliedActions,
             List<Formula> lMaybeDeadends, DeadendStrategies dsStrategy, bool bPreconditionFailure, out int cTags, out MemoryStream msModels)
         {
-            List<List<Predicate>> lChosen = null;
+            List<ISet<Predicate>> lChosen = null;
 
-            List<Predicate> lTemp = m_lProblematicTag;
+            ISet<Predicate> lTemp = m_lProblematicTag;
             //cChoose++;
             //if(cChoose == 34)
             //    Console.Write("*");
@@ -2045,7 +1924,7 @@ namespace CPORLib.PlanningModel
 
             if (Options.ConsiderStateNegations)
             {
-                List<List<Predicate>> lAllOthers = new List<List<Predicate>>();
+                List<ISet<Predicate>> lAllOthers = new List<ISet<Predicate>>();
                 lAllOthers.Add(GetNonAppearingPredicates(lChosen));
                 lStates.AddRange(ApplyActions(lAllOthers, lAppliedActions));
             }
@@ -2059,8 +1938,8 @@ namespace CPORLib.PlanningModel
         }
         public State WriteTaggedDomainAndProblem(CompoundFormula cfGoal, List<State> lStates, DeadendStrategies dsStrategy, out int cTags, out MemoryStream msModels)
         {
-            HashSet<Predicate> lObserved = new HashSet<Predicate>();
-            Dictionary<string, List<Predicate>> dTags = GetTags(lStates, lObserved);
+            ISet<Predicate> lObserved = new HashSet<Predicate>();
+            Dictionary<string, ISet<Predicate>> dTags = GetTags(lStates, lObserved);
 
             cTags = dTags.Count;
 
@@ -2127,7 +2006,7 @@ namespace CPORLib.PlanningModel
         public State WriteTaggedDomainAndProblem(PartiallySpecifiedState pssCurrent, List<State> lStates, DeadendStrategies dsStrategy, out int cTags, out MemoryStream msModels)
         {
             HashSet<Predicate> lObserved = new HashSet<Predicate>();
-            Dictionary<string, List<Predicate>> dTags = GetTags(lStates, lObserved);
+            Dictionary<string, ISet<Predicate>> dTags = GetTags(lStates, lObserved);
 
             cTags = dTags.Count;
 
@@ -2223,9 +2102,9 @@ namespace CPORLib.PlanningModel
 
             return lStates[0];
         }
-        private Dictionary<string, List<Predicate>> GetTags(List<State> lStates, HashSet<Predicate> lObserved)
+        private Dictionary<string, ISet<Predicate>> GetTags(List<State> lStates, ISet<Predicate> lObserved)
         {
-            Dictionary<string, List<Predicate>> dTags = new Dictionary<string, List<Predicate>>();
+            Dictionary<string, ISet<Predicate>> dTags = new Dictionary<string, ISet<Predicate>>();
             int iTag = 0;
             //bugbug - what happens when there is only a single state?
 
@@ -2246,7 +2125,7 @@ namespace CPORLib.PlanningModel
             {
                 string sTag = "tag" + iTag;
                 iTag++;
-                List<Predicate> lHidden = new List<Predicate>();
+                ISet<Predicate> lHidden = new HashSet<Predicate>();
                 foreach (Predicate p in s.Predicates)
                 {
                     if (!lObserved.Contains(p))
@@ -2280,29 +2159,29 @@ namespace CPORLib.PlanningModel
             return dTags;
         }
 
-        private List<List<Predicate>> ChooseStateSet()
+        private List<ISet<Predicate>> ChooseStateSet()
         {
             if (Options.Translation == Options.Translations.BestCase || (Unknown.Count == 0 && !Problem.Domain.ContainsNonDeterministicActions))
             {
-                List<List<Predicate>> lState = new List<List<Predicate>>();
-                lState.Add(new List<Predicate>(m_lObserved));
+                List<ISet<Predicate>> lState = new List<ISet<Predicate>>();
+                lState.Add(new HashSet<Predicate>(m_lObserved));
                 return lState;
             }
 
             return ReviseExistingTags(Options.TagsCount);
         }
 
-        private List<List<Predicate>> ChooseDeadEndState(List<Formula> lMaybeDeadends, DeadendStrategies dsStrategy, bool bPreconditionFailure)
+        private List<ISet<Predicate>> ChooseDeadEndState(List<Formula> lMaybeDeadends, DeadendStrategies dsStrategy, bool bPreconditionFailure)
         {
             // 1 - for each compund formula f in lMaybeDeadends add the negation of f to the hidden.
             // 2 - deadends may contradict. for the negative state, choose just one deadend.
-            List<List<Predicate>> predicates = new List<List<Predicate>>();
+            List<ISet<Predicate>> predicates = new List<ISet<Predicate>>();
 
-            List<Predicate> lDeadendTrue = new List<Predicate>();
-            List<Predicate> lDeadendFalse = new List<Predicate>();
+            ISet<Predicate> lDeadendTrue = new HashSet<Predicate>();
+            ISet<Predicate> lDeadendFalse = new HashSet<Predicate>();
 
-            List<Predicate> lDeadendState = new List<Predicate>();
-            List<Predicate> lNoDeadendState = new List<Predicate>();
+            ISet<Predicate> lDeadendState = new HashSet<Predicate>();
+            ISet<Predicate> lNoDeadendState = new HashSet<Predicate>();
 
             List<CompoundFormula> lHiddenNoDeadend = new List<CompoundFormula>();
             List<CompoundFormula> lHiddenDeadend = new List<CompoundFormula>();
@@ -2346,74 +2225,15 @@ namespace CPORLib.PlanningModel
 
             m_lProblematicTag = null;
 
-            predicates = new List<List<Predicate>>();
+            predicates = new List<ISet<Predicate>>();
 
             predicates.Add(lNoDeadendState);
             predicates.Add(lDeadendState);
 
             return predicates;
         }
-        private List<List<Predicate>> ChooseDeadEndStateII(List<Formula> lMaybeDeadends, bool Active, bool bPreconditionFailure)
-        {
-            List<List<Predicate>> predicates = new List<List<Predicate>>();
-
-            List<Predicate> lDeadendTrue = new List<Predicate>();
-            List<Predicate> lDeadendFalse = new List<Predicate>();
-
-            List<Predicate> lDeadendState = new List<Predicate>();
-            List<Predicate> lNoDeadendState = new List<Predicate>();
-
-
-
-
-
-            foreach (Formula f in lMaybeDeadends)
-            {
-                if (f is CompoundFormula)
-                {
-                    predicates = new List<List<Predicate>>();
-                    HashSet<Predicate> predictsList = new HashSet<Predicate>();
-                    f.GetAllPredicates(predictsList);
-                    HashSet<Predicate> pre = new HashSet<Predicate>();
-
-                    foreach (Predicate pDeadend in predictsList)
-                    {
-                        if (Observed.Contains(pDeadend.Negate()) == false)
-                        {
-                            lDeadendTrue.Add(pDeadend);
-                            lDeadendFalse.Add(pDeadend.Negate());
-
-                        }
-                    }
-                }
-                else
-                {
-                    PredicateFormula pf = (PredicateFormula)f;
-                    Predicate pDeadend = pf.Predicate;
-                    lDeadendTrue.Add(pDeadend);
-                    lDeadendFalse.Add(pDeadend.Negate());
-                }
-            }
-
-            lDeadendState = ChooseHiddenPredicatesForDeadendDetection(new List<CompoundFormula>(m_lHiddenFormulas), lDeadendTrue, bPreconditionFailure);
-            predicates = new List<List<Predicate>>();
-
-            lNoDeadendState = ChooseHiddenPredicatesForDeadendDetection(new List<CompoundFormula>(m_lHiddenFormulas), lDeadendFalse, bPreconditionFailure);
-
-            if (Active)
-            {
-                predicates.Add(lDeadendState);
-                predicates.Add(lNoDeadendState);
-            }
-            else
-            {
-                predicates.Add(lNoDeadendState);
-                predicates.Add(lDeadendState);
-            }
-            return predicates;
-        }
-
-        private List<List<Predicate>> ReviseExistingTags(int cTags)
+ 
+        private List<ISet<Predicate>> ReviseExistingTags(int cTags)
         {
             if (Options.DeadendStrategy == DeadendStrategies.Classical && m_lDeadendTags.Count > 0 && m_lProblematicTag == null)
             {
@@ -2433,13 +2253,13 @@ namespace CPORLib.PlanningModel
                 {
                     if (cf != null)
                     {
-                        HashSet<Predicate> lPredicates = cf.GetAllPredicates();
+                        ISet<Predicate> lPredicates = cf.GetAllPredicates();
                         foreach (Predicate p in lPredicates)
                             lHiddenPredicates.Add(p.Canonical());
                     }
                 }
                 //RunSatSolver(lHidden, 1, null);
-                List<Predicate> lFullAssignment = ChooseHiddenPredicates(lHidden, new List<Predicate>(), lHiddenPredicates.ToList());
+                ISet<Predicate> lFullAssignment = ChooseHiddenPredicates(lHidden, new HashSet<Predicate>(), lHiddenPredicates);
                 if (lFullAssignment == null)
                     return null;
                 m_lCurrentTags[0] = lFullAssignment;
@@ -2464,9 +2284,9 @@ namespace CPORLib.PlanningModel
                                 cf.GetAllPredicates(lHiddenPredicates);
                         foreach (Predicate p in m_lProblematicTag)
                             lHiddenPredicates.Remove(p.Canonical());
-                        List<Predicate> lFullAssignment = ChooseHiddenPredicates(lHidden, m_lProblematicTag, lHiddenPredicates.ToList());
+                        ISet<Predicate> lFullAssignment = ChooseHiddenPredicates(lHidden, m_lProblematicTag, lHiddenPredicates);
 
-                        List<List<Predicate>> lRefutationTags = new List<List<Predicate>>();
+                        List<ISet<Predicate>> lRefutationTags = new List<ISet<Predicate>>();
                         int cContinuingTags = Math.Min(m_lCurrentTags.Count, Options.TagsCount - 1);
                         if (cContinuingTags == 0)
                             cContinuingTags = 1;
@@ -2533,7 +2353,7 @@ namespace CPORLib.PlanningModel
             return (int)Math.Round(dExp);
         }
 
-        private bool ConsistentWith(List<Predicate> lPredicates)
+        private bool ConsistentWith(ISet<Predicate> lPredicates)
         {
             /*
             CompoundFormula cfAnd = new CompoundFormula("and");
@@ -2550,17 +2370,20 @@ namespace CPORLib.PlanningModel
         }
 
 
-        private bool Equals(List<Predicate> l1, List<Predicate> l2)
+        private bool Equals(ISet<Predicate> l1, ISet<Predicate> l2)
         {
+            return l1.Equals(l2);
+            /*
             if (l1.Count != l2.Count)
                 return false;
             foreach (Predicate p1 in l1)
                 if (!Contains(l2, p1))
                     return false;
             return true;
+            */
         }
 
-        private bool Contains(List<Predicate> l, Predicate p)
+        private bool Contains(ISet<Predicate> l, Predicate p)
         {
             foreach (Predicate pTag in l)
                 if (p.Equals(pTag))
@@ -2568,11 +2391,11 @@ namespace CPORLib.PlanningModel
             return false;
         }
 
-        private bool Contains(List<List<Predicate>> lStates, List<Predicate> lState)
+        private bool Contains(List<ISet<Predicate>> lStates, ISet<Predicate> lState)
         {
             if (lState == null)
                 return true;
-            foreach (List<Predicate> lExisting in lStates)
+            foreach (ISet<Predicate> lExisting in lStates)
             {
                 if (Equals(lExisting, lState))
                     return true;
@@ -2580,16 +2403,16 @@ namespace CPORLib.PlanningModel
             return false;
         }
 
-        private List<List<Predicate>> ChooseRandomStateSet(int cStates)
+        private List<ISet<Predicate>> ChooseRandomStateSet(int cStates)
         {
             //List<List<Predicate>> lAssignments = RunSatSolver(m_cfCNFHiddenState, cStates);
             //return lAssignments;
 
-            List<List<Predicate>> lStates = new List<List<Predicate>>();
+            List<ISet<Predicate>> lStates = new List<ISet<Predicate>>();
             List<CompoundFormula> lConstraints = new List<CompoundFormula>(m_lHiddenFormulas);
             while (cStates > 0 || lStates.Count == 0)
             {
-                List<Predicate> lAssignment = ChooseHiddenPredicates(lConstraints, false);
+                ISet<Predicate> lAssignment = ChooseHiddenPredicates(lConstraints, false);
 
                 if (!Contains(lStates, lAssignment))
                 {
@@ -2608,34 +2431,16 @@ namespace CPORLib.PlanningModel
         }
 
 
-        private List<List<Predicate>> ChooseStateSetForLandmarkDetection(List<GroundedPredicate> lSeedPredicates)
+ 
+
+        private List<ISet<Predicate>> ChooseDiverseStateSet(int cStates, ISet<Predicate> lCurrentTag)
         {
-
-
-            List<List<Predicate>> lStates = new List<List<Predicate>>();
-            List<CompoundFormula> lConstraints = new List<CompoundFormula>(m_lHiddenFormulas);
-
-            foreach (GroundedPredicate gp in lSeedPredicates)
-            {
-                List<Predicate> lAssignment = new List<Predicate>();
-                List<Predicate> lUnknown = new List<Predicate>();
-                List<CompoundFormula> lReducedConstraints = new List<CompoundFormula>();
-                List<CompoundFormula> lReduced = AddAssignment(lConstraints, lAssignment, lUnknown, gp);
-                lStates.Add(lAssignment);
-            }
-            return lStates;
-
-        }
-
-
-        private List<List<Predicate>> ChooseDiverseStateSet(int cStates, List<Predicate> lCurrentTag)
-        {
-            List<List<Predicate>> lStates = new List<List<Predicate>>();
+            List<ISet<Predicate>> lStates = new List<ISet<Predicate>>();
             if (lCurrentTag != null)
             {
                 List<CompoundFormula> lHidden = new List<CompoundFormula>(m_lHiddenFormulas);
-                List<Predicate> lToAssign = GetHiddenPredicates(lHidden);
-                List<Predicate> lAssignment = ChooseHiddenPredicates(lHidden, lCurrentTag, lToAssign);
+                ISet<Predicate> lToAssign = GetHiddenPredicates(lHidden);
+                ISet<Predicate> lAssignment = ChooseHiddenPredicates(lHidden, lCurrentTag, lToAssign);
                 lStates.Add(lAssignment);
             }
             List<CompoundFormula> lConstraints = new List<CompoundFormula>(m_lHiddenFormulas);
@@ -2654,7 +2459,7 @@ namespace CPORLib.PlanningModel
             int cChosenStates = 0;
             while ((cChosenStates < cStates && cFailedAttempts < cStates * 2) || lStates.Count == 0)//1 here if we want to add state negation
             {
-                List<Predicate> lAssignment = ChooseHiddenPredicates(lConstraints, lStates, true);
+                ISet<Predicate> lAssignment = ChooseHiddenPredicates(lConstraints, lStates, true);
                 if (lNotAppearing == null)
                 {
                     lNotAppearing = new List<Predicate>();
@@ -2698,9 +2503,9 @@ namespace CPORLib.PlanningModel
 
         }
 
-        private List<Predicate> GetNonAppearingPredicates(List<List<Predicate>> lChosen)
+        private ISet<Predicate> GetNonAppearingPredicates(List<ISet<Predicate>> lChosen)
         {
-            List<Predicate> lNotAppearing = new List<Predicate>();
+            ISet<Predicate> lNotAppearing = new HashSet<Predicate>();
             foreach (Predicate p in lChosen[0])
                 lNotAppearing.Add(p.Negate());
 
@@ -2714,9 +2519,9 @@ namespace CPORLib.PlanningModel
             return lNotAppearing;
         }
 
-        private List<List<Predicate>> RandomPermutation(List<List<Predicate>> lStates)
+        private List<ISet<Predicate>> RandomPermutation(List<ISet<Predicate>> lStates)
         {
-            List<List<Predicate>> lPermuted = new List<List<Predicate>>();
+            List<ISet<Predicate>> lPermuted = new List<ISet<Predicate>>();
             while (lStates.Count > 1)
             {
                 int idx = RandomGenerator.Next(lStates.Count);
@@ -2727,14 +2532,14 @@ namespace CPORLib.PlanningModel
             return lPermuted;
         }
 
-        public List<Predicate> RunSatSolver()
+        public ISet<Predicate> RunSatSolver()
         {
             List<Formula> lFormulas = new List<Formula>(m_lHiddenFormulas);
-            List<List<Predicate>> l = RunSatSolver(lFormulas, 1, null);
+            List<ISet<Predicate>> l = RunSatSolver(lFormulas, 1, null);
             return l[0];
         }
 
-        public List<List<Predicate>> RunSatSolver(List<Formula> lFormulas, int cAttempts)
+        public List<ISet<Predicate>> RunSatSolver(List<Formula> lFormulas, int cAttempts)
         {
             return RunSatSolver(lFormulas, cAttempts, null);
         }
@@ -2775,7 +2580,7 @@ namespace CPORLib.PlanningModel
             while (lNewlyLearnedPredicates.Count > 0)
             {
                 HashSet<int> lIndexes = new HashSet<int>();
-                List<Predicate> lKnown = new List<Predicate>();
+                ISet<Predicate> lKnown = new HashSet<Predicate>();
                 foreach (PredicateFormula pf in lNewlyLearnedPredicates)
                 {
                     GroundedPredicate p = (GroundedPredicate)pf.Predicate.Canonical();
@@ -2859,13 +2664,13 @@ namespace CPORLib.PlanningModel
             return true;
         }
 
-        public List<List<Predicate>> RunSatSolver(List<Formula> lFormulas, int cAttempts, List<Predicate> lProblematicTag)
+        public List<ISet<Predicate>> RunSatSolver(List<Formula> lFormulas, int cAttempts, ISet<Predicate> lProblematicTag)
         {
             HashSet<Predicate> lPartialAssignment = new HashSet<Predicate>();
 
 
             if (!ApplyUnitPropogation(lFormulas, lPartialAssignment))
-                return new List<List<Predicate>>();
+                return new List<ISet<Predicate>>();
             bool bAllNull = true;
 
 
@@ -2873,20 +2678,20 @@ namespace CPORLib.PlanningModel
                 Debug.WriteLine("*");
 
             DateTime dtStart = DateTime.Now;
-            List<List<Predicate>> lAssignments = new List<List<Predicate>>();
+            List<ISet<Predicate>> lAssignments = new List<ISet<Predicate>>();
 
             foreach (Formula f in lFormulas)
                 if (f != null)
                     bAllNull = false;
             if (bAllNull)//solved by unit propogation
             {
-                lAssignments.Add(new List<Predicate>(lPartialAssignment));
+                lAssignments.Add(new HashSet<Predicate>(lPartialAssignment));
                 return lAssignments;
             }
 
 
 
-            List<Predicate> lAssignment = lProblematicTag;
+            ISet<Predicate> lAssignment = lProblematicTag;
 
             if (lAssignment != null)
             {
@@ -2936,7 +2741,7 @@ namespace CPORLib.PlanningModel
 
             if (solution.HasFoundSolution)
             {
-                List<Predicate> lSolution = new List<Predicate>();
+                ISet<Predicate> lSolution = new HashSet<Predicate>();
 
                 foreach (KeyValuePair<int, CspTerm> p in dVariables)
                 {
@@ -3050,10 +2855,10 @@ namespace CPORLib.PlanningModel
                                 {
                                     if (cf.Operands[i] is PredicateFormula || ((CompoundFormula)(cf.Operands[i])).IsSimpleDisjunction())
                                     {
-                                        HashSet<Predicate> lFirstPredicates = cf.Operands[i].GetAllPredicates();
+                                        ISet<Predicate> lFirstPredicates = cf.Operands[i].GetAllPredicates();
                                         for (int j = i + 1; j < cOperands; j++)
                                         {
-                                            HashSet<Predicate> lSecondPredicates = cf.Operands[j].GetAllPredicates();
+                                            ISet<Predicate> lSecondPredicates = cf.Operands[j].GetAllPredicates();
                                             foreach (Predicate pFirst in lFirstPredicates)
                                             {
                                                 int idx1 = Problem.GetPredicateIndex(pFirst);
@@ -3262,7 +3067,7 @@ namespace CPORLib.PlanningModel
         public bool ConsistentWith(Predicate p)
         {
 
-            List<Predicate> lKnown = new List<Predicate>(Observed);
+            ISet<Predicate> lKnown = new HashSet<Predicate>(Observed);
             lKnown.Add(p);
             Formula fReduced = m_cfCNFHiddenState.Reduce(lKnown);
             if (fReduced.IsFalse(lKnown))
@@ -3466,7 +3271,7 @@ namespace CPORLib.PlanningModel
         {
             if (m_lCurrentTags.Count > 0)
             {
-                foreach (List<Predicate> lDeadend in m_lDeadendTags)
+                foreach (ISet<Predicate> lDeadend in m_lDeadendTags)
                 {
                     if (SameElements(lDeadend, m_lCurrentTags[0]))
                         return;
@@ -3475,7 +3280,7 @@ namespace CPORLib.PlanningModel
             }
         }
 
-        private bool SameElements(List<Predicate> l1, List<Predicate> l2)
+        private bool SameElements(ISet<Predicate> l1, ISet<Predicate> l2)
         {
             if (l1.Count != l2.Count)
                 return false;

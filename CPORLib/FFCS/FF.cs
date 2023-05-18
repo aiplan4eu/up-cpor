@@ -303,7 +303,7 @@ namespace CPORLib.FFCS
 
         private void Init()
         {
-            EfficientArrayMemory.Reset();
+            //EfficientArrayMemory.Reset();
 
 
             DP = new DomainProperties();
@@ -629,7 +629,7 @@ namespace CPORLib.FFCS
 
         public static void ClearEfficientMemory()
         {
-            EfficientArrayMemory.Clear();
+            //EfficientArrayMemory.Clear();
         }
     }
 }

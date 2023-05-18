@@ -16,7 +16,7 @@ namespace CPORLib.LogicalUtilities
             Predicate = p;
             Size = 1;
         }
-        public override bool IsTrueDeleteRelaxation(IEnumerable<Predicate> lKnown)
+        public override bool IsTrueDeleteRelaxation(ISet<Predicate> lKnown)
         {
             if (Predicate == Utilities.TRUE_PREDICATE)
                 return true;
@@ -33,7 +33,7 @@ namespace CPORLib.LogicalUtilities
             return false;
         }
 
-        public override bool IsTrue(IEnumerable<Predicate> lKnown, bool bContainsNegations)
+        public override bool IsTrue(ISet<Predicate> lKnown, bool bContainsNegations)
         {
             if (Predicate == Utilities.TRUE_PREDICATE)
                 return true;
@@ -72,7 +72,7 @@ namespace CPORLib.LogicalUtilities
             }
             return false;
         }
-        public override bool IsFalse(IEnumerable<Predicate> lKnown, bool bContainsNegations)
+        public override bool IsFalse(ISet<Predicate> lKnown, bool bContainsNegations)
         {
             if (Predicate == Utilities.FALSE_PREDICATE)
                 return true;
@@ -156,13 +156,13 @@ namespace CPORLib.LogicalUtilities
             return this;
         }
 
-        public override void GetAllPredicates(HashSet<Predicate> lPredicates)
+        public override void GetAllPredicates(ISet<Predicate> lPredicates)
         {
             if (!lPredicates.Contains(Predicate))
                 lPredicates.Add(Predicate);
         }
 
-        public override void GetAllEffectPredicates(HashSet<Predicate> lConditionalPredicates, HashSet<Predicate> lNonConditionalPredicates)
+        public override void GetAllEffectPredicates(ISet<Predicate> lConditionalPredicates, ISet<Predicate> lNonConditionalPredicates)
         {
             GetAllPredicates(lNonConditionalPredicates);
         }
@@ -179,7 +179,7 @@ namespace CPORLib.LogicalUtilities
             return f;
         }
 
-        public override bool ContainedIn(IEnumerable<Predicate> lPredicates, bool bContainsNegations)
+        public override bool ContainedIn(ISet<Predicate> lPredicates, bool bContainsNegations)
         {
             if(!bContainsNegations)
             {
@@ -246,7 +246,7 @@ namespace CPORLib.LogicalUtilities
             return Predicate.Equals(fOther.Predicate);
         }
 
-        public override Formula Regress(PlanningAction a, IEnumerable<Predicate> lObserved)
+        public override Formula Regress(PlanningAction a, ISet<Predicate> lObserved)
         {
             if (lObserved.Contains(Predicate))
                 return new PredicateFormula(Utilities.TRUE_PREDICATE);
@@ -273,8 +273,8 @@ namespace CPORLib.LogicalUtilities
             Predicate pNegate = Predicate.Negate();
             foreach (CompoundFormula cfCondition in a.GetConditions())
             {
-                HashSet<Predicate> lEffects = cfCondition.Operands[1].GetAllPredicates();
-                HashSet<Predicate> lOptionalEffects = cfCondition.Operands[1].GetAllOptionalPredicates();
+                ISet<Predicate> lEffects = cfCondition.Operands[1].GetAllPredicates();
+                ISet<Predicate> lOptionalEffects = cfCondition.Operands[1].GetAllOptionalPredicates();
                 if (lEffects.Contains(Predicate))
                 {
                     int iChoice = cfCondition.GetChoiceIndex(Predicate);
@@ -313,7 +313,7 @@ namespace CPORLib.LogicalUtilities
             Predicate pNegate = Predicate.Negate();
             foreach (CompoundFormula cfCondition in a.GetConditions())
             {
-                HashSet<Predicate> lEffects = cfCondition.Operands[1].GetAllPredicates();
+                ISet<Predicate> lEffects = cfCondition.Operands[1].GetAllPredicates();
                 if (lEffects.Contains(Predicate))
                 {
                     Formula fReg = cfCondition.Operands[0].CreateRegression(Predicate, -1);
@@ -380,7 +380,7 @@ namespace CPORLib.LogicalUtilities
             return cfOr.Simplify();
         }
 
-        public override Formula Reduce(IEnumerable<Predicate> lKnown)
+        public override Formula Reduce(ISet<Predicate> lKnown)
         {
             Predicate pReduced = Predicate;
             if (lKnown.Contains(Predicate))
@@ -434,14 +434,14 @@ namespace CPORLib.LogicalUtilities
             }
             return this;
         }
-        public override Formula RemoveImpossibleOptions(IEnumerable<Predicate> lObserved)
+        public override Formula RemoveImpossibleOptions(ISet<Predicate> lObserved)
         {
             if (lObserved.Contains(Predicate.Negate()))
                 return null;
             return this;
         }
 
-        public override Formula ApplyKnown(IEnumerable<Predicate> lKnown)
+        public override Formula ApplyKnown(ISet<Predicate> lKnown)
         {
             return this;
             /* Seems like this is what we want, but perhaps not here
@@ -487,7 +487,7 @@ namespace CPORLib.LogicalUtilities
                 return new PredicateFormula(Predicate.GenerateKnowPredicate(Predicate));
         }
 
-        public override Formula ReduceConditions(IEnumerable<Predicate> lKnown)
+        public override Formula ReduceConditions(ISet<Predicate> lKnown)
         {
             return new PredicateFormula(Predicate);
         }

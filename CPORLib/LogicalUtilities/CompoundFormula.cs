@@ -202,7 +202,7 @@ namespace CPORLib.LogicalUtilities
 
         }
 
-        public override bool IsTrueDeleteRelaxation(IEnumerable<Predicate> lKnown)
+        public override bool IsTrueDeleteRelaxation(ISet<Predicate> lKnown)
         {
             int cCountTrue = 0;
             foreach (Formula f in Operands)
@@ -222,7 +222,7 @@ namespace CPORLib.LogicalUtilities
             return Operator == "and";
         }
 
-        public override bool IsTrue(IEnumerable<Predicate> lKnown, bool bContainsNegations)
+        public override bool IsTrue(ISet<Predicate> lKnown, bool bContainsNegations)
         {
             bool bValue = false;
             int cCountTrue = 0, cCountFalse = 0;
@@ -247,7 +247,7 @@ namespace CPORLib.LogicalUtilities
                 return cCountFalse + cCountTrue == Operands.Count;
             return Operator == "and";
         }
-        public override bool IsFalse(IEnumerable<Predicate> lKnown, bool bContainsNegations)
+        public override bool IsFalse(ISet<Predicate> lKnown, bool bContainsNegations)
         {
             bool bValue = false;
             int cCountTrue = 0, cCountFalse = 0;
@@ -319,7 +319,7 @@ namespace CPORLib.LogicalUtilities
         }
 
 
-        public override Formula Reduce(IEnumerable<Predicate> lKnown)
+        public override Formula Reduce(ISet<Predicate> lKnown)
         {
             CompoundFormula cfReduced = new CompoundFormula(Operator);
             Formula fNew = null;
@@ -413,7 +413,7 @@ namespace CPORLib.LogicalUtilities
 
         private Formula ReduceAnd()
         {
-            List<Predicate> lObligatory = new List<Predicate>();
+            HashSet<Predicate> lObligatory = new HashSet<Predicate>();
             foreach (Formula f in Operands)
             {
                 if (f is PredicateFormula)
@@ -496,12 +496,12 @@ namespace CPORLib.LogicalUtilities
         }
 
 
-        public override void GetAllPredicates(HashSet<Predicate> lPredicates)
+        public override void GetAllPredicates(ISet<Predicate> lPredicates)
         {
             foreach (Formula f in Operands)
                 f.GetAllPredicates(lPredicates);
         }
-        public override void GetAllEffectPredicates(HashSet<Predicate> lConditionalPredicates, HashSet<Predicate> lNonConditionalPredicates)
+        public override void GetAllEffectPredicates(ISet<Predicate> lConditionalPredicates, ISet<Predicate> lNonConditionalPredicates)
         {
             if (Operator == "when")
                 Operands[1].GetAllPredicates(lConditionalPredicates);
@@ -535,7 +535,7 @@ namespace CPORLib.LogicalUtilities
             return cfClone;
         }
 
-        public override bool ContainedIn(IEnumerable<Predicate> lPredicates, bool bContainsNegations)
+        public override bool ContainedIn(ISet<Predicate> lPredicates, bool bContainsNegations)
         {
             bool bSuccess = false;
             foreach (Formula fSub in Operands)
@@ -761,7 +761,7 @@ namespace CPORLib.LogicalUtilities
             return cfNew;
         }
 
-        public CompoundFormula RemovePredicates(IEnumerable<Predicate> lPredicates)
+        public CompoundFormula RemovePredicates(ISet<Predicate> lPredicates)
         {
             CompoundFormula cfNew = new CompoundFormula(Operator);
             foreach (Formula f in Operands)
@@ -811,8 +811,8 @@ namespace CPORLib.LogicalUtilities
 
                 if (IsSimpleAnd(fFirst) && IsSimpleAnd(fSecond))
                 {
-                    HashSet<Predicate> lFirst = fFirst.GetAllPredicates();
-                    HashSet<Predicate> lSecond = fSecond.GetAllPredicates();
+                    ISet<Predicate> lFirst = fFirst.GetAllPredicates();
+                    ISet<Predicate> lSecond = fSecond.GetAllPredicates();
                     CompoundFormula cfSecond = new CompoundFormula("and");
                     foreach (Predicate p in lSecond)
                         if (!lFirst.Contains(p))
@@ -888,11 +888,11 @@ namespace CPORLib.LogicalUtilities
         {
             if (Operator == "or")
             {
-                HashSet<Predicate> lPredicates = GetAllPredicates();
-                HashSet<Predicate> lObligatory = new HashSet<Predicate>();
+                ISet<Predicate> lPredicates = GetAllPredicates();
+                ISet<Predicate> lObligatory = new HashSet<Predicate>();
                 foreach (Predicate p in lPredicates)
                 {
-                    List<Predicate> lNotP = new List<Predicate>();
+                    HashSet<Predicate> lNotP = new HashSet<Predicate>();
                     lNotP.Add(p.Negate());
                     if (IsFalse(lNotP))
                         lObligatory.Add(p);
@@ -954,7 +954,7 @@ namespace CPORLib.LogicalUtilities
             return null;
         }
 
-        public override Formula Regress(PlanningAction a, IEnumerable<Predicate> lObserved)
+        public override Formula Regress(PlanningAction a, ISet<Predicate> lObserved)
         {
             CompoundFormula cfNew = new CompoundFormula(Operator);
             foreach (Formula f in Operands)
@@ -1164,7 +1164,7 @@ namespace CPORLib.LogicalUtilities
                         cfOr.AddOperand(f);
                     foreach (PredicateFormula f in lPredicateOperands)
                         cfOr.AddOperand(f);
-                    if (!cfOr.IsTrue(new List<Predicate>()))
+                    if (!cfOr.IsTrue(new HashSet<Predicate>()))
                         cfAnd.AddOperand(cfOr);
                 }
                 /*
@@ -1514,7 +1514,7 @@ namespace CPORLib.LogicalUtilities
             {
                 for (int i = 0; i < Operands.Count; i++)
                 {
-                    HashSet<Predicate> lPredicates = Operands[i].GetAllPredicates();
+                    ISet<Predicate> lPredicates = Operands[i].GetAllPredicates();
                     if (lPredicates.Contains(p))
                         return i;
                 }
@@ -1543,7 +1543,7 @@ namespace CPORLib.LogicalUtilities
             {
                 for (int i = 0; i < Operands.Count; i++)
                 {
-                    HashSet<Predicate> lPredicates = Operands[i].GetAllPredicates();
+                    ISet<Predicate> lPredicates = Operands[i].GetAllPredicates();
                     if (!lPredicates.Contains(p))
                         return i;
                 }
@@ -1711,7 +1711,7 @@ namespace CPORLib.LogicalUtilities
             return sOutput;
         }
 
-        public override Formula RemoveImpossibleOptions(IEnumerable<Predicate> lObserved)
+        public override Formula RemoveImpossibleOptions(ISet<Predicate> lObserved)
         {
             CompoundFormula cfNew = new CompoundFormula(Operator);
             if (Operator == "and")
@@ -1757,7 +1757,7 @@ namespace CPORLib.LogicalUtilities
             return cfNew;
         }
 
-        public override Formula ApplyKnown(IEnumerable<Predicate> lKnown)
+        public override Formula ApplyKnown(ISet<Predicate> lKnown)
         {
             CompoundFormula cfNew = new CompoundFormula(Operator);
             if (Operator == "and" || Operator == "or" || Operator == "oneof")
@@ -1783,7 +1783,7 @@ namespace CPORLib.LogicalUtilities
             return cfNew;
         }
 
-        public override Formula ReduceConditions(IEnumerable<Predicate> lKnown)
+        public override Formula ReduceConditions(ISet<Predicate> lKnown)
         {
             CompoundFormula cfNew = new CompoundFormula(Operator);
             if (Operator == "and")// || Operator == "or" || Operator == "oneof")

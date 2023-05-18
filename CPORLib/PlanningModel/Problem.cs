@@ -18,8 +18,8 @@ namespace CPORLib.PlanningModel
         private HashSet<Predicate> m_lKnown;
         private List<CompoundFormula> m_lHidden;
         public IEnumerable<CompoundFormula> Hidden { get { return m_lHidden; } }
-        public IEnumerable<Predicate> Known { get { return m_lKnown; } }
-        public IEnumerable<Predicate> Unknown { get { return m_lInitiallyUnknown; } }
+        public ISet<Predicate> Known { get { return m_lKnown; } }
+        public ISet<Predicate> Unknown { get { return m_lInitiallyUnknown; } }
         public List<PlanningAction> ReasoningActions { get; private set; }
         public string MetricStatement { get; private set; }
         private HashSet<Predicate> m_lInitiallyUnknown;
@@ -58,7 +58,7 @@ namespace CPORLib.PlanningModel
         {
             Domain.AddHidden(cf);
 
-            HashSet<Predicate> hs = cf.GetAllPredicates();
+            ISet<Predicate> hs = cf.GetAllPredicates();
             foreach (GroundedPredicate gp in hs)
             {
                 m_lInitiallyUnknown.Add(gp.Canonical());
@@ -99,8 +99,8 @@ namespace CPORLib.PlanningModel
                 if (!lKnownPredicates.Contains(p.Name))
                     lKnownPredicates.Add(p.Name);
             // List<GroundedPredicate> lGrounded = Domain.GroundAllPredicates(lKnownPredicates);
-            HashSet<GroundedPredicate> lGrounded = Domain.GroundAllPredicates();
-            HashSet<Predicate> lUnknown = new HashSet<Predicate>();
+            ISet<Predicate> lGrounded = Domain.GroundAllPredicates();
+            ISet<Predicate> lUnknown = new HashSet<Predicate>();
             foreach (Formula f in m_lHidden)
                 f.GetAllPredicates(lUnknown);
             foreach (GroundedPredicate gp in lGrounded)
@@ -701,7 +701,7 @@ namespace CPORLib.PlanningModel
 
             sw.WriteLine(")");
 
-            HashSet<Predicate> lGoalPredicates = Goal.GetAllPredicates();
+            ISet<Predicate> lGoalPredicates = Goal.GetAllPredicates();
 
 
             CompoundFormula cfGoal = new CompoundFormula("and");
@@ -767,7 +767,7 @@ namespace CPORLib.PlanningModel
 
             sw.WriteLine(")");
 
-            HashSet<Predicate> lGoalPredicates = Goal.GetAllPredicates();
+            ISet<Predicate> lGoalPredicates = Goal.GetAllPredicates();
 
 
             CompoundFormula cfGoal = new CompoundFormula("and");
@@ -792,8 +792,8 @@ namespace CPORLib.PlanningModel
         }
 
 
-        public MemoryStream WriteTaggedProblem(Dictionary<string, List<Predicate>> dTags, CompoundFormula cfGoal, IEnumerable<Predicate> lObserved,
-                                        List<Predicate> lTrueState, Dictionary<string, double> dFunctionValues, Options.DeadendStrategies dsStrategy)
+        public MemoryStream WriteTaggedProblem(Dictionary<string, ISet<Predicate>> dTags, CompoundFormula cfGoal, ISet<Predicate> lObserved,
+                                        ISet<Predicate> lTrueState, Dictionary<string, double> dFunctionValues, Options.DeadendStrategies dsStrategy)
         {
             MemoryStream msProblem = new MemoryStream();
             StreamWriter sw = new StreamWriter(msProblem);
@@ -844,7 +844,7 @@ namespace CPORLib.PlanningModel
                     sw.WriteLine(sP + ")");
                 }
             }
-            foreach (KeyValuePair<string, List<Predicate>> p in dTags)
+            foreach (KeyValuePair<string, ISet<Predicate>> p in dTags)
             {
 
                 foreach (GroundedPredicate gp in p.Value)
@@ -899,8 +899,8 @@ namespace CPORLib.PlanningModel
 
 
 
-        public Problem CreateTaggedProblem(Domain dTagged, Dictionary<string, List<Predicate>> dTags, IEnumerable<Predicate> lObserved,
-                                        List<Predicate> lTrueState, Dictionary<string, double> dFunctionValues, Options.DeadendStrategies dsStrategy,
+        public Problem CreateTaggedProblem(Domain dTagged, Dictionary<string, ISet<Predicate>> dTags, ISet<Predicate> lObserved,
+                                        ISet<Predicate> lTrueState, Dictionary<string, double> dFunctionValues, Options.DeadendStrategies dsStrategy,
                                         bool bPreconditionFailure)
         {
             Problem problem = new Problem("K" + Name, dTagged);
@@ -943,7 +943,7 @@ namespace CPORLib.PlanningModel
                     continue;
                 problem.AddKnown(gp);
             }
-            foreach (KeyValuePair<string, List<Predicate>> p in dTags)
+            foreach (KeyValuePair<string, ISet<Predicate>> p in dTags)
             {
 
                 foreach (GroundedPredicate gp in p.Value)
@@ -1030,7 +1030,7 @@ namespace CPORLib.PlanningModel
         }
 
 
-        public MemoryStream WriteTaggedProblem(Dictionary<string, List<Predicate>> dTags, IEnumerable<Predicate> lObserved,
+        public MemoryStream WriteTaggedProblem(Dictionary<string, List<Predicate>> dTags, ISet<Predicate> lObserved,
                                         List<Predicate> lTrueState, Dictionary<string, double> dFunctionValues, Options.DeadendStrategies dsStrategy)
         {
             MemoryStream msProblem = new MemoryStream();
@@ -1167,7 +1167,7 @@ namespace CPORLib.PlanningModel
 
 
 
-        public MemoryStream WriteTaggedProblemNoState(Dictionary<string, List<Predicate>> dTags, IEnumerable<Predicate> lObserved,
+        public MemoryStream WriteTaggedProblemNoState(Dictionary<string, ISet<Predicate>> dTags, ISet<Predicate> lObserved,
                                                  Dictionary<string, double> dFunctionValues)
         {
             MemoryStream ms = new MemoryStream(1000);
@@ -1210,7 +1210,7 @@ namespace CPORLib.PlanningModel
                     }
                 }
             }
-            foreach (KeyValuePair<string, List<Predicate>> p in dTags)
+            foreach (KeyValuePair<string, ISet<Predicate>> p in dTags)
             {
 
                 foreach (GroundedPredicate gp in p.Value)

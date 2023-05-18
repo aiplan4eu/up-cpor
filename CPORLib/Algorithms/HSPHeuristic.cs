@@ -36,8 +36,8 @@ namespace CPORLib.Algorithms
 
         private void ComputeAllEffectsPreconditions()
         {
-            HashSet<GroundedPredicate> lAllPositivePredicates = m_dDomain.GroundAllPredicates();
-            HashSet<Predicate> lAllPredicates = new HashSet<Predicate>();
+            ISet<Predicate> lAllPositivePredicates = m_dDomain.GroundAllPredicates();
+            ISet<Predicate> lAllPredicates = new HashSet<Predicate>();
             foreach (Predicate p in lAllPositivePredicates)
             {
                 lAllPredicates.Add(p);
@@ -87,7 +87,7 @@ namespace CPORLib.Algorithms
             while (bChanged)
             {
                 cExpansions++;
-                List<Predicate> lCurrentPredicates = new List<Predicate>(lAllAchevablePredicates);
+                HashSet<Predicate> lCurrentPredicates = new HashSet<Predicate>(lAllAchevablePredicates);
                 List<Action> lActions = m_dDomain.GroundAllActions(lCurrentPredicates, true);
                 bChanged = false;
                 foreach (Action a in lActions)
@@ -99,7 +99,7 @@ namespace CPORLib.Algorithms
                         bool bApplicable = true;
                         if (a.Preconditions != null)
                         {
-                            HashSet<Predicate> lPreconditions = a.Preconditions.GetAllPredicates();
+                            ISet<Predicate> lPreconditions = a.Preconditions.GetAllPredicates();
                             foreach (Predicate p in lPreconditions)
                             {
                                 if (dCostForAchieving.ContainsKey(p))
@@ -116,7 +116,7 @@ namespace CPORLib.Algorithms
                         }
                         if (bApplicable)
                         {
-                            HashSet<Predicate> lEffects = a.GetApplicableEffects(lCurrentPredicates, true).GetAllPredicates();
+                            ISet<Predicate> lEffects = a.GetApplicableEffects(lCurrentPredicates, true).GetAllPredicates();
                             foreach (Predicate p in lEffects)
                             {
                                 //if (!p.Negation)
@@ -329,7 +329,7 @@ namespace CPORLib.Algorithms
         {
             Dictionary<Predicate, int> dCostForAchieving = new Dictionary<Predicate, int>();
             int iMaxCost = 0, cSumCosts = 0;
-            HashSet<GroundedPredicate> lPredicates = m_dDomain.GroundAllPredicates();
+            ISet<Predicate> lPredicates = m_dDomain.GroundAllPredicates();
             List<Action> lActions = m_dDomain.GroundAllActions(lPredicates, true);
             List<Predicate> lObserved = new List<Predicate>();
             foreach (Predicate p in m_lGoal)

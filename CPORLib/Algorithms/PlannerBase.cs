@@ -59,6 +59,9 @@ namespace CPORLib.Algorithms
             Problem.PrepareForPlanning();
 
             FF.ClearEfficientMemory();
+
+            GenericArraySet<Predicate>.Reset();
+            GroundedPredicateFactory.Reset();
         }
 
 
@@ -814,8 +817,8 @@ namespace CPORLib.Algorithms
 
         public void CreateTaggedDomainAndProblem(List<State> lStates, DeadendStrategies dsStrategy, out int cTags, out Domain domain, out Problem problem)
         {
-            HashSet<Predicate> lObserved = new HashSet<Predicate>();
-            Dictionary<string, List<Predicate>> dTags = GetTags(lStates, lObserved);
+            ISet<Predicate> lObserved = new HashSet<Predicate>();
+            Dictionary<string, ISet<Predicate>> dTags = GetTags(lStates, lObserved);
 
             cTags = dTags.Count;
 
@@ -854,9 +857,9 @@ namespace CPORLib.Algorithms
                 throw new NotImplementedException();
         }
         */
-        private Dictionary<string, List<Predicate>> GetTags(List<State> lStates, HashSet<Predicate> lObserved)
+        private Dictionary<string, ISet<Predicate>> GetTags(List<State> lStates, ISet<Predicate> lObserved)
         {
-            Dictionary<string, List<Predicate>> dTags = new Dictionary<string, List<Predicate>>();
+            Dictionary<string, ISet<Predicate>> dTags = new Dictionary<string, ISet<Predicate>>();
             int iTag = 0;
             //bugbug - what happens when there is only a single state?
 
@@ -877,7 +880,7 @@ namespace CPORLib.Algorithms
             {
                 string sTag = "tag" + iTag;
                 iTag++;
-                List<Predicate> lHidden = new List<Predicate>();
+                ISet<Predicate> lHidden = new HashSet<Predicate>();
                 foreach (Predicate p in s.Predicates)
                 {
                     if (!lObserved.Contains(p))

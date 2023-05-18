@@ -23,17 +23,17 @@ namespace CPORLib.FFCS
 
         /* local globals for this part
          */
-        /*
+       
         static Array2D<int> lpos = new Array2D<int>(MAX_PREDICATES);// new int[MAX_PREDICATES];
         static Array2D<int> lneg = new Array2D<int>(MAX_PREDICATES);// new int[MAX_PREDICATES];
         static Array2D<int> luse = new Array2D<int>(MAX_PREDICATES);// new int[MAX_PREDICATES];
         static Array2D<int> lindex = new Array2D<int>(MAX_PREDICATES);// new int[MAX_PREDICATES];
-        */
+ /*        
         static IntArray2D lpos = new IntArray2D(MAX_PREDICATES);// new int[MAX_PREDICATES];
         static IntArray2D lneg = new IntArray2D(MAX_PREDICATES);// new int[MAX_PREDICATES];
         static IntArray2D luse = new IntArray2D(MAX_PREDICATES);// new int[MAX_PREDICATES];
         static IntArray2D lindex = new IntArray2D(MAX_PREDICATES);// new int[MAX_PREDICATES];
-
+*/
         static int lp;
         static int[] largs = new int[MAX_VARS];
 
