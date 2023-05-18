@@ -86,7 +86,7 @@ class CPORImpl(Engine, OneshotPlannerMixin):
     def get_credits(**kwargs) -> Optional["Credits"]:
         return CPORCredits
 
-    def solve(self, problem: AbstractProblem) -> 'PlanGenerationResult':
+    def _solve(self, problem: AbstractProblem) -> 'PlanGenerationResult':
 
         assert isinstance(problem, ContingentProblem)
 
@@ -211,7 +211,7 @@ class SDRImpl(Engine, ActionSelectorMixin):
     def get_credits(**kwargs) -> Optional["Credits"]:
         return SDRCredits
 
-    def solve(self, problem: AbstractProblem) -> 'PlanGenerationResult':
+    def _solve(self, problem: AbstractProblem) -> 'PlanGenerationResult':
 
         assert isinstance(problem, ContingentProblem)
 
