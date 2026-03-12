@@ -1,0 +1,23 @@
+{
+  "goal_reached": true,
+  "steps": 3,
+  "trace": [
+    {
+      "action": "senseclear(b1)",
+      "observation": [
+        [
+          "clear(b1)",
+          false
+        ]
+      ]
+    },
+    {
+      "action": "move-to-t(b2, b1)",
+      "observation": null
+    },
+    {
+      "action": "move-t-to-b(b1, b2)",
+      "observation": null
+    }
+  ]
+}

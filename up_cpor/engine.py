@@ -11,7 +11,11 @@ from unified_planning.model.contingent.contingent_problem import ContingentProbl
 from unified_planning.engines.results import PlanGenerationResultStatus, PlanGenerationResult
 
 from typing import Type, IO, Optional, Callable, Dict
-from up_cpor.converter import UpCporConverter
+from up_cpor.converter import CporPlanGraphError, UpCporConverter
+
+
+def _coerce_random_seed(random_seed: Optional[int]) -> Optional[int]:
+    return None if random_seed is None else int(random_seed)
 
 
 MetaCredits = Credits('Conitngent Planning Algorithms',
@@ -53,12 +57,13 @@ SDRCredits = Credits('SDR',
 
 class CPORImpl(Engine, OneshotPlannerMixin):
 
-    def __init__(self, bOnline = False, **options):
+    def __init__(self, bOnline = False, random_seed: Optional[int] = None, **options):
         up.engines.Engine.__init__(self)
         up.engines.mixins.OneshotPlannerMixin.__init__(self)
         self.bOnline = bOnline
         self._skip_checks = False
         self.cnv = UpCporConverter()
+        self.random_seed = _coerce_random_seed(random_seed)
 
     @property
     def name(self) -> str:
@@ -103,8 +108,13 @@ class CPORImpl(Engine, OneshotPlannerMixin):
         c_domain = self.cnv.createDomain(problem)
         c_problem = self.cnv.createProblem(problem, c_domain)
 
+        if self.random_seed is not None:
+            self.cnv.set_random_seed(self.random_seed)
         solution = self.cnv.createCPORPlan(c_domain, c_problem)
-        actions = self.cnv.createActionTree(solution, problem)
+        try:
+            actions = self.cnv.createActionTree(solution, problem)
+        except CporPlanGraphError:
+            return PlanGenerationResult(PlanGenerationResultStatus.INTERNAL_ERROR, None, self.name)
         if solution is None or actions is None:
             return PlanGenerationResult(PlanGenerationResultStatus.UNSOLVABLE_PROVEN, None, self.name)
 
@@ -116,7 +126,9 @@ class CPORImpl(Engine, OneshotPlannerMixin):
 
 class CPORMetaEngineImpl(MetaEngine, mixins.OneshotPlannerMixin):
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, random_seed: Optional[int] = None, **kwargs):
+        self.random_seed = _coerce_random_seed(random_seed)
+        kwargs.pop("random_seed", None)
         MetaEngine.__init__(self, *args, **kwargs)
         mixins.OneshotPlannerMixin.__init__(self)
         self.cnv = UpCporConverter()
@@ -172,8 +184,13 @@ class CPORMetaEngineImpl(MetaEngine, mixins.OneshotPlannerMixin):
         c_domain = self.cnv.createDomain(problem)
         c_problem = self.cnv.createProblem(problem, c_domain)
 
+        if self.random_seed is not None:
+            self.cnv.set_random_seed(self.random_seed)
         solution = self.cnv.createCPORPlan(c_domain, c_problem)
-        actions = self.cnv.createActionTree(solution, problem)
+        try:
+            actions = self.cnv.createActionTree(solution, problem)
+        except CporPlanGraphError:
+            return PlanGenerationResult(PlanGenerationResultStatus.INTERNAL_ERROR, None, self.name)
 
         if solution is None or actions is None:
             return PlanGenerationResult(PlanGenerationResultStatus.UNSOLVABLE_PROVEN, None, self.name)
@@ -183,11 +200,18 @@ class CPORMetaEngineImpl(MetaEngine, mixins.OneshotPlannerMixin):
 
 class SDRImpl(Engine, ActionSelectorMixin):
 
-    def __init__(self, bOnline = False, problem: AbstractProblem = None, **options):
+    def __init__(
+        self,
+        bOnline = False,
+        problem: AbstractProblem = None,
+        random_seed: Optional[int] = None,
+        **options,
+    ):
         self._skip_checks = False
         self.cnv = UpCporConverter()
         self.problem = problem
-        self.solver = self._setSolver(self.problem)
+        self.random_seed = _coerce_random_seed(random_seed)
+        self.solver = self._setSolver(self.problem) if self.problem is not None else None
         self.bOnline = bOnline
 
     @property
@@ -227,6 +251,8 @@ class SDRImpl(Engine, ActionSelectorMixin):
 
         c_domain = self.cnv.createDomain(problem)
         c_problem = self.cnv.createProblem(problem, c_domain)
+        if self.random_seed is not None:
+            self.cnv.set_random_seed(self.random_seed)
         self.solver, solution = self.cnv.createSDRPlan(c_domain, c_problem)
 
         if not self.bOnline:
@@ -251,8 +277,7 @@ class SDRImpl(Engine, ActionSelectorMixin):
     def _setSolver(self, problem):
         c_domain = self.cnv.createDomain(problem)
         c_problem = self.cnv.createProblem(problem, c_domain)
+        if self.random_seed is not None:
+            self.cnv.set_random_seed(self.random_seed)
         solver = self.cnv.createSDRSolver(c_domain, c_problem)
         return solver
-
-
-

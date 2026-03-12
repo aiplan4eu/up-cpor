@@ -1,0 +1,39 @@
+[build-system]
+requires = ["setuptools>=64", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "up_cpor"
+dynamic = ["version"]
+description = "up_cpor"
+readme = "README.md"
+license = "Apache-2.0"
+requires-python = ">=3.7"
+authors = [
+    { name = "BGU CPOR Development Team", email = "shanigu@bgu.ac.il" },
+]
+dependencies = [
+    "pythonnet==3.0.5",
+    # currently, latest UP version does not include PR 707 required for running UP-CPOR: https://github.com/aiplan4eu/unified-planning/pull/707
+    "unified-planning @ git+https://github.com/aiplan4eu/unified-planning@fa635c0fb4debb47f22c5bd1af4dc2559be861fa",
+    "pysmt",
+    "z3-solver",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "up-tamer",
+    "up-pyperplan",
+]
+
+[tool.setuptools]
+packages = ["CPORLib", "up_cpor"]
+
+[tool.setuptools.dynamic]
+version = { attr = "up_cpor.__version__" }
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["tests"]
+addopts = ["--import-mode=importlib"]

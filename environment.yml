@@ -1,0 +1,10 @@
+name: cpor
+channels:
+  - conda-forge
+dependencies:
+  - dotnet
+  - mono
+  - python=3.12
+  - pip
+  - pip:
+    - .[dev]

@@ -1,0 +1,29 @@
+{
+  "goal_after": false,
+  "goal_before": false,
+  "steps": 3,
+  "trace": [
+    {
+      "action": "observe-ball(p1-1, o1)",
+      "observation": [
+        [
+          "obj-at(o1, p1-1)",
+          false
+        ]
+      ]
+    },
+    {
+      "action": "move(p1-1, p1-2)",
+      "observation": null
+    },
+    {
+      "action": "observe-ball(p1-2, o2)",
+      "observation": [
+        [
+          "obj-at(o2, p1-2)",
+          false
+        ]
+      ]
+    }
+  ]
+}

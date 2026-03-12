@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using CPORLib.LogicalUtilities;
+using CPORLib.Tools;
+using System.Collections.Generic;
 using System;
 
 namespace CPORLib.PlanningModel
@@ -39,6 +41,9 @@ namespace CPORLib.PlanningModel
         public ConditionalPlanTreeNode TrueObservationChild { get; set; }
         public bool DeadEnd { get; set; }
         public bool Goal { get; set; }
+        public bool HasValidationDependencies { get; private set; }
+        public GenericArraySet<Predicate> ValidationPredicatesKnown { get; private set; }
+        public GenericArraySet<Predicate> ValidationPredicatesUnknown { get; private set; }
 
         private static int CountNodes = 0;
 
@@ -47,6 +52,24 @@ namespace CPORLib.PlanningModel
             ID = CountNodes++;
             //if (ID == 174)
             //    Debug.Write("*");
+        }
+
+        public void CaptureValidationDependencies(GenericArraySet<Predicate> known, GenericArraySet<Predicate> unknown)
+        {
+            if ((known == null || known.Count == 0) && (unknown == null || unknown.Count == 0))
+                return;
+
+            if (ValidationPredicatesKnown == null)
+                ValidationPredicatesKnown = new GenericArraySet<Predicate>();
+            if (ValidationPredicatesUnknown == null)
+                ValidationPredicatesUnknown = new GenericArraySet<Predicate>();
+
+            if (known != null)
+                ValidationPredicatesKnown.UnionWith(known);
+            if (unknown != null)
+                ValidationPredicatesUnknown.UnionWith(unknown);
+
+            HasValidationDependencies = true;
         }
 
         private string ToTreeString(string sIndent, HashSet<int> lHistory)

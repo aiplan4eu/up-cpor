@@ -29,6 +29,14 @@ namespace CPORLib.Tools
 
         public static readonly Predicate Observed = new GroundedPredicate("observed");
 
+        public static void ResetStaticPredicateIndexes()
+        {
+            TRUE_PREDICATE.Index = -1;
+            FALSE_PREDICATE.Index = -1;
+            if (Observed is GroundedPredicate observedPredicate)
+                observedPredicate.Index = -1;
+        }
+
 
         public static bool SameList(List<string> l1, List<string> l2)
         {

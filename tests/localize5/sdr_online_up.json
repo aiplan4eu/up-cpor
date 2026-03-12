@@ -1,0 +1,49 @@
+{
+  "goal_reached": null,
+  "steps": 7,
+  "trace": [
+    {
+      "action": "checking",
+      "observation": []
+    },
+    {
+      "action": "sense-up",
+      "observation": [
+        [
+          "free-up",
+          true
+        ]
+      ]
+    },
+    {
+      "action": "move-up",
+      "observation": []
+    },
+    {
+      "action": "checking",
+      "observation": []
+    },
+    {
+      "action": "sense-up",
+      "observation": [
+        [
+          "free-up",
+          true
+        ]
+      ]
+    },
+    {
+      "action": "sense-right",
+      "observation": [
+        [
+          "free-right",
+          false
+        ]
+      ]
+    },
+    {
+      "action": "move-up",
+      "observation": []
+    }
+  ]
+}

@@ -1,17 +1,21 @@
 import unified_planning as up
-from typing import Dict
-from unified_planning.model.contingent.environment import Environment
+from typing import Dict, Optional
+from unified_planning.model.contingent import ExecutionEnvironment
 
 from up_cpor.converter import UpCporConverter
 
-class SDRSimulator(Environment):
+class SDRSimulator(ExecutionEnvironment):
 
     def __init__(
-        self, problem: "up.model.contingent.contingent_problem.ContingentProblem"
+        self,
+        problem: "up.model.contingent.contingent_problem.ContingentProblem",
+        random_seed: Optional[int] = None,
     ):
         super().__init__(problem)
         self.problem = problem.clone()
         self.cnv = UpCporConverter()
+        if random_seed is not None:
+            self.cnv.set_random_seed(random_seed)
         self.simulator = self.cnv.createSDRSimulator(problem)
 
 
@@ -22,4 +26,3 @@ class SDRSimulator(Environment):
 
     def is_goal_reached(self) -> bool:
         return self.cnv.SDRGoal(self.simulator)
-

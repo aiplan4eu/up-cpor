@@ -1,0 +1,51 @@
+{
+  "goal_after": false,
+  "goal_before": false,
+  "steps": 6,
+  "trace": [
+    {
+      "action": "smell_wumpus(p1-1)",
+      "observation": [
+        [
+          "stench(p1-1)",
+          false
+        ]
+      ]
+    },
+    {
+      "action": "feel-breeze(p1-1)",
+      "observation": [
+        [
+          "breeze(p1-1)",
+          false
+        ]
+      ]
+    },
+    {
+      "action": "move(p1-1, p1-2)",
+      "observation": null
+    },
+    {
+      "action": "feel-breeze(p1-2)",
+      "observation": [
+        [
+          "breeze(p1-2)",
+          false
+        ]
+      ]
+    },
+    {
+      "action": "move(p1-2, p2-2)",
+      "observation": null
+    },
+    {
+      "action": "smell_wumpus(p2-2)",
+      "observation": [
+        [
+          "stench(p2-2)",
+          true
+        ]
+      ]
+    }
+  ]
+}

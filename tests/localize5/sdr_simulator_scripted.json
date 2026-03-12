@@ -1,0 +1,55 @@
+{
+  "goal_after": false,
+  "goal_before": false,
+  "steps": 7,
+  "trace": [
+    {
+      "action": "checking",
+      "observation": null
+    },
+    {
+      "action": "sense-up",
+      "observation": [
+        [
+          "free-up",
+          false
+        ]
+      ]
+    },
+    {
+      "action": "sense-down",
+      "observation": [
+        [
+          "free-down",
+          true
+        ]
+      ]
+    },
+    {
+      "action": "sense-left",
+      "observation": [
+        [
+          "free-left",
+          false
+        ]
+      ]
+    },
+    {
+      "action": "sense-right",
+      "observation": [
+        [
+          "free-right",
+          true
+        ]
+      ]
+    },
+    {
+      "action": "move-right",
+      "observation": null
+    },
+    {
+      "action": "checking",
+      "observation": null
+    }
+  ]
+}

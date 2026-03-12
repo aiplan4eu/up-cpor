@@ -1,0 +1,34 @@
+{
+  "goal_after": false,
+  "goal_before": false,
+  "steps": 3,
+  "trace": [
+    {
+      "action": "senseclear(b3)",
+      "observation": [
+        [
+          "clear(b3)",
+          false
+        ]
+      ]
+    },
+    {
+      "action": "senseclear(b2)",
+      "observation": [
+        [
+          "clear(b2)",
+          true
+        ]
+      ]
+    },
+    {
+      "action": "senseon(b3, b2)",
+      "observation": [
+        [
+          "on(b3, b2)",
+          false
+        ]
+      ]
+    }
+  ]
+}

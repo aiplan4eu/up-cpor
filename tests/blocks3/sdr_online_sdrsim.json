@@ -1,0 +1,23 @@
+{
+  "goal_reached": true,
+  "steps": 3,
+  "trace": [
+    {
+      "action": "senseon(b2, b3)",
+      "observation": [
+        [
+          "on(b2, b3)",
+          true
+        ]
+      ]
+    },
+    {
+      "action": "move-b-to-b(b2, b3, b1)",
+      "observation": null
+    },
+    {
+      "action": "move-t-to-b(b3, b2)",
+      "observation": null
+    }
+  ]
+}

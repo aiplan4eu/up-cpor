@@ -1,0 +1,86 @@
+{
+  "goal_reached": true,
+  "steps": 15,
+  "trace": [
+    {
+      "action": "move(p1-1, p1-2)",
+      "observation": null
+    },
+    {
+      "action": "move(p1-2, p1-3)",
+      "observation": null
+    },
+    {
+      "action": "smell_wumpus(p1-3)",
+      "observation": [
+        [
+          "stench(p1-3)",
+          true
+        ]
+      ]
+    },
+    {
+      "action": "move(p1-3, p1-4)",
+      "observation": null
+    },
+    {
+      "action": "move(p1-4, p2-4)",
+      "observation": null
+    },
+    {
+      "action": "feel-breeze(p2-4)",
+      "observation": [
+        [
+          "breeze(p2-4)",
+          false
+        ]
+      ]
+    },
+    {
+      "action": "move(p2-4, p2-5)",
+      "observation": null
+    },
+    {
+      "action": "move(p2-5, p3-5)",
+      "observation": null
+    },
+    {
+      "action": "smell_wumpus(p3-5)",
+      "observation": [
+        [
+          "stench(p3-5)",
+          false
+        ]
+      ]
+    },
+    {
+      "action": "feel-breeze(p3-5)",
+      "observation": [
+        [
+          "breeze(p3-5)",
+          true
+        ]
+      ]
+    },
+    {
+      "action": "move(p3-5, p3-4)",
+      "observation": null
+    },
+    {
+      "action": "move(p3-4, p4-4)",
+      "observation": null
+    },
+    {
+      "action": "move(p4-4, p5-4)",
+      "observation": null
+    },
+    {
+      "action": "move(p5-4, p5-5)",
+      "observation": null
+    },
+    {
+      "action": "grab(p5-5)",
+      "observation": null
+    }
+  ]
+}

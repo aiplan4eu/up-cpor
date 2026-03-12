@@ -56,6 +56,8 @@ namespace CPORLib.Algorithms
             
             ExecutionData = new ExecutionData("", "", d, p, Options.DeadendStrategy);
 
+            GenericArraySet<Predicate>.Reset();
+            GroundedPredicateFactory.Reset();
             Problem.PrepareForPlanning();
 
             FF.ClearEfficientMemory();

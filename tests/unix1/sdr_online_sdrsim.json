@@ -1,0 +1,52 @@
+{
+  "goal_reached": true,
+  "steps": 9,
+  "trace": [
+    {
+      "action": "cd-down(root, sub2)",
+      "observation": null
+    },
+    {
+      "action": "cd-down(sub2, sub21)",
+      "observation": null
+    },
+    {
+      "action": "ls(sub21, my-file)",
+      "observation": [
+        [
+          "file-in-dir(my-file, sub21)",
+          false
+        ]
+      ]
+    },
+    {
+      "action": "cd-up(sub21, sub2)",
+      "observation": null
+    },
+    {
+      "action": "cd-up(sub2, root)",
+      "observation": null
+    },
+    {
+      "action": "cd-down(root, sub1)",
+      "observation": null
+    },
+    {
+      "action": "cd-down(sub1, sub11)",
+      "observation": null
+    },
+    {
+      "action": "ls(sub11, my-file)",
+      "observation": [
+        [
+          "file-in-dir(my-file, sub11)",
+          true
+        ]
+      ]
+    },
+    {
+      "action": "mv(my-file, sub11, root)",
+      "observation": null
+    }
+  ]
+}

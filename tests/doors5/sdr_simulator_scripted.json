@@ -1,0 +1,25 @@
+{
+  "goal_after": false,
+  "goal_before": false,
+  "steps": 2,
+  "trace": [
+    {
+      "action": "sense-door(p1-3, p1-2)",
+      "observation": [
+        [
+          "opened(p1-2)",
+          true
+        ]
+      ]
+    },
+    {
+      "action": "sense-door(p1-3, p2-3)",
+      "observation": [
+        [
+          "opened(p2-3)",
+          false
+        ]
+      ]
+    }
+  ]
+}

@@ -27,77 +27,93 @@ namespace CPORLib.Algorithms
 
         public SDRPlanner(Domain domain, Problem problem): base(domain, problem)    
         {
+            using (new OptionsSnapshot())
+            {
+                ApplyPlannerOptions();
+                //Debug.WriteLine("Started online replanning for " + Domain.Name + ", " + DateTime.Now);
+                //no deadend support for now
+                BeliefState bsInitial = problem.GetInitialBelief();
+                CurrentState = bsInitial.GetPartiallySpecifiedState();
+                FutureActions = null;
+                NextActionIndex= 0;
+                ExpectingObservation = false;
+            }
+        }
+
+        private static void ApplyPlannerOptions()
+        {
             Options.ComputeCompletePlanTree = false;
             Options.AddAllKnownToGiven = true; //this is needed in, e.g., medpks010
-            //Debug.WriteLine("Started online replanning for " + Domain.Name + ", " + DateTime.Now);
-            //no deadend support for now
-            BeliefState bsInitial = problem.GetInitialBelief();
-            CurrentState = bsInitial.GetPartiallySpecifiedState();
-            FutureActions = null;
-            NextActionIndex= 0;
-            ExpectingObservation = false;
+            Options.TagsCount = 2;
         }
 
         
         public string GetAction()
         {
-            Error = "";
-            if (ExpectingObservation)
+            using (new OptionsSnapshot())
             {
-                Error = "Expecting the observation received from the last action before computing a new action.";
-                return null;
-            }
-            if (GoalReached)
-            {
-                Error = "Goal already reached, no additional actions should be executed.";
-                return null;
-            }
-            bool bPreconditionFailure = false;
-            if (FutureActions != null && NextActionIndex < FutureActions.Count)
-            {
-                string sAction = FutureActions[NextActionIndex];
-                bool bPreconditionsHold = CurrentState.IsApplicable(sAction);
-                //Console.WriteLine("SDR: Checking applicability of action " + sAction +" : " + bPreconditionsHold);
-                if (bPreconditionsHold)
-                    return sAction;
-                else
-                    bPreconditionFailure = true;
-            }
+                ApplyPlannerOptions();
+                Error = "";
+                if (ExpectingObservation)
+                {
+                    Error = "Expecting the observation received from the last action before computing a new action.";
+                    return null;
+                }
+                if (GoalReached)
+                {
+                    Error = "Goal already reached, no additional actions should be executed.";
+                    return null;
+                }
+                bool bPreconditionFailure = false;
+                if (FutureActions != null && NextActionIndex < FutureActions.Count)
+                {
+                    string sAction = FutureActions[NextActionIndex];
+                    bool bPreconditionsHold = CurrentState.IsApplicable(sAction);
+                    //Console.WriteLine("SDR: Checking applicability of action " + sAction +" : " + bPreconditionsHold);
+                    if (bPreconditionsHold)
+                        return sAction;
+                    else
+                        bPreconditionFailure = true;
+                }
 
-            List<string> lPlan = Plan(CurrentState, bPreconditionFailure, out bool bDeadEndReached, out State sChosen);
-            if (lPlan == null || lPlan.Count ==0)
-            {
-                Error = "Could not plan for the current state";
-                return null;
+                List<string> lPlan = Plan(CurrentState, bPreconditionFailure, out bool bDeadEndReached, out State sChosen);
+                if (lPlan == null || lPlan.Count ==0)
+                {
+                    Error = "Could not plan for the current state";
+                    return null;
+                }
+                FutureActions = lPlan;
+                NextActionIndex = 0;
+                return GetAction();
             }
-            FutureActions = lPlan;
-            NextActionIndex = 0;
-            return GetAction();
         }
 
         public bool SetObservation(string sObservation)
         {
-            Error = "";
-            if (GoalReached)
+            using (new OptionsSnapshot())
             {
-                Error = "Goal already reached, no additional actions should be executed.";
-                return false;
-            }
-            string sAction = FutureActions[NextActionIndex];
-            string sRevisedActionName = sAction.Replace(Utilities.DELIMITER_CHAR, " ");
-            string[] aName = Utilities.SplitString(sRevisedActionName, ' ');
-            Action a = Problem.Domain.GroundActionByName(aName);
-            if(a.Observe == null && sObservation != null)
-            {
-                Error = "Action was not a sensing action, null observation expected.";
-                return false;
-            }
-            if (a.Observe != null && sObservation == null)
-            {
-                Error = "Sensing action executed, expecting an observation.";
-                return false;
-            }
-            PartiallySpecifiedState psNext = CurrentState.Apply(a, sObservation);
+                ApplyPlannerOptions();
+                Error = "";
+                if (GoalReached)
+                {
+                    Error = "Goal already reached, no additional actions should be executed.";
+                    return false;
+                }
+                string sAction = FutureActions[NextActionIndex];
+                string sRevisedActionName = sAction.Replace(Utilities.DELIMITER_CHAR, " ");
+                string[] aName = Utilities.SplitString(sRevisedActionName, ' ');
+                Action a = Problem.Domain.GroundActionByName(aName);
+                if(a.Observe == null && sObservation != null)
+                {
+                    Error = "Action was not a sensing action, null observation expected.";
+                    return false;
+                }
+                if (a.Observe != null && sObservation == null)
+                {
+                    Error = "Sensing action executed, expecting an observation.";
+                    return false;
+                }
+                PartiallySpecifiedState psNext = CurrentState.Apply(a, sObservation);
                 /*
             CurrentState.ApplyOffline(a, out bool bPreconditionFailure, out PartiallySpecifiedState psTrue
                 , out PartiallySpecifiedState psFalse, true);
@@ -131,32 +147,36 @@ namespace CPORLib.Algorithms
                 CurrentState = psFalse;
             }
                 */
-            if(psNext == null)
-            {
-                Error = "Failed to apply the action at the current state.";
-                return false;
+                if(psNext == null)
+                {
+                    Error = "Failed to apply the action at the current state.";
+                    return false;
+                }
+                CurrentState = psNext;
+                NextActionIndex++;
+                if(NextActionIndex == FutureActions.Count || sObservation != null)
+                {
+                    FutureActions = null;
+                    NextActionIndex = -1;
+                }
+                ExpectingObservation = false;
+                return true;
             }
-            CurrentState = psNext;
-            NextActionIndex++;
-            if(NextActionIndex == FutureActions.Count || sObservation != null)
-            {
-                FutureActions = null;
-                NextActionIndex = -1;
-            }
-            ExpectingObservation = false;
-            return true;
         }
 
         public bool OnlineReplanning()
         {
-            Console.WriteLine("Started online replanning for " + Domain.Name + ", " + DateTime.Now);
+            using (new OptionsSnapshot())
+            {
+                ApplyPlannerOptions();
+                Console.WriteLine("Started online replanning for " + Domain.Name + ", " + DateTime.Now);
 
 
-            bool bSampleDeadendState = Options.SampleDeadendState;
+                bool bSampleDeadendState = Options.SampleDeadendState;
 
-            BeliefState bsInitial = Problem.GetInitialBelief();
-            bsInitial.UnderlyingEnvironmentState = null;
-            State s = null;
+                BeliefState bsInitial = Problem.GetInitialBelief();
+                bsInitial.UnderlyingEnvironmentState = null;
+                State s = null;
 
             if (Problem.DeadEndList.Count == 0)
                 bSampleDeadendState = false;
@@ -341,9 +361,10 @@ namespace CPORLib.Algorithms
             Console.WriteLine("Actions: " + cHistory);
             Console.WriteLine("Average time - " + tsTime.TotalSeconds * 1.0 / cActions);
             Console.WriteLine("Total time - " + tsTime.TotalSeconds);
-            Console.WriteLine("*******************************************************************************");
+                Console.WriteLine("*******************************************************************************");
 
-            return bValid;
+                return bValid;
+            }
         }
 
 

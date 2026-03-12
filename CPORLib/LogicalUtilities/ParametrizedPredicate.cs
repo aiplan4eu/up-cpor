@@ -287,14 +287,15 @@ namespace CPORLib.LogicalUtilities
 
         protected override int ComputeHashCode()
         {
-            int iSum = 0;
+            int hash = StableHash.GetStringHash(Name);
             foreach (Argument a in Parameters)
             {
-                iSum += a.GetHashCode();
-                iSum *= 100;
+                unchecked
+                {
+                    hash = hash * 31 + StableHash.Combine(a.Type, a.Name);
+                }
             }
-            iSum += m_iName;
-            return iSum;
+            return hash;
         }
 
         public override Predicate Clone()

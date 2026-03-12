@@ -1,0 +1,57 @@
+{
+  "goal_reached": true,
+  "steps": 9,
+  "trace": [
+    {
+      "action": "senseon(b4, b7)",
+      "observation": [
+        [
+          "on(b4, b7)",
+          true
+        ]
+      ]
+    },
+    {
+      "action": "senseon(b6, b1)",
+      "observation": [
+        [
+          "on(b6, b1)",
+          false
+        ]
+      ]
+    },
+    {
+      "action": "senseclear(b2)",
+      "observation": [
+        [
+          "clear(b2)",
+          true
+        ]
+      ]
+    },
+    {
+      "action": "move-to-t(b4, b7)",
+      "observation": []
+    },
+    {
+      "action": "move-b-to-b(b1, b6, b4)",
+      "observation": []
+    },
+    {
+      "action": "move-to-t(b6, b3)",
+      "observation": []
+    },
+    {
+      "action": "move-b-to-b(b2, b5, b1)",
+      "observation": []
+    },
+    {
+      "action": "move-t-to-b(b3, b6)",
+      "observation": []
+    },
+    {
+      "action": "move-t-to-b(b5, b7)",
+      "observation": []
+    }
+  ]
+}

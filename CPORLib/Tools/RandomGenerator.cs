@@ -4,7 +4,7 @@ using System.Diagnostics;
 
 namespace CPORLib.Tools
 {
-    class RandomGenerator
+    public class RandomGenerator
     {
         private static Random m_rnd = new Random(0);
         public static void Init(int iSeed)

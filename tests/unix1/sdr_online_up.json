@@ -1,0 +1,27 @@
+{
+  "goal_reached": true,
+  "steps": 4,
+  "trace": [
+    {
+      "action": "cd-down(root, sub1)",
+      "observation": []
+    },
+    {
+      "action": "cd-down(sub1, sub11)",
+      "observation": []
+    },
+    {
+      "action": "ls(sub11, my-file)",
+      "observation": [
+        [
+          "file-in-dir(my-file, sub11)",
+          true
+        ]
+      ]
+    },
+    {
+      "action": "mv(my-file, sub11, root)",
+      "observation": []
+    }
+  ]
+}

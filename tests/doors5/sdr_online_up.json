@@ -1,0 +1,124 @@
+{
+  "goal_reached": true,
+  "steps": 22,
+  "trace": [
+    {
+      "action": "move(p1-3, p1-4)",
+      "observation": []
+    },
+    {
+      "action": "sense-door(p1-4, p2-4)",
+      "observation": [
+        [
+          "opened(p2-4)",
+          false
+        ]
+      ]
+    },
+    {
+      "action": "move(p1-4, p1-5)",
+      "observation": []
+    },
+    {
+      "action": "sense-door(p1-5, p2-5)",
+      "observation": [
+        [
+          "opened(p2-5)",
+          false
+        ]
+      ]
+    },
+    {
+      "action": "move(p1-5, p1-4)",
+      "observation": []
+    },
+    {
+      "action": "move(p1-4, p1-3)",
+      "observation": []
+    },
+    {
+      "action": "move(p1-3, p1-2)",
+      "observation": []
+    },
+    {
+      "action": "sense-door(p1-2, p2-2)",
+      "observation": [
+        [
+          "opened(p2-2)",
+          false
+        ]
+      ]
+    },
+    {
+      "action": "move(p1-2, p1-1)",
+      "observation": []
+    },
+    {
+      "action": "sense-door(p1-1, p2-1)",
+      "observation": [
+        [
+          "opened(p2-1)",
+          false
+        ]
+      ]
+    },
+    {
+      "action": "move(p1-1, p1-2)",
+      "observation": []
+    },
+    {
+      "action": "move(p1-2, p1-3)",
+      "observation": []
+    },
+    {
+      "action": "move(p1-3, p2-3)",
+      "observation": []
+    },
+    {
+      "action": "move(p2-3, p3-3)",
+      "observation": []
+    },
+    {
+      "action": "move(p3-3, p3-4)",
+      "observation": []
+    },
+    {
+      "action": "move(p3-4, p3-5)",
+      "observation": []
+    },
+    {
+      "action": "sense-door(p3-5, p4-5)",
+      "observation": [
+        [
+          "opened(p4-5)",
+          false
+        ]
+      ]
+    },
+    {
+      "action": "move(p3-5, p3-4)",
+      "observation": []
+    },
+    {
+      "action": "move(p3-4, p3-3)",
+      "observation": []
+    },
+    {
+      "action": "sense-door(p3-3, p4-3)",
+      "observation": [
+        [
+          "opened(p4-3)",
+          true
+        ]
+      ]
+    },
+    {
+      "action": "move(p3-3, p4-3)",
+      "observation": []
+    },
+    {
+      "action": "move(p4-3, p5-3)",
+      "observation": []
+    }
+  ]
+}

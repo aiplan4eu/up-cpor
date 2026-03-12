@@ -17,6 +17,8 @@ namespace CPORLib.Tools
         {
             Indexes = new Dictionary<T, int>();
             CountIndexes = 0;
+            if (typeof(Predicate).IsAssignableFrom(typeof(T)))
+                Utilities.ResetStaticPredicateIndexes();
         }
 
 
@@ -212,6 +214,5 @@ namespace CPORLib.Tools
     }
 
 }
-
 
 

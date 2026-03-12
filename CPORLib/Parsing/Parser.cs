@@ -565,20 +565,25 @@ namespace CPORLib.Parsing
                 }
                 else
                 {
-                    try
+                    if (!d.ConstantNameToType.ContainsKey(sName))
                     {
-                        Constant c = new Constant(d.ConstantNameToType[sName], sName);
-                        ((GroundedPredicate)p).AddConstant(c);
+                        throw new Exception("Unknown constant " + sName + " in " + exp);
                     }
-                    catch (Exception e)
-                    {
-                        Debug.WriteLine("");
-                    }
+
+                    Constant c = new Constant(d.ConstantNameToType[sName], sName);
+                    ((GroundedPredicate)p).AddConstant(c);
                 }
             }
             if (bParametrized)
+            {
                 if (!MatchParametersToPredicateDeclaration((ParametrizedPredicate)p, d))
-                    throw new Exception("Paramter does not match predicate declaration " + p);
+                    throw new Exception("Parameter does not match predicate declaration " + p);
+            }
+            else
+            {
+                if (!MatchGroundedPredicateToPredicateDeclaration((GroundedPredicate)p, d, out string sError))
+                    throw new Exception(sError);
+            }
 
             if (bParametrized && bAllConstants)
             {
@@ -591,6 +596,51 @@ namespace CPORLib.Parsing
 
             PredicateFormula vf = new PredicateFormula(p);
             return vf;
+        }
+
+        private bool MatchGroundedPredicateToPredicateDeclaration(GroundedPredicate gp, Domain d, out string sError)
+        {
+            foreach (Predicate pDefinition in d.Predicates)
+            {
+                if (pDefinition.Name == gp.Name)
+                {
+                    if (pDefinition is ParametrizedPredicate ppDefinition)
+                    {
+                        List<Argument> lArguments = ppDefinition.Parameters.ToList();
+                        if (gp.Constants.Count != lArguments.Count)
+                        {
+                            sError = "Predicate " + gp.Name + " expects " + lArguments.Count + " arguments, got " + gp.Constants.Count + " in " + gp;
+                            return false;
+                        }
+                        for (int i = 0; i < lArguments.Count; i++)
+                        {
+                            Argument a = lArguments[i];
+                            Constant c = gp.Constants[i];
+                            if (a is Parameter param)
+                            {
+                                if (param.Type != "" && !d.ParentOf(param.Type, c.Type))
+                                {
+                                    sError = "Constant " + c.Name + " of type " + c.Type + " does not match predicate declaration " + gp.Name;
+                                    return false;
+                                }
+                            }
+                            else if (a is Constant expected && expected.Name != c.Name)
+                            {
+                                sError = "Predicate " + gp.Name + " expects constant " + expected.Name + " at argument " + i;
+                                return false;
+                            }
+                        }
+                        sError = null;
+                        return true;
+                    }
+
+                    sError = "Predicate declaration " + gp.Name + " is not parameterized.";
+                    return false;
+                }
+            }
+
+            sError = "Unknown predicate declaration " + gp.Name;
+            return false;
         }
 
         private bool MatchParametersToPredicateDeclaration(ParametrizedPredicate pp, Domain d)

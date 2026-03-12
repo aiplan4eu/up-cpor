@@ -53,7 +53,7 @@ namespace CPORLib.LogicalUtilities
         }
         public override sealed int GetHashCode()
         {
-            return m_iType * 100 + m_iName;
+            return StableHash.Combine(Type, Name);
         }
         public override sealed bool Equals(object obj)
         {

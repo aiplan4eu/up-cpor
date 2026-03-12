@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text;
 
 
 using static CPORLib.Tools.Options;
@@ -20,7 +21,6 @@ namespace CPORLib.Algorithms
 
         public CPORPlanner(Domain domain, Problem problem) : base(domain, problem)  
         {
-            Options.ComputeCompletePlanTree = true;
         }
 
 
@@ -29,11 +29,15 @@ namespace CPORLib.Algorithms
 
         public ConditionalPlanTreeNode OfflinePlanning()
         {
-            try
+            using (new OptionsSnapshot())
             {
+                Options.ComputeCompletePlanTree = true;
+                Options.TagsCount = 2;
+                try
+                {
 
-                //if (Verbose)
-                Console.WriteLine("Started offline planning for " + Domain.Name + ", " + DateTime.Now);
+                    //if (Verbose)
+                    Console.WriteLine("Started offline planning for " + Domain.Name + ", " + DateTime.Now);
 
                 Dictionary<PartiallySpecifiedState, PartiallySpecifiedState> dAlreadyVisitedStates = new Dictionary<PartiallySpecifiedState, PartiallySpecifiedState>(new PartiallySpecifiedState_IEqualityComparer());
                 DateTime dtStart = DateTime.Now;
@@ -294,20 +298,20 @@ namespace CPORLib.Algorithms
                 TraceListener.Flush();
                 TraceListener.Close();
 
-                return pssInitial.Plan;
+                    return pssInitial.Plan;
+                }
+                catch(Exception e)
+                {
+                    Console.WriteLine("Caught an exception: " + e.Message);
+                    Console.WriteLine(e.StackTrace);
+
+
+                    CPORPlanner.TraceListener.Write(e.StackTrace);
+                    TraceListener.Flush();
+                    TraceListener.Close();
+                    return null;
+                }
             }
-            catch(Exception e)
-            {
-                Console.WriteLine("Caught an exception: " + e.Message);
-                Console.WriteLine(e.StackTrace);
-
-
-                CPORPlanner.TraceListener.Write(e.StackTrace);
-                TraceListener.Flush();
-                TraceListener.Close();
-                return null;
-            }
-
         }
 
 
@@ -317,38 +321,113 @@ namespace CPORLib.Algorithms
 
         public static bool ValidatePlanGraph(string sPlanFile, Domain d, Problem p, out int cNodes)
         {
-            bool bComputePlanTree = Options.ComputeCompletePlanTree;
-            Options.ComputeCompletePlanTree = true;
-            ConditionalPlanTreeNode nRoot = ReadPlan(sPlanFile, d);
-
-            if (nRoot == null)
+            using (new OptionsSnapshot())
             {
-                cNodes = 0;
-                return false;
+                Options.ComputeCompletePlanTree = true;
+                Options.TagsCount = 2;
+                ConditionalPlanTreeNode nRoot = ReadPlan(sPlanFile, d);
+
+                if (nRoot == null)
+                {
+                    cNodes = 0;
+                    return false;
+                }
+
+                BeliefState bsInitial = p.GetInitialBelief();
+                PartiallySpecifiedState pssInit = bsInitial.GetPartiallySpecifiedState();
+
+                HashSet<int> lNodes = new HashSet<int>();
+                GetAllNodes(nRoot, lNodes);
+                cNodes = lNodes.Count;
+                int cLeaves = 0;
+                Dictionary<string, bool> dValidatedStates = new Dictionary<string, bool>();
+                HashSet<int> hsActiveNodes = new HashSet<int>();
+                return ValidatePlanGraph(pssInit, nRoot, hsActiveNodes, dValidatedStates, DateTime.Now, new TimeSpan(0, 15, 0), ref cLeaves);
             }
-
-            BeliefState bsInitial = p.GetInitialBelief();
-            PartiallySpecifiedState pssInit = bsInitial.GetPartiallySpecifiedState();
-
-            HashSet<int> lNodes = new HashSet<int>();
-            GetAllNodes(nRoot, lNodes);
-            cNodes = lNodes.Count;
-            int cLeaves = 0;
-            bool bValid = ValidatePlanGraph(pssInit, nRoot, new List<ConditionalPlanTreeNode>(), new List<string>(), DateTime.Now, new TimeSpan(0, 15, 0), ref cLeaves);
-            Options.ComputeCompletePlanTree = bComputePlanTree;
-            return bValid;
         }
 
         public bool ValidatePlanGraph(ConditionalPlanTreeNode nCurrent)
         {
-            int cCheckedLeaves = 0;
-            return ValidatePlanGraph(Problem.GetInitialBelief().GetPartiallySpecifiedState(), nCurrent, new List<ConditionalPlanTreeNode>(), new List<string>(), DateTime.Now, new TimeSpan(0, 15, 0), ref cCheckedLeaves);
+            using (new OptionsSnapshot())
+            {
+                Options.ComputeCompletePlanTree = true;
+                Options.TagsCount = 2;
+                int cCheckedLeaves = 0;
+                Dictionary<string, bool> dValidatedStates = new Dictionary<string, bool>();
+                HashSet<int> hsActiveNodes = new HashSet<int>();
+                return ValidatePlanGraph(Problem.GetInitialBelief().GetPartiallySpecifiedState(), nCurrent, hsActiveNodes, dValidatedStates, DateTime.Now, new TimeSpan(0, 15, 0), ref cCheckedLeaves);
+            }
         }
 
-        public static bool ValidatePlanGraph(PartiallySpecifiedState pssCurrent, ConditionalPlanTreeNode nCurrent, List<ConditionalPlanTreeNode> lHistory, List<string> ll,
+        private static string GetValidationPredicateStatus(PartiallySpecifiedState pssCurrent, Predicate p)
+        {
+            if (pssCurrent.Observed.Contains(p))
+                return "t";
+            if (pssCurrent.Observed.Contains(p.Negate()))
+                return "f";
+            if (pssCurrent.Hidden.Contains(p.Canonical()))
+                return "u";
+            return "?";
+        }
+
+        private static void AppendValidationProjection(StringBuilder sb, string prefix, PartiallySpecifiedState pssCurrent, GenericArraySet<Predicate> predicates)
+        {
+            if (predicates == null || predicates.Count == 0)
+                return;
+
+            List<string> lEntries = new List<string>();
+            foreach (Predicate p in predicates)
+                lEntries.Add(p.ToString() + "=" + GetValidationPredicateStatus(pssCurrent, p));
+            lEntries.Sort(StringComparer.Ordinal);
+
+            foreach (string sEntry in lEntries)
+            {
+                sb.Append(prefix);
+                sb.Append(sEntry);
+                sb.Append(';');
+            }
+        }
+
+        private static void AppendValidationSnapshot(StringBuilder sb, string prefix, GenericArraySet<Predicate> predicates)
+        {
+            if (predicates == null || predicates.Count == 0)
+                return;
+
+            List<string> lEntries = new List<string>();
+            foreach (Predicate p in predicates)
+                lEntries.Add(p.ToString());
+            lEntries.Sort(StringComparer.Ordinal);
+
+            foreach (string sEntry in lEntries)
+            {
+                sb.Append(prefix);
+                sb.Append(sEntry);
+                sb.Append(';');
+            }
+        }
+
+        private static string BuildValidationCacheKey(PartiallySpecifiedState pssCurrent, ConditionalPlanTreeNode nCurrent)
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.Append(nCurrent.ID);
+            sb.Append('|');
+            if (nCurrent.HasValidationDependencies)
+            {
+                AppendValidationProjection(sb, "k:", pssCurrent, nCurrent.ValidationPredicatesKnown);
+                AppendValidationProjection(sb, "u:", pssCurrent, nCurrent.ValidationPredicatesUnknown);
+            }
+            else
+            {
+                AppendValidationSnapshot(sb, "o:", pssCurrent.Observed);
+                AppendValidationSnapshot(sb, "h:", pssCurrent.Hidden);
+            }
+            return sb.ToString();
+        }
+
+        public static bool ValidatePlanGraph(PartiallySpecifiedState pssCurrent, ConditionalPlanTreeNode nCurrent, HashSet<int> hsActiveNodes, Dictionary<string, bool> dValidatedStates,
             DateTime dtStart, TimeSpan tsMax, ref int cCheckedLeaves)
         {
-            if (lHistory.Count % 10 == 0)
+            if (hsActiveNodes.Count % 10 == 0)
             {
                 DateTime dtNow = DateTime.Now;
                 TimeSpan ts = dtNow - dtStart;
@@ -360,90 +439,109 @@ namespace CPORLib.Algorithms
             }
             if (cCheckedLeaves % 100 == 0)
                 Debug.Write("\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b Leaves: " + cCheckedLeaves);
-            if (lHistory.Contains(nCurrent))//loop detected
-                return false;
             if (pssCurrent == null)
             {
                 cCheckedLeaves++;
                 return false;
             }
-            if (pssCurrent.IsGoalState())
-            {
-                cCheckedLeaves++;
-                return true;
-            }
 
-            if (nCurrent.DeadEnd)
-            {
-                cCheckedLeaves++;
-                if (pssCurrent.IsDeadEndState() == Options.DeadEndExistence.DeadEndTrue)
-                    return true;
+            string sCacheKey = BuildValidationCacheKey(pssCurrent, nCurrent);
+            if (dValidatedStates.TryGetValue(sCacheKey, out bool bCached))
+                return bCached;
+
+            if (!hsActiveNodes.Add(nCurrent.ID))//loop detected
                 return false;
-            }
-            if (nCurrent.Action == null) //stopping not at a deadend or goal
+
+            bool bResult = false;
+            bool bCacheResult = true;
+            try
             {
-                cCheckedLeaves++;
-                return false;
-            }
-            PartiallySpecifiedState psTrueState, psFalseState;
-
-            pssCurrent.ApplyOffline(nCurrent.Action, out bool bPreconditionFailed, out psTrueState, out psFalseState, true);
-            if (bPreconditionFailed || (psTrueState == null && psFalseState == null))
-            {
-                //Debug.WriteLine("BUGBUG");
-                return false;
-            }
-
-            lHistory.Add(nCurrent);
-            if (nCurrent.Action.Observe == null)
-            {
-                ll.Add(nCurrent.SingleChild.ID.ToString());
-                return ValidatePlanGraph(psTrueState, nCurrent.SingleChild, lHistory, ll, dtStart, tsMax, ref cCheckedLeaves);
-            }
-            bool bTrueOk = false;
-            bool bFalseOk = false;
-
-            List<string> x1 = new List<string>(ll);
-            x1.Add(nCurrent.TrueObservationChild.ID.ToString());
-
-            List<string> x2 = new List<string>(ll);
-            x2.Add(nCurrent.FalseObservationChild.ID.ToString());
-
-
-            List<ConditionalPlanTreeNode> lFalseHistory = new List<ConditionalPlanTreeNode>(lHistory);
-            List<ConditionalPlanTreeNode> lTrueHistory = new List<ConditionalPlanTreeNode>(lHistory);
-
-
-            if (psTrueState == null)
-            {
-                bTrueOk = true;
-            }
-            else
-            {
-                if (nCurrent.TrueObservationChild == null)
+                if (pssCurrent.IsGoalState())
                 {
-                    Debug.WriteLine("BUG");
-                    return false;
+                    cCheckedLeaves++;
+                    bResult = true;
+                    return bResult;
                 }
-                bTrueOk = ValidatePlanGraph(psTrueState, nCurrent.TrueObservationChild, lTrueHistory, x1, dtStart, tsMax, ref cCheckedLeaves);
-            }
-            if (psFalseState == null)
-            {
-                bFalseOk = true;
-            }
-            else
-            {
 
-                if (nCurrent.FalseObservationChild == null)
+                if (nCurrent.DeadEnd)
                 {
-                    Debug.WriteLine("BUG");
-                    return false;
+                    cCheckedLeaves++;
+                    if (pssCurrent.IsDeadEndState() == Options.DeadEndExistence.DeadEndTrue)
+                    {
+                        bResult = true;
+                        return bResult;
+                    }
+
+                    bResult = false;
+                    return bResult;
                 }
-                bFalseOk = ValidatePlanGraph(psFalseState, nCurrent.FalseObservationChild, lFalseHistory, x2, dtStart, tsMax, ref cCheckedLeaves);
+                if (nCurrent.Action == null) //stopping not at a deadend or goal
+                {
+                    cCheckedLeaves++;
+                    bResult = false;
+                    return bResult;
+                }
+                PartiallySpecifiedState psTrueState, psFalseState;
+
+                pssCurrent.ApplyOffline(nCurrent.Action, out bool bPreconditionFailed, out psTrueState, out psFalseState, true);
+                if (bPreconditionFailed || (psTrueState == null && psFalseState == null))
+                {
+                    //Debug.WriteLine("BUGBUG");
+                    bResult = false;
+                    return bResult;
+                }
+
+                if (nCurrent.Action.Observe == null)
+                {
+                    bResult = ValidatePlanGraph(psTrueState, nCurrent.SingleChild, hsActiveNodes, dValidatedStates, dtStart, tsMax, ref cCheckedLeaves);
+                    return bResult;
+                }
+                bool bTrueOk = false;
+                bool bFalseOk = false;
+
+                if (psTrueState == null)
+                {
+                    bTrueOk = true;
+                }
+                else
+                {
+                    if (nCurrent.TrueObservationChild == null)
+                    {
+                        Debug.WriteLine("BUG");
+                        bResult = false;
+                        return bResult;
+                    }
+                    bTrueOk = ValidatePlanGraph(psTrueState, nCurrent.TrueObservationChild, hsActiveNodes, dValidatedStates, dtStart, tsMax, ref cCheckedLeaves);
+                }
+                if (psFalseState == null)
+                {
+                    bFalseOk = true;
+                }
+                else
+                {
+                    if (nCurrent.FalseObservationChild == null)
+                    {
+                        Debug.WriteLine("BUG");
+                        bResult = false;
+                        return bResult;
+                    }
+                    bFalseOk = ValidatePlanGraph(psFalseState, nCurrent.FalseObservationChild, hsActiveNodes, dValidatedStates, dtStart, tsMax, ref cCheckedLeaves);
+                }
+                if (bTrueOk && bFalseOk)
+                    bResult = true;
+                return bResult;
             }
-            if (bTrueOk && bFalseOk)
-                return true;
-            return false;
+            catch
+            {
+                bCacheResult = false;
+                throw;
+            }
+            finally
+            {
+                hsActiveNodes.Remove(nCurrent.ID);
+                if (bCacheResult)
+                    dValidatedStates[sCacheKey] = bResult;
+            }
         }
 
 
@@ -609,8 +707,8 @@ namespace CPORLib.Algorithms
 
             int cNodes = dNodes.Count + dObservationNodes.Count;
 
-            pssCurrent.ApplyOffline(nCurrent.Action, out bool bPreconditionFailed, out psTrueState, out psFalseState);
-            if (bPreconditionFailed || psTrueState == null)
+            pssCurrent.ApplyOffline(nCurrent.Action, out bool bPreconditionFailed, out psTrueState, out psFalseState, true);
+            if (bPreconditionFailed || (psTrueState == null && psFalseState == null))
             {
                 Debug.WriteLine("BUG");
                 return;
